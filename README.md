@@ -1,2 +1,2 @@
-# autohydro
-Automatic hydroponics web app
+# envbot
+Environmental monitoring web app
