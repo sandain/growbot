@@ -1,0 +1,114 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+  GrowBot
+
+=head1 SYNOPSIS
+
+
+=head1 DESCRIPTION
+
+
+=head1 DEPENDENCIES
+
+  GrowBot requires Perl version 5.10 or later, in addition to Mojolicious.
+
+=head1 FEEDBACK
+
+=head2 Reporting Bugs
+
+  Report bugs to the GitHub issue tracker at:
+  https://github.com/sandain/growbot/issues
+
+=head1 AUTHOR - Jason M. Wood
+
+  Email sandain@hotmail.com
+
+=head1 COPYRIGHT AND LICENSE
+
+  Copyright (c) 2020  Jason M. Wood <sandain@hotmail.com>
+
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
+
+=head1 APPENDIX
+
+  The rest of the documentation details each of the object methods.
+
+=cut
+
+use strict;
+use warnings;
+use utf8;
+use 5.010;
+
+use Mojolicious::Lite;
+
+use lib qw(lib);
+use Device::I2C::Bosch280;
+use Device::I2C::AtlasScientific;
+
+=head2 Helper Functions
+
+=head3 sensor
+
+  Return the sensor data for the selected device.
+
+=cut
+
+helper 'sensor' => sub {
+  my $self = shift;
+  my ($address) = @_;
+  
+  return sprintf "{ \"address\":\"%s\" }", $address;
+
+};
+
+
+=head2 HTTP Request Methods
+
+=head3 get /
+
+  Renders the dashboard.
+
+=cut
+
+get '/' => sub {
+  my $self = shift;
+  $self->render (template => 'dashboard');
+};
+
+=head3 get /sensor/<i2c address>
+
+  Renders the dashboard.
+
+=cut
+
+get '/sensor/:address' => sub {
+  my $self = shift;
+  my $address = $self->param ('address');
+  $self->render (template => 'sensor');
+};
+
+app->start;

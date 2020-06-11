@@ -1,0 +1,16 @@
+[Unit]
+Description=GrowBot
+Documentation=https://github.com/sandain/growbot
+Requires=network.target
+After=network.target
+
+[Service]
+User=growbot
+Group=growbot
+PIDFile=/opt/growbot/hypnotoad.pid
+ExecStart=/usr/bin/hypnotoad /opt/growbot/growbot
+ExecReload=/usr/bin/hypnotoad /opt/growbot/growbot
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
