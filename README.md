@@ -1,2 +1,2 @@
-# envbot
+# growbot
 Environmental monitoring web app
