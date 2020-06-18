@@ -78,22 +78,18 @@ use Device::I2C;
 use IO::File;
 use Exporter qw (import);
 
-# Supported sensors
+## Public constants.
+
+# Supported sensors.
 use constant BOSCH280_SENSOR_BMP280 => 0x01;
 use constant BOSCH280_SENSOR_BME280 => 0x02;
-
-# Supported sensor Ids
-use constant BOSCH280_ID_BMP280_0 => 0x56;
-use constant BOSCH280_ID_BMP280_1 => 0x57;
-use constant BOSCH280_ID_BMP280_2 => 0x58;
-use constant BOSCH280_ID_BME280   => 0x60;
 
 # Power modes.
 use constant BOSCH280_MODE_SLEEP  => 0x00;
 use constant BOSCH280_MODE_FORCED => 0x01;
 use constant BOSCH280_MODE_NORMAL => 0x03;
 
-# Oversampling mode
+# Oversampling mode.
 use constant BOSCH280_OVERSAMPLING_OFF => 0x00;
 use constant BOSCH280_OVERSAMPLING_X1  => 0x01;
 use constant BOSCH280_OVERSAMPLING_X2  => 0x02;
@@ -118,36 +114,64 @@ use constant BOSCH280_FILTER_X4  => 0x03;
 use constant BOSCH280_FILTER_X8  => 0x04;
 use constant BOSCH280_FILTER_X16 => 0x05;
 
-# Register Addresses.
-use constant BOSCH280_REG_CHIP_ID   => 0xD0;  # Chip Id
-use constant BOSCH280_REG_RESET     => 0xE0;  # Reset
-use constant BOSCH280_REG_CTRL_HUM  => 0xF2;  # Control humidity oversampling
-use constant BOSCH280_REG_STATUS    => 0xF3;  # Device status
-use constant BOSCH280_REG_CTRL_MEAS => 0xF4;  # Control temperature & pressure oversampling
-use constant BOSCH280_REG_CONFIG    => 0xF5;  # Config IIR filter
-use constant BOSCH280_REG_PRESS     => 0xF7;  # Raw pressure data
-use constant BOSCH280_REG_TEMP      => 0xFA;  # Raw temperature data
-use constant BOSCH280_REG_HUM       => 0xFD;  # Raw humidity data (BME280 only)
-use constant BOSCH280_PRESS_LENGTH => 3;
-use constant BOSCH280_TEMP_LENGTH  => 3;
-use constant BOSCH280_HUM_LENGTH   => 2;
-
-# Calibration.
-use constant BOSCH280_REG_CALIBRATION_0 => 0x88;   # Pressure and temperature
-use constant BOSCH280_REG_CALIBRATION_1 => 0xE1;   # Humidity
-use constant BOSCH280_CALIBRATION_LENGTH_0 => 26;  # Length of data
-use constant BOSCH280_CALIBRATION_LENGTH_1 => 7;   # Length of data
-
-# Reset command
-use constant BOSCH280_CMD_RESET => 0xB6;      # Reset
-
-# Minimum and maximum values
+# Minimum and maximum values.
 use constant BOSCH280_TEMPERATURE_MIN => -40; # Minimum temperature (C)
 use constant BOSCH280_TEMPERATURE_MAX => 85;  # Maximum temperature (C)
 use constant BOSCH280_PRESSURE_MIN => 300;    # Minimum pressure (hPa)
 use constant BOSCH280_PRESSURE_MAX => 1100;   # Maximum pressure (hPa)
-use constant BOSCH280_HUMIDITY_MIN => 0;      # Minimum humidity (0%)
-use constant BOSCH280_HUMIDITY_MAX => 100;    # Maximum humidity (100%)
+use constant BOSCH280_HUMIDITY_MIN => 0;      # Minimum humidity (%)
+use constant BOSCH280_HUMIDITY_MAX => 100;    # Maximum humidity (%)
+
+## Private constants.
+
+# Supported sensor identifiers.
+use constant BOSCH280_ID_BMP280_0 => 0x56;
+use constant BOSCH280_ID_BMP280_1 => 0x57;
+use constant BOSCH280_ID_BMP280_2 => 0x58;
+use constant BOSCH280_ID_BME280   => 0x60;
+
+# BMP280 standby duration (ms).
+use constant BOSCH280_STANDBY_X0_BMP280 =>    0.5;
+use constant BOSCH280_STANDBY_X1_BMP280 =>   62.5;
+use constant BOSCH280_STANDBY_X2_BMP280 =>  125;
+use constant BOSCH280_STANDBY_X3_BMP280 =>  250;
+use constant BOSCH280_STANDBY_X4_MP280  =>  500;
+use constant BOSCH280_STANDBY_X5_BMP280 => 1000;
+use constant BOSCH280_STANDBY_X6_BMP280 => 2000;
+use constant BOSCH280_STANDBY_X7_BMP280 => 4000;
+
+# BME280 standby duration (ms).
+use constant BOSCH280_STANDBY_X0_BME280 =>    0.5;
+use constant BOSCH280_STANDBY_X1_BME280 =>   62.5;
+use constant BOSCH280_STANDBY_X2_BME280 =>  125;
+use constant BOSCH280_STANDBY_X3_BME280 =>  250;
+use constant BOSCH280_STANDBY_X4_BME280 =>  500;
+use constant BOSCH280_STANDBY_X5_BME280 => 1000;
+use constant BOSCH280_STANDBY_X6_BME280 =>   10;
+use constant BOSCH280_STANDBY_X7_BME280 =>   20;
+
+# Register addresses.
+use constant BOSCH280_REG_CHIP_ID       => 0xD0;  # Chip Identifier.
+use constant BOSCH280_REG_RESET         => 0xE0;  # Reset.
+use constant BOSCH280_REG_CTRL_HUM      => 0xF2;  # Control humidity oversampling (BME280 only).
+use constant BOSCH280_REG_STATUS        => 0xF3;  # Device status.
+use constant BOSCH280_REG_CTRL_MEAS     => 0xF4;  # Control temperature & pressure oversampling.
+use constant BOSCH280_REG_CONFIG        => 0xF5;  # Config IIR filter.
+use constant BOSCH280_REG_PRESS         => 0xF7;  # Raw pressure data.
+use constant BOSCH280_REG_TEMP          => 0xFA;  # Raw temperature data.
+use constant BOSCH280_REG_HUM           => 0xFD;  # Raw humidity data (BME280 only).
+use constant BOSCH280_REG_CALIBRATION_0 => 0x88;  # Pressure and temperature.
+use constant BOSCH280_REG_CALIBRATION_1 => 0xE1;  # Humidity.
+
+# Register lengths.
+use constant BOSCH280_TEMP_LENGTH  => 3;           # Length of temperature data.
+use constant BOSCH280_PRESS_LENGTH => 3;           # Length of pressure data.
+use constant BOSCH280_HUM_LENGTH   => 2;           # Length of humidity data (BME280 only).
+use constant BOSCH280_CALIBRATION_LENGTH_0 => 26;  # Length of temperature & pressure calibration data.
+use constant BOSCH280_CALIBRATION_LENGTH_1 => 7;   # Length of humidity calibration data (BME280 only).
+
+# Reset command.
+use constant BOSCH280_CMD_RESET => 0xB6;
 
 our @EXPORT_OK = qw (
   BOSCH280_SENSOR_BMP280
@@ -174,6 +198,12 @@ our @EXPORT_OK = qw (
   BOSCH280_FILTER_X4
   BOSCH280_FILTER_X8
   BOSCH280_FILTER_X16
+  BOSCH280_TEMPERATURE_MIN
+  BOSCH280_TEMPERATURE_MAX
+  BOSCH280_PRESSURE_MIN
+  BOSCH280_PRESSURE_MAX
+  BOSCH280_HUMIDITY_MIN
+  BOSCH280_HUMIDITY_MAX
 );
 
 our @ISA = qw (Device::I2C);
