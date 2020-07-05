@@ -1,82 +1,84 @@
 #!/usr/bin/env perl
 
+=encoding utf8
+
 =head1 NAME
 
-  Device::Sensor::Bosch280
+Device::Sensor::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
 
 =head1 SYNOPSIS
 
-  use strict;
-  use warnings;
-  use utf8;
-  use v5.10;
-  use open qw/:std :utf8/;
+use strict;
+use warnings;
+use utf8;
+use v5.10;
+use open qw/:std :utf8/;
 
-  use Device::Sensor::Bosch280 qw (
-    BOSCH280_SENSOR_BME280
-    BOSCH280_OVERSAMPLING_OFF
-    BOSCH280_OVERSAMPLING_X1
-    BOSCH280_OVERSAMPLING_X2
-    BOSCH280_OVERSAMPLING_X4
-    BOSCH280_OVERSAMPLING_X8
-    BOSCH280_OVERSAMPLING_X16
-    BOSCH280_MODE_SLEEP
-    BOSCH280_MODE_FORCED
-    BOSCH280_MODE_NORMAL
-    BOSCH280_STANDBY_X0
-    BOSCH280_STANDBY_X1
-    BOSCH280_STANDBY_X2
-    BOSCH280_STANDBY_X3
-    BOSCH280_STANDBY_X4
-    BOSCH280_STANDBY_X5
-    BOSCH280_STANDBY_X6
-    BOSCH280_STANDBY_X7
-    BOSCH280_FILTER_OFF
-    BOSCH280_FILTER_X2
-    BOSCH280_FILTER_X4
-    BOSCH280_FILTER_X8
-    BOSCH280_FILTER_X16
-  );
+use Device::Sensor::Bosch280 qw (
+  BOSCH280_SENSOR_BME280
+  BOSCH280_OVERSAMPLING_OFF
+  BOSCH280_OVERSAMPLING_X1
+  BOSCH280_OVERSAMPLING_X2
+  BOSCH280_OVERSAMPLING_X4
+  BOSCH280_OVERSAMPLING_X8
+  BOSCH280_OVERSAMPLING_X16
+  BOSCH280_MODE_SLEEP
+  BOSCH280_MODE_FORCED
+  BOSCH280_MODE_NORMAL
+  BOSCH280_STANDBY_X0
+  BOSCH280_STANDBY_X1
+  BOSCH280_STANDBY_X2
+  BOSCH280_STANDBY_X3
+  BOSCH280_STANDBY_X4
+  BOSCH280_STANDBY_X5
+  BOSCH280_STANDBY_X6
+  BOSCH280_STANDBY_X7
+  BOSCH280_FILTER_OFF
+  BOSCH280_FILTER_X2
+  BOSCH280_FILTER_X4
+  BOSCH280_FILTER_X8
+  BOSCH280_FILTER_X16
+);
 
-  # The I2C device file.
-  my $device = '/dev/i2c-1';
+# The I2C device file.
+my $device = '/dev/i2c-1';
 
-  # The address of the BME280 or BMP280 (0x76 or 0x77).
-  my $address = 0x77;
+# The address of the BME280 or BMP280 (0x76 or 0x77).
+my $address = 0x77;
 
-  # Load this driver.
-  my $bme280 = Device::Sensor::Bosch280->new ($device, $address);
+# Load this driver.
+my $bme280 = Device::Sensor::Bosch280->new ($device, $address);
 
-  # Verify the model of the device.
-  die "Unexpected model" unless ($bme280->{model} == BOSCH280_SENSOR_BME280);
+# Verify the model of the device.
+die "Unexpected model" unless ($bme280->{model} == BOSCH280_SENSOR_BME280);
 
-  # Perform a soft reset on the device.
-  $bme280->reset;
+# Perform a soft reset on the device.
+$bme280->reset;
 
-  # Modify the controls on the device.
-  my $ctrl = $bme280->controls;
-  $ctrl->{temperature} = BOSCH280_OVERSAMPLING_X2;
-  $ctrl->{pressure} = BOSCH280_OVERSAMPLING_X2;
-  $ctrl->{mode} = BOSCH280_MODE_FORCED;
-  $ctrl->{humidity} = BOSCH280_OVERSAMPLING_X2;
-  $bme280->controls ($ctrl);
+# Modify the controls on the device.
+my $ctrl = $bme280->controls;
+$ctrl->{temperature} = BOSCH280_OVERSAMPLING_X2;
+$ctrl->{pressure} = BOSCH280_OVERSAMPLING_X2;
+$ctrl->{mode} = BOSCH280_MODE_FORCED;
+$ctrl->{humidity} = BOSCH280_OVERSAMPLING_X2;
+$bme280->controls ($ctrl);
 
-  # Get a measurement from the device.
-  my ($temperature, $pressure, $humidity) = $bme280->measure;
-  printf "Temperature:\t%.2f °C\n", $temperature;
-  printf "Pressure:\t%.2f hPa\n", $pressure;
-  printf "Humidity:\t%.2f %%\n", $humidity;
+# Get a measurement from the device.
+my ($temperature, $pressure, $humidity) = $bme280->measure;
+printf "Temperature:\t%.2f °C\n", $temperature;
+printf "Pressure:\t%.2f hPa\n", $pressure;
+printf "Humidity:\t%.2f %%\n", $humidity;
 
 =head1 DESCRIPTION
 
-  Device::Sensor::Bosch280 is an I2C driver for the Bosch BMP280 and BME280
-  environmental sensors.
+Device::Sensor::Bosch280 is an I2C driver for the Bosch BMP280 and BME280
+environmental sensors.
 
-  This driver is based on documentation found at:
+This driver is based on documentation found at:
   https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf
   https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf
 
-  And reference C code provided by Bosch Sensortec:
+And reference C code provided by Bosch Sensortec:
   https://github.com/BoschSensortec/BME280_driver
 
 =head2 Methods
@@ -85,87 +87,87 @@
 
 =item C<new>
 
-  Returns a new Device::Sensor::Bosch280 object.
+Returns a new Device::Sensor::Bosch280 object.
 
 =item C<id>
 
-  Returns the identifier of the device.
+Returns the identifier of the device.
 
 =item C<reset>
 
-  Perform a soft reset on the device.
+Perform a soft reset on the device.
 
 =item C<status>
 
-  Get the status of the device.
+Get the status of the device.
 
 =item C<controls>
 
-  Get or set the controls of the device.
+Get or set the controls of the device.
 
 =item C<config>
 
-  Get or set the configuration of the device.
+Get or set the configuration of the device.
 
 =item C<temperature>
 
-  Get a temperature measurement from the device.
+Get a temperature measurement from the device.
 
 =item C<pressure>
 
-  Get a presssure measurement from the device.
+Get a presssure measurement from the device.
 
 =item C<humidity>
 
-  Get a humidity measurement from the device.
+Get a humidity measurement from the device.
 
 =item C<measure>
 
-  Get a temperature, pressure, and humidity measure from the device.
+Get a temperature, pressure, and humidity measure from the device.
 
 =back
 
 =head1 DEPENDENCIES
 
-  Device::Sensor::Bosch280 requires Perl version 5.10 or later.
+Device::Sensor::Bosch280 requires Perl version 5.10 or later.
 
 =head1 FEEDBACK
 
 =head2 Reporting Bugs
 
-  Report bugs to the GitHub issue tracker at:
+Report bugs to the GitHub issue tracker at:
   https://github.com/sandain/growbot/issues
 
 =head1 AUTHOR - Jason M. Wood
 
-  Email sandain@hotmail.com
+Email sandain@hotmail.com
 
 =head1 COPYRIGHT AND LICENSE
 
-  Copyright (c) 2020  Jason M. Wood <sandain@hotmail.com>
+Copyright (c) 2020  Jason M. Wood <sandain@hotmail.com>
 
-  All rights reserved.
+All rights reserved.
 
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in the
-     documentation and/or other materials provided with the distribution.
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
 
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-  POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
 
 =cut
 
