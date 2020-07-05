@@ -70,8 +70,6 @@ use Device::I2C;
 use IO::File;
 use Exporter qw(import);
 
-our @ISA = qw (Exporter);
-
 sub new {
   my $class = shift;
   die "Usage: $class->new(DEVICENAME)" unless (@_ == 1);
