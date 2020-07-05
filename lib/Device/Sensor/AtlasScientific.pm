@@ -14,6 +14,16 @@ Device::Sensor::AtlasScientific - Driver for Atlas Scientific environmental sens
 Device::Sensor::AtlasScientific is a driver for the Atlas Scientific series of
 environmental sensors.
 
+=head2 Methods
+
+=over 12
+
+=item C<new>
+
+Returns a new Device::Sensor::AtlasScientific object.
+
+=back
+
 =head1 DEPENDENCIES
 
 Device::Sensor::AtlasScientific requires Perl version 5.10 or later.
