@@ -616,7 +616,7 @@ sub reset {
   # control.
   my $im_update = 1;
   while ($im_update) {
-    usleep (2000);
+    usleep 2000;
     ($im_update, $_) = $self->status;
   }
 }
