@@ -54,15 +54,15 @@
   $bme280->reset;
 
   # Modify the controls on the device.
-  my $ctrl = $bme280->get_controls;
+  my $ctrl = $bme280->controls;
   $ctrl->{temperature} = BOSCH280_OVERSAMPLING_X2;
   $ctrl->{pressure} = BOSCH280_OVERSAMPLING_X2;
   $ctrl->{mode} = BOSCH280_MODE_FORCED;
   $ctrl->{humidity} = BOSCH280_OVERSAMPLING_X2;
-  $bme280->set_controls ($ctrl);
+  $bme280->controls ($ctrl);
 
   # Get a measurement from the device.
-  my ($temperature, $pressure, $humidity) = $bme280->get_measure;
+  my ($temperature, $pressure, $humidity) = $bme280->measure;
   printf "Temperature:\t%.2f °C\n", $temperature;
   printf "Pressure:\t%.2f hPa\n", $pressure;
   printf "Humidity:\t%.2f %%\n", $humidity;
@@ -78,6 +78,52 @@
 
   And reference C code provided by Bosch Sensortec:
   https://github.com/BoschSensortec/BME280_driver
+
+=head2 Methods
+
+=over 12
+
+=item C<new>
+
+  Returns a new Device::Sensor::Bosch280 object.
+
+=item C<id>
+
+  Returns the identifier of the device.
+
+=item C<reset>
+
+  Perform a soft reset on the device.
+
+=item C<status>
+
+  Get the status of the device.
+
+=item C<controls>
+
+  Get or set the controls of the device.
+
+=item C<config>
+
+  Get or set the configuration of the device.
+
+=item C<temperature>
+
+  Get a temperature measurement from the device.
+
+=item C<pressure>
+
+  Get a presssure measurement from the device.
+
+=item C<humidity>
+
+  Get a humidity measurement from the device.
+
+=item C<measure>
+
+  Get a temperature, pressure, and humidity measure from the device.
+
+=back
 
 =head1 DEPENDENCIES
 
@@ -468,6 +514,7 @@ my $_set_controls = sub {
   # Write the controls for temperature, pressure, and the mode of operation.
   my $meas = $ctrl->{temperature} << 5 | $ctrl->{pressure} << 2 | $ctrl->{mode};
   $self->{io}->writeByteData (BOSCH280_REG_CTRL_MEAS, $meas);
+  return $ctrl;
 };
 
 my $_set_config = sub {
@@ -476,6 +523,7 @@ my $_set_config = sub {
   # Write the config.
   my $config = $cfg->{standby} << 5 | $cfg->{filter} << 2 | $cfg->{spi_enable};
   $self->{io}->writeByteData (BOSCH280_REG_CONFIG, $config);
+  return $cfg;
 };
 
 my $_compensate_temperature = sub {
@@ -569,22 +617,10 @@ sub new {
   return $self;
 }
 
-=head3 id
-
-  Return the id of the device.
-
-=cut
-
 sub id {
   my $self = shift;
   return $self->{id};
 }
-
-=head3 reset
-
-  Reset the device.
-
-=cut
 
 sub reset {
   my $self = shift;
@@ -599,14 +635,6 @@ sub reset {
   }
 }
 
-=head3 status
-
-  Read the status of the device.
-
-  Returns im_update and measuring status.
-
-=cut
-
 sub status {
   my $self = shift;
   my $status = $self->{io}->readByteData (BOSCH280_REG_STATUS);
@@ -614,47 +642,39 @@ sub status {
   return ($status[0], $status[3]);
 }
 
-sub get_controls {
-  my $self = shift;
-  return $self->$_get_controls;
-}
-
-sub set_controls {
+sub controls {
   my $self = shift;
   my ($ctrl) = @_;
+  $ctrl = $self->$_get_controls unless (defined $ctrl);
   return $self->$_set_controls ($ctrl);
 }
 
-sub get_config {
-  my $self = shift;
-  return $self->$_get_config;
-}
-
-sub set_config {
+sub config {
   my $self = shift;
   my ($cfg) = @_;
+  $cfg = $self->$_get_config unless (defined $cfg);
   return $self->$_set_config ($cfg);
 }
 
-sub get_temperature {
+sub temperature {
   my $self = shift;
   my $data = $self->$_get_data;
   return $self->$_compensate_temperature ($data->{temperature});
 }
 
-sub get_pressure {
+sub pressure {
   my $self = shift;
   my $data = $self->$_get_data;
   return $self->$_compensate_pressure ($data->{pressure}) / 100;
 }
 
-sub get_humidity {
+sub humidity {
   my $self = shift;
   my $data = $self->$_get_data;
   return $self->$_compensate_humidity ($data->{humidity});
 }
 
-sub get_measure {
+sub measure {
   my $self = shift;
   my $data = $self->$_get_data;
   my $t = $self->$_compensate_temperature ($data->{temperature});
