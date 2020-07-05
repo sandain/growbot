@@ -379,11 +379,11 @@ my $_get_measure_time = sub {
   $t_measure += 2 * 16 + 0.5 if ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_X16);
   return $t_measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
   # Account for humidity oversampling.
-  $t_measure += 2 *  1 + 0.5 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X1);
-  $t_measure += 2 *  2 + 0.5 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X2);
-  $t_measure += 2 *  4 + 0.5 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X4);
-  $t_measure += 2 *  8 + 0.5 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X8);
-  $t_measure += 2 * 16 + 0.5 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X16);
+  $t_measure += 2 *  1 + 0.5 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X1);
+  $t_measure += 2 *  2 + 0.5 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X2);
+  $t_measure += 2 *  4 + 0.5 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X4);
+  $t_measure += 2 *  8 + 0.5 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X8);
+  $t_measure += 2 * 16 + 0.5 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X16);
   return $t_measure;
 };
 
@@ -404,11 +404,11 @@ my $_get_max_measure_time = sub {
   $t_measure += 2.3 * 16 + 0.575 if ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_X16);
   return $t_measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
   # Account for humidity oversampling.
-  $t_measure += 2.3 *  1 + 0.575 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X1);
-  $t_measure += 2.3 *  2 + 0.575 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X2);
-  $t_measure += 2.3 *  4 + 0.575 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X4);
-  $t_measure += 2.3 *  8 + 0.575 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X8);
-  $t_measure += 2.3 * 16 + 0.575 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X16);
+  $t_measure += 2.3 *  1 + 0.575 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X1);
+  $t_measure += 2.3 *  2 + 0.575 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X2);
+  $t_measure += 2.3 *  4 + 0.575 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X4);
+  $t_measure += 2.3 *  8 + 0.575 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X8);
+  $t_measure += 2.3 * 16 + 0.575 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X16);
   return $t_measure;
 };
 
