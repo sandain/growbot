@@ -213,11 +213,11 @@ use constant BOSCH280_STANDBY_X6 => 0x06;  # BMP280  2000 ms    BME280   10 ms
 use constant BOSCH280_STANDBY_X7 => 0x07;  # BMP280  4000 ms    BME280   20 ms
 
 # Filter settings.
-use constant BOSCH280_FILTER_OFF => 0x01;
-use constant BOSCH280_FILTER_X2  => 0x02;
-use constant BOSCH280_FILTER_X4  => 0x03;
-use constant BOSCH280_FILTER_X8  => 0x04;
-use constant BOSCH280_FILTER_X16 => 0x05;
+use constant BOSCH280_FILTER_OFF => 0x00;
+use constant BOSCH280_FILTER_X2  => 0x01;
+use constant BOSCH280_FILTER_X4  => 0x02;
+use constant BOSCH280_FILTER_X8  => 0x03;
+use constant BOSCH280_FILTER_X16 => 0x04;
 
 # Minimum and maximum values.
 use constant BOSCH280_TEMPERATURE_MIN => -40;      # Minimum temperature (C)
