@@ -73,11 +73,24 @@ use Exporter qw(import);
 
 sub new {
   my $class = shift;
-  die "Usage: $class->new(DEVICENAME)" unless (@_ == 1);
-  my $io = new Device::I2C ($_[0], O_RDWR);
-  die "Unable to open I2C Device File at $_[0]" unless ($io);
-  bless ($io, $class);
-  $io;
+  die "Usage: $class->new (i2c, address)" unless (@_ == 2);
+  my ($i2c, $address) = @_;
+  my $io = new Device::I2C ($i2c, O_RDWR);
+  # Make sure we can open the I2C bus.
+  die "Error: Unable to open I2C Device File at $i2c"
+    unless ($io);
+  # Make sure we can open the Atlas Scientific device.
+  die "Error: Unable to access device at $address"
+    unless ($io->checkDevice ($address));
+  # Select the device at the provided address.
+  $io->selectDevice ($address);
+  # Bless ourselves with our class.
+  my $self = bless {
+    i2c         => $i2c,
+    address     => $address,
+    io          => $io
+  }, $class;
+  return $self;
 }
 
 1;
