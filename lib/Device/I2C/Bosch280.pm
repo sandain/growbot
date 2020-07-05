@@ -6,7 +6,6 @@
 
 =head1 SYNOPSIS
 
-  Device::I2C driver for the Bosch BMP280 and BME280 environmental sensors.
 
 =head1 DESCRIPTION
 
@@ -22,7 +21,7 @@
 
 =head1 DEPENDENCIES
 
-  Device::I2C::Bosch requires Perl version 5.10 or later.
+  Device::I2C::Bosch280 requires Perl version 5.10 or later.
 
 =head1 FEEDBACK
 
@@ -72,7 +71,7 @@ package Device::I2C::Bosch280;
 
 use strict;
 use warnings;
-use 5.010;
+use v5.10;
 
 use Device::I2C;
 use IO::File;
@@ -115,12 +114,12 @@ use constant BOSCH280_FILTER_X8  => 0x04;
 use constant BOSCH280_FILTER_X16 => 0x05;
 
 # Minimum and maximum values.
-use constant BOSCH280_TEMPERATURE_MIN => -40; # Minimum temperature (C)
-use constant BOSCH280_TEMPERATURE_MAX => 85;  # Maximum temperature (C)
-use constant BOSCH280_PRESSURE_MIN => 300;    # Minimum pressure (hPa)
-use constant BOSCH280_PRESSURE_MAX => 1100;   # Maximum pressure (hPa)
-use constant BOSCH280_HUMIDITY_MIN => 0;      # Minimum humidity (%)
-use constant BOSCH280_HUMIDITY_MAX => 100;    # Maximum humidity (%)
+use constant BOSCH280_TEMPERATURE_MIN => -40;      # Minimum temperature (C)
+use constant BOSCH280_TEMPERATURE_MAX =>  85;      # Maximum temperature (C)
+use constant BOSCH280_PRESSURE_MIN    =>  30000;   # Minimum pressure (Pa)
+use constant BOSCH280_PRESSURE_MAX    =>  110000;  # Maximum pressure (Pa)
+use constant BOSCH280_HUMIDITY_MIN    =>  0;       # Minimum humidity (%)
+use constant BOSCH280_HUMIDITY_MAX    =>  100;     # Maximum humidity (%)
 
 ## Private constants.
 
@@ -130,48 +129,47 @@ use constant BOSCH280_ID_BMP280_1 => 0x57;
 use constant BOSCH280_ID_BMP280_2 => 0x58;
 use constant BOSCH280_ID_BME280   => 0x60;
 
-# BMP280 standby duration (ms).
-use constant BOSCH280_STANDBY_X0_BMP280 =>    0.5;
-use constant BOSCH280_STANDBY_X1_BMP280 =>   62.5;
-use constant BOSCH280_STANDBY_X2_BMP280 =>  125;
-use constant BOSCH280_STANDBY_X3_BMP280 =>  250;
-use constant BOSCH280_STANDBY_X4_MP280  =>  500;
-use constant BOSCH280_STANDBY_X5_BMP280 => 1000;
-use constant BOSCH280_STANDBY_X6_BMP280 => 2000;
-use constant BOSCH280_STANDBY_X7_BMP280 => 4000;
+# BMP280 standby duration (μs).
+use constant BOSCH280_STANDBY_X0_BMP280 =>     500;
+use constant BOSCH280_STANDBY_X1_BMP280 =>   62500;
+use constant BOSCH280_STANDBY_X2_BMP280 =>  125000;
+use constant BOSCH280_STANDBY_X3_BMP280 =>  250000;
+use constant BOSCH280_STANDBY_X4_BMP280 =>  500000;
+use constant BOSCH280_STANDBY_X5_BMP280 => 1000000;
+use constant BOSCH280_STANDBY_X6_BMP280 => 2000000;
+use constant BOSCH280_STANDBY_X7_BMP280 => 4000000;
 
-# BME280 standby duration (ms).
-use constant BOSCH280_STANDBY_X0_BME280 =>    0.5;
-use constant BOSCH280_STANDBY_X1_BME280 =>   62.5;
-use constant BOSCH280_STANDBY_X2_BME280 =>  125;
-use constant BOSCH280_STANDBY_X3_BME280 =>  250;
-use constant BOSCH280_STANDBY_X4_BME280 =>  500;
-use constant BOSCH280_STANDBY_X5_BME280 => 1000;
-use constant BOSCH280_STANDBY_X6_BME280 =>   10;
-use constant BOSCH280_STANDBY_X7_BME280 =>   20;
+# BME280 standby duration (μs).
+use constant BOSCH280_STANDBY_X0_BME280 =>     500;
+use constant BOSCH280_STANDBY_X1_BME280 =>   62500;
+use constant BOSCH280_STANDBY_X2_BME280 =>  125000;
+use constant BOSCH280_STANDBY_X3_BME280 =>  250000;
+use constant BOSCH280_STANDBY_X4_BME280 =>  500000;
+use constant BOSCH280_STANDBY_X5_BME280 => 1000000;
+use constant BOSCH280_STANDBY_X6_BME280 =>   10000;
+use constant BOSCH280_STANDBY_X7_BME280 =>   20000;
 
 # Register addresses.
 use constant BOSCH280_REG_CHIP_ID       => 0xD0;  # Chip Identifier.
 use constant BOSCH280_REG_RESET         => 0xE0;  # Reset.
 use constant BOSCH280_REG_CTRL_HUM      => 0xF2;  # Control humidity oversampling (BME280 only).
 use constant BOSCH280_REG_STATUS        => 0xF3;  # Device status.
-use constant BOSCH280_REG_CTRL_MEAS     => 0xF4;  # Control temperature & pressure oversampling.
+use constant BOSCH280_REG_CTRL_MEAS     => 0xF4;  # Control temperature and pressure oversampling.
 use constant BOSCH280_REG_CONFIG        => 0xF5;  # Config IIR filter.
-use constant BOSCH280_REG_PRESS         => 0xF7;  # Raw pressure data.
-use constant BOSCH280_REG_TEMP          => 0xFA;  # Raw temperature data.
-use constant BOSCH280_REG_HUM           => 0xFD;  # Raw humidity data (BME280 only).
+use constant BOSCH280_REG_DATA          => 0xF7;  # Raw temperature, pressure, and pressure data.
 use constant BOSCH280_REG_CALIBRATION_0 => 0x88;  # Pressure and temperature.
 use constant BOSCH280_REG_CALIBRATION_1 => 0xE1;  # Humidity.
 
 # Register lengths.
-use constant BOSCH280_TEMP_LENGTH  => 3;           # Length of temperature data.
-use constant BOSCH280_PRESS_LENGTH => 3;           # Length of pressure data.
-use constant BOSCH280_HUM_LENGTH   => 2;           # Length of humidity data (BME280 only).
-use constant BOSCH280_CALIBRATION_LENGTH_0 => 26;  # Length of temperature & pressure calibration data.
-use constant BOSCH280_CALIBRATION_LENGTH_1 => 7;   # Length of humidity calibration data (BME280 only).
+use constant BOSCH280_DATA_LENGTH_0        =>  6;  # Length of temperature and pressure data.
+use constant BOSCH280_DATA_LENGTH_1        =>  2;  # Length of humidity data (BME280 only).
+use constant BOSCH280_CALIBRATION_LENGTH_0 => 26;  # Length of temperature and pressure calibration data.
+use constant BOSCH280_CALIBRATION_LENGTH_1 =>  7;  # Length of humidity calibration data (BME280 only).
 
 # Reset command.
 use constant BOSCH280_CMD_RESET => 0xB6;
+
+our @ISA = qw (Exporter);
 
 our @EXPORT_OK = qw (
   BOSCH280_SENSOR_BMP280
@@ -206,26 +204,26 @@ our @EXPORT_OK = qw (
   BOSCH280_HUMIDITY_MAX
 );
 
-our @ISA = qw (Device::I2C);
+## Public methods.
 
 sub new {
   my $class = shift;
   die "Usage: $class->new (i2c, address)" unless (@_ == 2);
   my ($i2c, $address) = @_;
-  my $device = new Device::I2C ($i2c, O_RDWR);
+  my $io = new Device::I2C ($i2c, O_RDWR);
   # Make sure we can open the I2C bus.
   die "Error: Unable to open I2C Device File at $i2c"
-    unless ($device);
+    unless ($io);
   # Make sure we can open the BME280 or BMP280 device.
   die "Error: Unable to access device at $address"
-    unless ($device->checkDevice ($address));
+    unless ($io->checkDevice ($address));
   # Select the device at the provided address.
-  $device->selectDevice ($address);
+  $io->selectDevice ($address);
   # Bless ourselves with our class.
   my $self = bless {
     i2c         => $i2c,
     address     => $address,
-    device      => $device
+    io          => $io
   }, $class;
   return $self;
 }
