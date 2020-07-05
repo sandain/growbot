@@ -2,20 +2,19 @@
 
 =head1 NAME
 
-  Device::I2C::AtlasScientific
+  Device::Sensor::AtlasScientific
 
 =head1 SYNOPSIS
 
-  Device::I2C driver for the Atlas Scientific series of environmental sensors.
 
 =head1 DESCRIPTION
 
-  Device::I2C::AtlasScientific is a driver for the Atlas Scientific series of
+  Device::Sensor::AtlasScientific is a driver for the Atlas Scientific series of
   environmental sensors.
 
 =head1 DEPENDENCIES
 
-  Device::I2C::AtlasScientific requires Perl version 5.10 or later.
+  Device::Sensor::AtlasScientific requires Perl version 5.10 or later.
 
 =head1 FEEDBACK
 
@@ -61,17 +60,17 @@
 
 =cut
 
-package Device::I2C::AtlasScientific;
+package Device::Sensor::AtlasScientific;
 
 use strict;
 use warnings;
-use 5.010;
+use v5.10;
 
 use Device::I2C;
 use IO::File;
 use Exporter qw(import);
 
-our @ISA = qw(Device::I2C);
+our @ISA = qw (Exporter);
 
 sub new {
   my $class = shift;
