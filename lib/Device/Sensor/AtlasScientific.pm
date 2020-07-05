@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 
+=encoding utf8
+
 =head1 NAME
 
 Device::Sensor::AtlasScientific - Driver for Atlas Scientific environmental sensors.
