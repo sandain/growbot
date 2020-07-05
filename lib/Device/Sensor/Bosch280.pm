@@ -8,66 +8,66 @@ Device::Sensor::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sens
 
 =head1 SYNOPSIS
 
-use strict;
-use warnings;
-use utf8;
-use v5.10;
-use open qw/:std :utf8/;
+  use strict;
+  use warnings;
+  use utf8;
+  use v5.10;
+  use open qw/:std :utf8/;
 
-use Device::Sensor::Bosch280 qw (
-  BOSCH280_SENSOR_BME280
-  BOSCH280_OVERSAMPLING_OFF
-  BOSCH280_OVERSAMPLING_X1
-  BOSCH280_OVERSAMPLING_X2
-  BOSCH280_OVERSAMPLING_X4
-  BOSCH280_OVERSAMPLING_X8
-  BOSCH280_OVERSAMPLING_X16
-  BOSCH280_MODE_SLEEP
-  BOSCH280_MODE_FORCED
-  BOSCH280_MODE_NORMAL
-  BOSCH280_STANDBY_X0
-  BOSCH280_STANDBY_X1
-  BOSCH280_STANDBY_X2
-  BOSCH280_STANDBY_X3
-  BOSCH280_STANDBY_X4
-  BOSCH280_STANDBY_X5
-  BOSCH280_STANDBY_X6
-  BOSCH280_STANDBY_X7
-  BOSCH280_FILTER_OFF
-  BOSCH280_FILTER_X2
-  BOSCH280_FILTER_X4
-  BOSCH280_FILTER_X8
-  BOSCH280_FILTER_X16
-);
+  use Device::Sensor::Bosch280 qw (
+    BOSCH280_SENSOR_BME280
+    BOSCH280_OVERSAMPLING_OFF
+    BOSCH280_OVERSAMPLING_X1
+    BOSCH280_OVERSAMPLING_X2
+    BOSCH280_OVERSAMPLING_X4
+    BOSCH280_OVERSAMPLING_X8
+    BOSCH280_OVERSAMPLING_X16
+    BOSCH280_MODE_SLEEP
+    BOSCH280_MODE_FORCED
+    BOSCH280_MODE_NORMAL
+    BOSCH280_STANDBY_X0
+    BOSCH280_STANDBY_X1
+    BOSCH280_STANDBY_X2
+    BOSCH280_STANDBY_X3
+    BOSCH280_STANDBY_X4
+    BOSCH280_STANDBY_X5
+    BOSCH280_STANDBY_X6
+    BOSCH280_STANDBY_X7
+    BOSCH280_FILTER_OFF
+    BOSCH280_FILTER_X2
+    BOSCH280_FILTER_X4
+    BOSCH280_FILTER_X8
+    BOSCH280_FILTER_X16
+  );
 
-# The I2C device file.
-my $device = '/dev/i2c-1';
+  # The I2C device file.
+  my $device = '/dev/i2c-1';
 
-# The address of the BME280 or BMP280 (0x76 or 0x77).
-my $address = 0x77;
+  # The address of the BME280 or BMP280 (0x76 or 0x77).
+  my $address = 0x77;
 
-# Load this driver.
-my $bme280 = Device::Sensor::Bosch280->new ($device, $address);
+  # Load this driver.
+  my $bme280 = Device::Sensor::Bosch280->new ($device, $address);
 
-# Verify the model of the device.
-die "Unexpected model" unless ($bme280->{model} == BOSCH280_SENSOR_BME280);
+  # Verify the model of the device.
+  die "Unexpected model" unless ($bme280->{model} == BOSCH280_SENSOR_BME280);
 
-# Perform a soft reset on the device.
-$bme280->reset;
+  # Perform a soft reset on the device.
+  $bme280->reset;
 
-# Modify the controls on the device.
-my $ctrl = $bme280->controls;
-$ctrl->{temperature} = BOSCH280_OVERSAMPLING_X2;
-$ctrl->{pressure} = BOSCH280_OVERSAMPLING_X2;
-$ctrl->{mode} = BOSCH280_MODE_FORCED;
-$ctrl->{humidity} = BOSCH280_OVERSAMPLING_X2;
-$bme280->controls ($ctrl);
+  # Modify the controls on the device.
+  my $ctrl = $bme280->controls;
+  $ctrl->{temperature} = BOSCH280_OVERSAMPLING_X2;
+  $ctrl->{pressure} = BOSCH280_OVERSAMPLING_X2;
+  $ctrl->{mode} = BOSCH280_MODE_FORCED;
+  $ctrl->{humidity} = BOSCH280_OVERSAMPLING_X2;
+  $bme280->controls ($ctrl);
 
-# Get a measurement from the device.
-my ($temperature, $pressure, $humidity) = $bme280->measure;
-printf "Temperature:\t%.2f °C\n", $temperature;
-printf "Pressure:\t%.2f hPa\n", $pressure;
-printf "Humidity:\t%.2f %%\n", $humidity;
+  # Get a measurement from the device.
+  my ($temperature, $pressure, $humidity) = $bme280->measure;
+  printf "Temperature:\t%.2f °C\n", $temperature;
+  printf "Pressure:\t%.2f hPa\n", $pressure;
+  printf "Humidity:\t%.2f %%\n", $humidity;
 
 =head1 DESCRIPTION
 
@@ -144,30 +144,30 @@ Email sandain@hotmail.com
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2020  Jason M. Wood <sandain@hotmail.com>
+  Copyright (c) 2020  Jason M. Wood <sandain@hotmail.com>
 
-All rights reserved.
+  All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
 
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
 
 =cut
 
