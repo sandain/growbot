@@ -64,6 +64,7 @@ package Device::Sensor::AtlasScientific;
 
 use strict;
 use warnings;
+use utf8;
 use v5.10;
 
 use Device::I2C;
