@@ -2,14 +2,14 @@
 
 =head1 NAME
 
-  Device::I2C::Bosch280
+  Device::Sensor::Bosch280
 
 =head1 SYNOPSIS
 
 
 =head1 DESCRIPTION
 
-  Device::I2C::Bosch280 is an I2C driver for the Bosch BMP280 and BME280
+  Device::Sensor::Bosch280 is an I2C driver for the Bosch BMP280 and BME280
   environmental sensors.
 
   This driver is based on documentation found at:
@@ -21,7 +21,7 @@
 
 =head1 DEPENDENCIES
 
-  Device::I2C::Bosch280 requires Perl version 5.10 or later.
+  Device::Sensor::Bosch280 requires Perl version 5.10 or later.
 
 =head1 FEEDBACK
 
@@ -67,7 +67,7 @@
 
 =cut
 
-package Device::I2C::Bosch280;
+package Device::Sensor::Bosch280;
 
 use strict;
 use warnings;
