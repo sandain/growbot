@@ -61,10 +61,6 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE.
 
-=head1 APPENDIX
-
-  The rest of the documentation details each of the object methods.
-
 =cut
 
 package Device::Sensor::Bosch280;
