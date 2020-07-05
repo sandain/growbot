@@ -412,76 +412,60 @@ my $_get_config = sub {
 
 my $_get_measure_time = sub {
   my $self = shift;
+  my @coefficients = (0, 1, 2, 4, 8, 16);
   my $t_measure = 1;
   # Account for temperature oversampling.
-  $t_measure += 2 *  1 if ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_X1);
-  $t_measure += 2 *  2 if ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_X2);
-  $t_measure += 2 *  4 if ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_X4);
-  $t_measure += 2 *  8 if ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_X8);
-  $t_measure += 2 * 16 if ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_X16);
+  $t_measure += 2 * $coefficients[$self->{controls}->{temperature}] unless ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_OFF);
   # Account for pressure oversampling.
-  $t_measure += 2 *  1 + 0.5 if ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_X1);
-  $t_measure += 2 *  2 + 0.5 if ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_X2);
-  $t_measure += 2 *  4 + 0.5 if ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_X4);
-  $t_measure += 2 *  8 + 0.5 if ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_X8);
-  $t_measure += 2 * 16 + 0.5 if ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_X16);
+  $t_measure += 2 * $coefficients[$self->{controls}->{pressure}] + 0.5 unless ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_OFF);
   return $t_measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
   # Account for humidity oversampling.
-  $t_measure += 2 *  1 + 0.5 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X1);
-  $t_measure += 2 *  2 + 0.5 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X2);
-  $t_measure += 2 *  4 + 0.5 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X4);
-  $t_measure += 2 *  8 + 0.5 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X8);
-  $t_measure += 2 * 16 + 0.5 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X16);
+  $t_measure += 2 * $coefficients[$self->{controls}->{humidity}] + 0.5 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_OFF);
   return $t_measure;
 };
 
 my $_get_max_measure_time = sub {
   my $self = shift;
+  my @coefficients = (0, 1, 2, 4, 8, 16);
   my $t_measure = 1.25;
   # Account for temperature oversampling.
-  $t_measure += 2.3 *  1 if ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_X1);
-  $t_measure += 2.3 *  2 if ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_X2);
-  $t_measure += 2.3 *  4 if ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_X4);
-  $t_measure += 2.3 *  8 if ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_X8);
-  $t_measure += 2.3 * 16 if ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_X16);
+  $t_measure += 2.3 * $coefficients[$self->{controls}->{temperature}] unless ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_OFF);
   # Account for pressure oversampling.
-  $t_measure += 2.3 *  1 + 0.575 if ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_X1);
-  $t_measure += 2.3 *  2 + 0.575 if ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_X2);
-  $t_measure += 2.3 *  4 + 0.575 if ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_X4);
-  $t_measure += 2.3 *  8 + 0.575 if ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_X8);
-  $t_measure += 2.3 * 16 + 0.575 if ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_X16);
+  $t_measure += 2.3 * $coefficients[$self->{controls}->{pressure}] + 0.575 unless ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_OFF);
   return $t_measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
   # Account for humidity oversampling.
-  $t_measure += 2.3 *  1 + 0.575 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X1);
-  $t_measure += 2.3 *  2 + 0.575 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X2);
-  $t_measure += 2.3 *  4 + 0.575 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X4);
-  $t_measure += 2.3 *  8 + 0.575 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X8);
-  $t_measure += 2.3 * 16 + 0.575 if ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_X16);
+  $t_measure += 2.3 * $coefficients[$self->{controls}->{humidity}] + 0.575 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_OFF);
   return $t_measure;
 };
 
 my $_get_standyby_time = sub {
   my $self = shift;
+  my @coefficients;
   if ($self->{model} == BOSCH280_SENSOR_BME280) {
-    return BOSCH280_STANDBY_X0_BME280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X0);
-    return BOSCH280_STANDBY_X1_BME280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X1);
-    return BOSCH280_STANDBY_X2_BME280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X2);
-    return BOSCH280_STANDBY_X3_BME280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X3);
-    return BOSCH280_STANDBY_X4_BME280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X4);
-    return BOSCH280_STANDBY_X5_BME280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X5);
-    return BOSCH280_STANDBY_X6_BME280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X6);
-    return BOSCH280_STANDBY_X7_BME280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X7);
+    @coefficients = (
+      BOSCH280_STANDBY_X0_BME280,
+      BOSCH280_STANDBY_X1_BME280,
+      BOSCH280_STANDBY_X2_BME280,
+      BOSCH280_STANDBY_X3_BME280,
+      BOSCH280_STANDBY_X4_BME280,
+      BOSCH280_STANDBY_X5_BME280,
+      BOSCH280_STANDBY_X6_BME280,
+      BOSCH280_STANDBY_X7_BME280
+    );
   }
   elsif ($self->{model} == BOSCH280_SENSOR_BMP280) {
-    return BOSCH280_STANDBY_X0_BMP280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X0);
-    return BOSCH280_STANDBY_X1_BMP280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X1);
-    return BOSCH280_STANDBY_X2_BMP280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X2);
-    return BOSCH280_STANDBY_X3_BMP280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X3);
-    return BOSCH280_STANDBY_X4_BMP280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X4);
-    return BOSCH280_STANDBY_X5_BMP280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X5);
-    return BOSCH280_STANDBY_X6_BMP280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X6);
-    return BOSCH280_STANDBY_X7_BMP280 if ($self->{config}->{standby} == BOSCH280_STANDBY_X7);
+    @coefficients = (
+      BOSCH280_STANDBY_X0_BMP280,
+      BOSCH280_STANDBY_X1_BMP280,
+      BOSCH280_STANDBY_X2_BMP280,
+      BOSCH280_STANDBY_X3_BMP280,
+      BOSCH280_STANDBY_X4_BMP280,
+      BOSCH280_STANDBY_X5_BMP280,
+      BOSCH280_STANDBY_X6_BMP280,
+      BOSCH280_STANDBY_X7_BMP280
+    );
   }
+  return $coefficients[$self->{config}->{standby}];
 };
 
 my $_get_data = sub {
