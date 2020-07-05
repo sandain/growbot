@@ -169,8 +169,6 @@ use constant BOSCH280_CALIBRATION_LENGTH_1 =>  7;  # Length of humidity calibrat
 # Reset command.
 use constant BOSCH280_CMD_RESET => 0xB6;
 
-our @ISA = qw (Exporter);
-
 our @EXPORT_OK = qw (
   BOSCH280_SENSOR_BMP280
   BOSCH280_SENSOR_BME280
