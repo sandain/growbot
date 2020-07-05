@@ -8,6 +8,22 @@ Device::Sensor::AtlasScientific - Driver for Atlas Scientific environmental sens
 
 =head1 SYNOPSIS
 
+use strict;
+use warnings;
+use utf8;
+use v5.10;
+use open qw/:std :utf8/;
+
+use Device::Sensor::AtlasScientific qw ();
+
+# The I2C device file.
+my $device = '/dev/i2c-1';
+
+# The address of the Atlas Scientific sensor.
+my $address = 0x63;
+
+# Load this driver.
+my $pH = Device::Sensor::AtlasScientific->new ($device, $address);
 
 =head1 DESCRIPTION
 
