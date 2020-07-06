@@ -13,6 +13,7 @@ Device::Sensor::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sens
   use utf8;
   use v5.10;
   use open qw/:std :utf8/;
+  use Time::HiRes qw (usleep);
 
   use Device::Sensor::Bosch280 qw (
     BOSCH280_SENSOR_BME280
@@ -55,7 +56,7 @@ Device::Sensor::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sens
   # Perform a soft reset on the device.
   $bme280->reset;
 
-  # Modify the controls on the device.
+  # Modify the controls to use forced mode and X2 sampling.
   my $ctrl = $bme280->controls;
   $ctrl->{temperature} = BOSCH280_OVERSAMPLING_X2;
   $ctrl->{pressure} = BOSCH280_OVERSAMPLING_X2;
@@ -63,11 +64,55 @@ Device::Sensor::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sens
   $ctrl->{mode} = BOSCH280_MODE_FORCED;
   $bme280->controls ($ctrl);
 
+  # Wait for the measurement to finish.
+  usleep $bme280->measureTime;
+  my ($im_update, $measuring) = $bme280->status;
+  while ($measuring) {q
+    usleep $bme280->maxMeasureTime - $bme280->measureTime;
+    ($im_update, $measuring) = $bme280->status;
+  }
+
   # Get a measurement from the device.
   my ($temperature, $pressure, $humidity) = $bme280->measure;
   printf "Temperature:\t%.2f °C\n", $temperature;
   printf "Pressure:\t%.2f hPa\n", $pressure;
   printf "Humidity:\t%.2f %%\n", $humidity;
+
+  # Modify the configuration to use standby X0 (500 µs) and filter to off.
+  my $cfg = $bme280->config;
+  $cfg->{standby} = BOSCH280_STANDBY_X0;
+  $cfg->{filter} = BOSCH280_FILTER_OFF;
+  $bme280->config ($cfg);
+
+  # Modify the controls to use normal mode and X4 sampling.
+  $ctrl->{temperature} = BOSCH280_OVERSAMPLING_X4;
+  $ctrl->{pressure} = BOSCH280_OVERSAMPLING_X4;
+  $ctrl->{humidity} = BOSCH280_OVERSAMPLING_X4;
+  $ctrl->{mode} = BOSCH280_MODE_NORMAL;
+  $bme280->controls ($ctrl);
+
+  # Get ten measurements.
+  for (my $i = 0; $i < 10; $i ++) {
+    # Wait for the measurement to finish.
+    usleep $bme280->measureTime;
+    ($_, $measuring) = $bme280->status;
+    while ($measuring) {
+      usleep $bme280->maxMeasureTime - $bme280->measureTime;
+      ($_, $measuring) = $bme280->status;
+    }
+    # Get a measurement from the device.
+    ($temperature, $pressure, $humidity) = $bme280->measure;
+    printf "%2d: temperature:\t%.2f °C\n", $i, $temperature;
+    printf "%2d: pressure:   \t%.2f hPa\n", $i, $pressure;
+    printf "%2d: humidity:   \t%.2f %%\n", $i, $humidity;
+
+    # Wait for the standby time.
+    usleep $bme280->standbyTime;
+  }
+
+  # Modify the controls to use sleep mode.
+  $ctrl->{mode} = BOSCH280_MODE_SLEEP;
+  $bme280->controls ($ctrl);
 
 =head1 DESCRIPTION
 
@@ -124,6 +169,20 @@ Get a humidity measurement from the device.
 =item C<measure>
 
 Get a temperature, pressure, and humidity measure from the device.
+
+=item C<measureTime>
+
+Returns the amount of time in µseconds for a measurement to run based on the
+current settings.
+
+=item C<maxMeasureTime>
+
+Returns the maximum amount of time in µseconds for a measurement to run based on
+the current settings.
+
+=item C<standbyTime>
+
+Returns the standby time in µseconds (used in normal mode).
 
 =back
 
@@ -671,6 +730,21 @@ sub measure {
   my $p = $self->$_compensatePressure ($data->{pressure}) / 100;
   my $h = $self->$_compensateHumidity ($data->{humidity});
   return ($t, $p, $h);
+}
+
+sub measureTime {
+  my $self = shift;
+  return $self->$_getMeasureTime;
+}
+
+sub maxMeasureTime {
+  my $self = shift;
+  return $self->$_getMaxMeasureTime;
+}
+
+sub standbyTime {
+  my $self = shift;
+  return $self->$_getStandybyTime;
 }
 
 1;
