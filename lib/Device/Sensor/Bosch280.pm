@@ -418,10 +418,12 @@ my $_getMeasureTime = sub {
   $t_measure += 2 * $coefficients[$self->{controls}->{temperature}] unless ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_OFF);
   # Account for pressure oversampling.
   $t_measure += 2 * $coefficients[$self->{controls}->{pressure}] + 0.5 unless ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_OFF);
-  return $t_measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
+  # Return measure time in μseconds if model is BMP280.
+  return $t_measure * 1000 if ($self->{model} == BOSCH280_SENSOR_BMP280);
   # Account for humidity oversampling.
   $t_measure += 2 * $coefficients[$self->{controls}->{humidity}] + 0.5 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_OFF);
-  return $t_measure;
+  # Return measure time in μseconds.
+  return $t_measure * 1000;
 };
 
 my $_getMaxMeasureTime = sub {
@@ -432,10 +434,12 @@ my $_getMaxMeasureTime = sub {
   $t_measure += 2.3 * $coefficients[$self->{controls}->{temperature}] unless ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_OFF);
   # Account for pressure oversampling.
   $t_measure += 2.3 * $coefficients[$self->{controls}->{pressure}] + 0.575 unless ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_OFF);
-  return $t_measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
+  # Return measure time in μseconds if model is BMP280.
+  return $t_measure * 1000 if ($self->{model} == BOSCH280_SENSOR_BMP280);
   # Account for humidity oversampling.
   $t_measure += 2.3 * $coefficients[$self->{controls}->{humidity}] + 0.575 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_OFF);
-  return $t_measure;
+  # Return measure time in μseconds.
+  return $t_measure * 1000;
 };
 
 my $_getStandybyTime = sub {
