@@ -310,13 +310,13 @@ our @EXPORT_OK = qw (
 
 ## Private methods.
 
-my $_extract_bits = sub {
+my $_extractBits = sub {
   my $self = shift;
   my ($value, $i, $n) = @_;
   return ((1 << $n) - 1) & ($value >> $i);
 };
 
-my $_get_model = sub {
+my $_getModel = sub {
   my $self = shift;
   return BOSCH280_SENSOR_BME280 if ($self->{id} == BOSCH280_ID_BME280);
   return BOSCH280_SENSOR_BMP280 if ($self->{id} == BOSCH280_ID_BMP280_2);
@@ -324,7 +324,7 @@ my $_get_model = sub {
   return BOSCH280_SENSOR_BMP280 if ($self->{id} == BOSCH280_ID_BMP280_0);
 };
 
-my $_get_calibration = sub {
+my $_getCalibration = sub {
   my $self = shift;
   my %calibration;
   # Read the temperature and pressure calibration data.
@@ -374,18 +374,18 @@ my $_get_calibration = sub {
   return \%calibration;
 };
 
-my $_get_controls = sub {
+my $_getControls = sub {
   my $self = shift;
   # Read the controls for temperature, pressure, and the mode of operation.
   my $meas = $self->{io}->readByteData (BOSCH280_REG_CTRL_MEAS);
-  my $osrs_t = $self->$_extract_bits ($meas, 5, 3);
-  my $osrs_p = $self->$_extract_bits ($meas, 2, 3);
-  my $mode = $self->$_extract_bits ($meas, 0, 1);
+  my $osrs_t = $self->$_extractBits ($meas, 5, 3);
+  my $osrs_p = $self->$_extractBits ($meas, 2, 3);
+  my $mode = $self->$_extractBits ($meas, 0, 1);
   my $osrs_h = BOSCH280_OVERSAMPLING_OFF;
   if ($self->{model} == BOSCH280_SENSOR_BME280) {
     # Read the controls for humidity.
     my $hum_meas = $self->{io}->readByteData (BOSCH280_REG_CTRL_HUM);
-    $osrs_h = $self->$_extract_bits ($hum_meas, 0, 3);
+    $osrs_h = $self->$_extractBits ($hum_meas, 0, 3);
   }
   my $ctrl = {
     temperature => $osrs_t,
@@ -396,12 +396,12 @@ my $_get_controls = sub {
   return $ctrl;
 };
 
-my $_get_config = sub {
+my $_getConfig = sub {
   my $self = shift;
   my $config = $self->{io}->readByteData (BOSCH280_REG_CONFIG);
-  my $t_sb = $self->$_extract_bits ($config, 5, 3);
-  my $filter = $self->$_extract_bits ($config, 2, 3);
-  my $spi3w_en = $self->$_extract_bits ($config, 0, 1);
+  my $t_sb = $self->$_extractBits ($config, 5, 3);
+  my $filter = $self->$_extractBits ($config, 2, 3);
+  my $spi3w_en = $self->$_extractBits ($config, 0, 1);
   my $cfg = {
     standby => $t_sb,
     filter => $filter,
@@ -410,7 +410,7 @@ my $_get_config = sub {
   return $cfg;
 };
 
-my $_get_measure_time = sub {
+my $_getMeasureTime = sub {
   my $self = shift;
   my @coefficients = (0, 1, 2, 4, 8, 16);
   my $t_measure = 1;
@@ -424,7 +424,7 @@ my $_get_measure_time = sub {
   return $t_measure;
 };
 
-my $_get_max_measure_time = sub {
+my $_getMaxMeasureTime = sub {
   my $self = shift;
   my @coefficients = (0, 1, 2, 4, 8, 16);
   my $t_measure = 1.25;
@@ -438,7 +438,7 @@ my $_get_max_measure_time = sub {
   return $t_measure;
 };
 
-my $_get_standyby_time = sub {
+my $_getStandybyTime = sub {
   my $self = shift;
   my @coefficients;
   if ($self->{model} == BOSCH280_SENSOR_BME280) {
@@ -468,7 +468,7 @@ my $_get_standyby_time = sub {
   return $coefficients[$self->{config}->{standby}];
 };
 
-my $_get_data = sub {
+my $_getData = sub {
   my $self = shift;
   my ($temperature, $pressure, $humidity);
   my $length = BOSCH280_DATA_LENGTH_0;
@@ -489,7 +489,7 @@ my $_get_data = sub {
   return $data;
 };
 
-my $_set_controls = sub {
+my $_setControls = sub {
   my $self = shift;
   my ($ctrl) = @_;
   # The humidity controls need to be set first.
@@ -503,7 +503,7 @@ my $_set_controls = sub {
   return $ctrl;
 };
 
-my $_set_config = sub {
+my $_setConfig = sub {
   my $self = shift;
   my ($cfg) = @_;
   # Write the config.
@@ -512,7 +512,7 @@ my $_set_config = sub {
   return $cfg;
 };
 
-my $_compensate_temperature = sub {
+my $_compensateTemperature = sub {
   my $self = shift;
   my ($t) = @_;
   my ($var1, $var2);
@@ -526,7 +526,7 @@ my $_compensate_temperature = sub {
   return $temperature;
 };
 
-my $_compensate_pressure = sub {
+my $_compensatePressure = sub {
   my $self = shift;
   my ($p) = @_;
   my ($var1, $var2, $var3);
@@ -549,7 +549,7 @@ my $_compensate_pressure = sub {
   return $pressure;
 };
 
-my $_compensate_humidity = sub {
+my $_compensateHumidity = sub {
   my $self = shift;
   my ($h) = @_;
   my $cal = $self->{calibration};
@@ -592,14 +592,14 @@ sub new {
   # Read the device id.
   $self->{id} = $io->readByteData (BOSCH280_REG_CHIP_ID);
   # Figure out the model of the device.
-  $self->{model} = $self->$_get_model;
+  $self->{model} = $self->$_getModel;
   die "Error: Unrecognized device " . $self->{id} unless (defined $self->{model});
   # Read the calibration data.
-  $self->{calibration} = $self->$_get_calibration;
+  $self->{calibration} = $self->$_getCalibration;
   # Read the environmental controls and the mode of operation.
-  $self->{controls} = $self->$_get_controls;
+  $self->{controls} = $self->$_getControls;
   # Read the config.
-  $self->{config} = $self->$_get_config;
+  $self->{config} = $self->$_getConfig;
   return $self;
 }
 
@@ -631,41 +631,41 @@ sub status {
 sub controls {
   my $self = shift;
   my ($ctrl) = @_;
-  $ctrl = $self->$_get_controls unless (defined $ctrl);
-  return $self->$_set_controls ($ctrl);
+  $ctrl = $self->$_getControls unless (defined $ctrl);
+  return $self->$_setControls ($ctrl);
 }
 
 sub config {
   my $self = shift;
   my ($cfg) = @_;
-  $cfg = $self->$_get_config unless (defined $cfg);
-  return $self->$_set_config ($cfg);
+  $cfg = $self->$_getConfig unless (defined $cfg);
+  return $self->$_setConfig ($cfg);
 }
 
 sub temperature {
   my $self = shift;
-  my $data = $self->$_get_data;
-  return $self->$_compensate_temperature ($data->{temperature});
+  my $data = $self->$_getData;
+  return $self->$_compensateTemperature ($data->{temperature});
 }
 
 sub pressure {
   my $self = shift;
-  my $data = $self->$_get_data;
-  return $self->$_compensate_pressure ($data->{pressure}) / 100;
+  my $data = $self->$_getData;
+  return $self->$_compensatePressure ($data->{pressure}) / 100;
 }
 
 sub humidity {
   my $self = shift;
-  my $data = $self->$_get_data;
-  return $self->$_compensate_humidity ($data->{humidity});
+  my $data = $self->$_getData;
+  return $self->$_compensateHumidity ($data->{humidity});
 }
 
 sub measure {
   my $self = shift;
-  my $data = $self->$_get_data;
-  my $t = $self->$_compensate_temperature ($data->{temperature});
-  my $p = $self->$_compensate_pressure ($data->{pressure}) / 100;
-  my $h = $self->$_compensate_humidity ($data->{humidity});
+  my $data = $self->$_getData;
+  my $t = $self->$_compensateTemperature ($data->{temperature});
+  my $p = $self->$_compensatePressure ($data->{pressure}) / 100;
+  my $h = $self->$_compensateHumidity ($data->{humidity});
   return ($t, $p, $h);
 }
 
