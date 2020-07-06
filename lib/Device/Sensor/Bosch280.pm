@@ -59,8 +59,8 @@ Device::Sensor::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sens
   my $ctrl = $bme280->controls;
   $ctrl->{temperature} = BOSCH280_OVERSAMPLING_X2;
   $ctrl->{pressure} = BOSCH280_OVERSAMPLING_X2;
-  $ctrl->{mode} = BOSCH280_MODE_FORCED;
   $ctrl->{humidity} = BOSCH280_OVERSAMPLING_X2;
+  $ctrl->{mode} = BOSCH280_MODE_FORCED;
   $bme280->controls ($ctrl);
 
   # Get a measurement from the device.
