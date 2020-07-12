@@ -75,7 +75,7 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   # Get a measurement from the device.
   my ($temperature, $pressure, $humidity) = $bme280->measure;
   printf "Temperature:\t%.2f °C\n", $temperature;
-  printf "Pressure:\t%.2f hPa\n", $pressure;
+  printf "Pressure:\t%.2f hPa\n", $pressure / 100;
   printf "Humidity:\t%.2f %%\n", $humidity;
 
   # Modify the configuration to use standby X0 (500 µs) and filter to off.
@@ -103,7 +103,7 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
     # Get a measurement from the device.
     ($temperature, $pressure, $humidity) = $bme280->measure;
     printf "%2d: temperature:\t%.2f °C\n", $i, $temperature;
-    printf "%2d: pressure:   \t%.2f hPa\n", $i, $pressure;
+    printf "%2d: pressure:   \t%.2f hPa\n", $i, $pressure / 100;
     printf "%2d: humidity:   \t%.2f %%\n", $i, $humidity;
 
     # Wait for the standby time.
@@ -714,7 +714,7 @@ sub temperature {
 sub pressure {
   my $self = shift;
   my $data = $self->$_getData;
-  return $self->$_compensatePressure ($data->{pressure}) / 100;
+  return $self->$_compensatePressure ($data->{pressure});
 }
 
 sub humidity {
@@ -727,7 +727,7 @@ sub measure {
   my $self = shift;
   my $data = $self->$_getData;
   my $t = $self->$_compensateTemperature ($data->{temperature});
-  my $p = $self->$_compensatePressure ($data->{pressure}) / 100;
+  my $p = $self->$_compensatePressure ($data->{pressure});
   my $h = $self->$_compensateHumidity ($data->{humidity});
   return ($t, $p, $h);
 }
