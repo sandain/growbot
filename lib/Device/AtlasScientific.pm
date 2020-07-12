@@ -4,7 +4,7 @@
 
 =head1 NAME
 
-Device::Sensor::AtlasScientific - Driver for Atlas Scientific environmental sensors.
+Device::AtlasScientific - Driver for Atlas Scientific environmental robotic devices.
 
 =head1 SYNOPSIS
 
@@ -14,7 +14,7 @@ Device::Sensor::AtlasScientific - Driver for Atlas Scientific environmental sens
   use v5.10;
   use open qw/:std :utf8/;
 
-  use Device::Sensor::AtlasScientific qw ();
+  use Device::AtlasScientific qw ();
 
   # The I2C device file.
   my $device = '/dev/i2c-1';
@@ -23,12 +23,12 @@ Device::Sensor::AtlasScientific - Driver for Atlas Scientific environmental sens
   my $address = 0x63;
 
   # Load this driver.
-  my $pH = Device::Sensor::AtlasScientific->new ($device, $address);
+  my $pH = Device::AtlasScientific->new ($device, $address);
 
 =head1 DESCRIPTION
 
-Device::Sensor::AtlasScientific is a driver for the Atlas Scientific series of
-environmental sensors.
+Device::AtlasScientific is a driver for the Atlas Scientific series of
+environmental robotic devices.
 
 =head2 Methods
 
@@ -36,13 +36,13 @@ environmental sensors.
 
 =item C<new>
 
-Returns a new Device::Sensor::AtlasScientific object.
+Returns a new Device::AtlasScientific object.
 
 =back
 
 =head1 DEPENDENCIES
 
-Device::Sensor::AtlasScientific requires Perl version 5.10 or later.
+Device::AtlasScientific requires Perl version 5.10 or later.
 
 =head1 FEEDBACK
 
@@ -84,7 +84,7 @@ Email sandain@hotmail.com
 
 =cut
 
-package Device::Sensor::AtlasScientific;
+package Device::AtlasScientific;
 
 use strict;
 use warnings;

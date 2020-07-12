@@ -4,7 +4,7 @@
 
 =head1 NAME
 
-Device::Sensor::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
+Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
 
 =head1 SYNOPSIS
 
@@ -15,7 +15,7 @@ Device::Sensor::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sens
   use open qw/:std :utf8/;
   use Time::HiRes qw (usleep);
 
-  use Device::Sensor::Bosch280 qw (
+  use Device::Bosch280 qw (
     BOSCH280_SENSOR_BME280
     BOSCH280_OVERSAMPLING_OFF
     BOSCH280_OVERSAMPLING_X1
@@ -48,7 +48,7 @@ Device::Sensor::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sens
   my $address = 0x77;
 
   # Load this driver.
-  my $bme280 = Device::Sensor::Bosch280->new ($device, $address);
+  my $bme280 = Device::Bosch280->new ($device, $address);
 
   # Verify the model of the device.
   die "Unexpected model" unless ($bme280->{model} == BOSCH280_SENSOR_BME280);
@@ -116,7 +116,7 @@ Device::Sensor::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sens
 
 =head1 DESCRIPTION
 
-Device::Sensor::Bosch280 is an I2C driver for the Bosch BMP280 and BME280
+Device::Bosch280 is an I2C driver for the Bosch BMP280 and BME280
 environmental sensors.
 
 This driver is based on documentation found at:
@@ -132,7 +132,7 @@ And reference C code provided by Bosch Sensortec:
 
 =item C<new>
 
-Returns a new Device::Sensor::Bosch280 object.
+Returns a new Device::Bosch280 object.
 
 =item C<id>
 
@@ -188,7 +188,7 @@ Returns the standby time in µseconds (used in normal mode).
 
 =head1 DEPENDENCIES
 
-Device::Sensor::Bosch280 requires Perl version 5.10 or later.
+Device::Bosch280 requires Perl version 5.10 or later.
 
 =head1 FEEDBACK
 
@@ -230,7 +230,7 @@ Email sandain@hotmail.com
 
 =cut
 
-package Device::Sensor::Bosch280;
+package Device::Bosch280;
 
 use strict;
 use warnings;

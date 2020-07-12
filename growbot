@@ -62,8 +62,8 @@ use v5.10;
 use Mojolicious::Lite;
 
 use lib qw(lib);
-use Device::Sensor::Bosch280;
-use Device::Sensor::AtlasScientific;
+use Device::Bosch280;
+use Device::AtlasScientific;
 
 =head2 Helper Functions
 
