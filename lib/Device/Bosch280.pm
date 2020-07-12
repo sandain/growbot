@@ -116,8 +116,7 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
 
 =head1 DESCRIPTION
 
-Device::Bosch280 is an I2C driver for the Bosch BMP280 and BME280
-environmental sensors.
+Device::Bosch280 is a driver for Bosch BMP280 and BME280 environmental sensors.
 
 This driver is based on documentation found at:
   https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf
