@@ -390,28 +390,40 @@ my $_getCalibration = sub {
     BOSCH280_REG_CALIBRATION_0, BOSCH280_CALIBRATION_LENGTH_0
   );
   # Extract the temperature data.
-  $calibration{T1} = $cal0[1] << 8 | $cal0[0];             # T1: unsigned short.
-  $calibration{T2} = $cal0[3] << 8 | $cal0[2];             # T2: signed short.
+  # T1: unsigned short.
+  $calibration{T1} = $cal0[1] << 8 | $cal0[0];
+  # T2: signed short.
+  $calibration{T2} = $cal0[3] << 8 | $cal0[2];
   $calibration{T2} -= 2 ** 16 if ($calibration{T2} >= 2 ** 15);
-  $calibration{T3} = $cal0[5] << 8 | $cal0[4];             # T3: signed short.
+  # T3: signed short.
+  $calibration{T3} = $cal0[5] << 8 | $cal0[4];
   $calibration{T3} -= 2 ** 16 if ($calibration{T3} >= 2 ** 15);
   # Extract the pressure data.
-  $calibration{P1} = $cal0[7] << 8 | $cal0[6];             # P1: unsigned short.
-  $calibration{P2} = $cal0[9] << 8 | $cal0[8];             # P2: signed short.
+  # P1: unsigned short.
+  $calibration{P1} = $cal0[7] << 8 | $cal0[6];
+  # P2: signed short.
+  $calibration{P2} = $cal0[9] << 8 | $cal0[8];
   $calibration{P2} -= 2 ** 16 if ($calibration{P2} >= 2 ** 15);
-  $calibration{P3} = $cal0[11] << 8 | $cal0[10];           # P3: signed short.
+  # P3: signed short.
+  $calibration{P3} = $cal0[11] << 8 | $cal0[10];
   $calibration{P3} -= 2 ** 16 if ($calibration{P3} >= 2 ** 15);
-  $calibration{P4} = $cal0[13] << 8 | $cal0[12];           # P4: signed short.
+  # P4: signed short.
+  $calibration{P4} = $cal0[13] << 8 | $cal0[12];
   $calibration{P4} -= 2 ** 16 if ($calibration{P4} >= 2 ** 15);
-  $calibration{P5} = $cal0[15] << 8 | $cal0[14];           # P5: signed short.
+  # P5: signed short.
+  $calibration{P5} = $cal0[15] << 8 | $cal0[14];
   $calibration{P5} -= 2 ** 16 if ($calibration{P5} >= 2 ** 15);
-  $calibration{P6} = $cal0[17] << 8 | $cal0[16];           # P6: signed short.
+  # P6: signed short.
+  $calibration{P6} = $cal0[17] << 8 | $cal0[16];
   $calibration{P6} -= 2 ** 16 if ($calibration{P6} >= 2 ** 15);
-  $calibration{P7} = $cal0[19] << 8 | $cal0[18];           # P7: signed short.
+  # P7: signed short.
+  $calibration{P7} = $cal0[19] << 8 | $cal0[18];
   $calibration{P7} -= 2 ** 16 if ($calibration{P7} >= 2 ** 15);
-  $calibration{P8} = $cal0[21] << 8 | $cal0[20];           # P8: signed short.
+  # P8: signed short.
+  $calibration{P8} = $cal0[21] << 8 | $cal0[20];
   $calibration{P8} -= 2 ** 16 if ($calibration{P8} >= 2 ** 15);
-  $calibration{P9} = $cal0[23] << 8 | $cal0[22];           # P9: signed short.
+  # P9: signed short.
+  $calibration{P9} = $cal0[23] << 8 | $cal0[22];
   $calibration{P9} -= 2 ** 16 if ($calibration{P9} >= 2 ** 15);
   if ($self->{model} == BOSCH280_SENSOR_BME280) {
     # Read the humidity calibration data.
@@ -419,14 +431,20 @@ my $_getCalibration = sub {
       BOSCH280_REG_CALIBRATION_1, BOSCH280_CALIBRATION_LENGTH_1
     );
     # Extract the humidity data.
-    $calibration{H1} = $cal0[25];                          # H1: unsigned char.
-    $calibration{H2} = $cal1[1] << 8 | $cal1[0];           # H2: signed short.
-    $calibration{H3} = $cal1[2];                           # H3: unsigned char.
-    $calibration{H4} = $cal1[3] * 16 | $cal1[4] & 0x0F;    # H4: signed short.
+    # H1: unsigned char.
+    $calibration{H1} = $cal0[25];
+    # H2: signed short.
+    $calibration{H2} = $cal1[1] << 8 | $cal1[0];
+    # H3: unsigned char.
+    $calibration{H3} = $cal1[2];
+    # H4: signed short.
+    $calibration{H4} = $cal1[3] * 16 | $cal1[4] & 0x0F;
     $calibration{H4} -= 2 ** 16 if ($calibration{H4} >= 2 ** 15);
-    $calibration{H5} = $cal1[5] * 16 | $cal1[4] >> 4;      # H5: signed short.
+    # H5: signed short.
+    $calibration{H5} = $cal1[5] * 16 | $cal1[4] >> 4;
     $calibration{H5} -= 2 ** 16 if ($calibration{H5} >= 2 ** 15);
-    $calibration{H6} = $cal1[6];                           # H6: signed char.
+    # H6: signed char.
+    $calibration{H6} = $cal1[6];
     $calibration{H6} -= 2 ** 8 if ($calibration{H6} >= 2 ** 7);
   }
   return \%calibration;
@@ -473,13 +491,19 @@ my $_getMeasureTime = sub {
   my @coefficients = (0, 1, 2, 4, 8, 16);
   my $t_measure = 1;
   # Account for temperature oversampling.
-  $t_measure += 2 * $coefficients[$self->{controls}->{temperature}] unless ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_OFF);
+  unless ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_OFF) {
+    $t_measure += 2 * $coefficients[$self->{controls}->{temperature}];
+  }
   # Account for pressure oversampling.
-  $t_measure += 2 * $coefficients[$self->{controls}->{pressure}] + 0.5 unless ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_OFF);
+  unless ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_OFF) {
+    $t_measure += 2 * $coefficients[$self->{controls}->{pressure}] + 0.5;
+  }
   # Return measure time in μseconds if model is BMP280.
   return $t_measure * 1000 if ($self->{model} == BOSCH280_SENSOR_BMP280);
   # Account for humidity oversampling.
-  $t_measure += 2 * $coefficients[$self->{controls}->{humidity}] + 0.5 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_OFF);
+  unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_OFF) {
+    $t_measure += 2 * $coefficients[$self->{controls}->{humidity}] + 0.5;
+  }
   # Return measure time in μseconds.
   return $t_measure * 1000;
 };
@@ -489,13 +513,19 @@ my $_getMaxMeasureTime = sub {
   my @coefficients = (0, 1, 2, 4, 8, 16);
   my $t_measure = 1.25;
   # Account for temperature oversampling.
-  $t_measure += 2.3 * $coefficients[$self->{controls}->{temperature}] unless ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_OFF);
+  unless ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_OFF) {
+    $t_measure += 2.3 * $coefficients[$self->{controls}->{temperature}];
+  }
   # Account for pressure oversampling.
-  $t_measure += 2.3 * $coefficients[$self->{controls}->{pressure}] + 0.575 unless ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_OFF);
+  unless ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_OFF) {
+    $t_measure += 2.3 * $coefficients[$self->{controls}->{pressure}] + 0.575;
+  }
   # Return measure time in μseconds if model is BMP280.
   return $t_measure * 1000 if ($self->{model} == BOSCH280_SENSOR_BMP280);
   # Account for humidity oversampling.
-  $t_measure += 2.3 * $coefficients[$self->{controls}->{humidity}] + 0.575 unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_OFF);
+  unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_OFF) {
+    $t_measure += 2.3 * $coefficients[$self->{controls}->{humidity}] + 0.575;
+  }
   # Return measure time in μseconds.
   return $t_measure * 1000;
 };
