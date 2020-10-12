@@ -781,10 +781,10 @@ sub config {
       $cfg->{spi_enable} == 0x00 || $cfg->{spi_enable} == 0x01
     );
     # Set the config to the new values, and return the values as set.
-    return $self->$_setConfig unless (defined $cfg);
+    return $self->$_setConfig ($cfg);
   }
   # Return the currently set values.
-  return $self->$_getConfig ($cfg);
+  return $self->$_getConfig;
 }
 
 sub temperature {
