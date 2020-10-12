@@ -584,6 +584,8 @@ my $_getData = sub {
 my $_setControls = sub {
   my $self = shift;
   my ($ctrl) = @_;
+  # Update the values stored locally.
+  $self->{controls} = $ctrl;
   # The humidity controls need to be set first.
   if ($self->{model} == BOSCH280_SENSOR_BME280) {
     # Write the controls for humidity.
@@ -598,6 +600,8 @@ my $_setControls = sub {
 my $_setConfig = sub {
   my $self = shift;
   my ($cfg) = @_;
+  # Update the values stored locally.
+  $self->{config} = $cfg;
   # Write the config.
   my $config = $cfg->{standby} << 5 | $cfg->{filter} << 2 | $cfg->{spi_enable};
   $self->{io}->writeByteData (BOSCH280_REG_CONFIG, $config);
