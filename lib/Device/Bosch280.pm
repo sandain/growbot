@@ -727,15 +727,64 @@ sub status {
 sub controls {
   my $self = shift;
   my ($ctrl) = @_;
-  $ctrl = $self->$_getControls unless (defined $ctrl);
-  return $self->$_setControls ($ctrl);
+  # Check if controls are changing.
+  if (defined $ctrl) {
+    # Fill in empty values with current values.
+    $ctrl->{temperature} = $self->{controls}{temperature} unless (defined $ctrl->{temperature});
+    $ctrl->{pressure} = $self->{controls}{pressure} unless (defined $ctrl->{pressure});
+    $ctrl->{humidity} = $self->{controls}{humidity} unless (defined $ctrl->{humidity});
+    $ctrl->{mode} = $self->{controls}{mode} unless (defined $ctrl->{mode});
+    # Verify that values are within range.
+    die "Invalid temperature control " . $ctrl->{temperature} unless (
+      $ctrl->{temperature} >= BOSCH280_OVERSAMPLING_OFF &&
+      $ctrl->{temperature} <= BOSCH280_OVERSAMPLING_X16
+    );
+    die "Invalid pressure control " . $ctrl->{pressure} unless (
+      $ctrl->{pressure} >= BOSCH280_OVERSAMPLING_OFF &&
+      $ctrl->{pressure} <= BOSCH280_OVERSAMPLING_X16
+    );
+    die "Invalid humidity control " . $ctrl->{humidity} unless (
+      $ctrl->{humidity} >= BOSCH280_OVERSAMPLING_OFF &&
+      $ctrl->{humidity} <= BOSCH280_OVERSAMPLING_X16
+    );
+    die "Invalid mode " . $ctrl->{mode} unless (
+      $ctrl->{mode} == BOSCH280_MODE_SLEEP ||
+      $ctrl->{mode} == BOSCH280_MODE_FORCED ||
+      $ctrl->{mode} == BOSCH280_MODE_NORMAL
+    );
+    # Set the controls to the new values, and return the values as set.
+    return $self->$_setControls ($ctrl);
+  }
+  # Return the currently set values.
+  return $self->$_getControls;
 }
 
 sub config {
   my $self = shift;
   my ($cfg) = @_;
-  $cfg = $self->$_getConfig unless (defined $cfg);
-  return $self->$_setConfig ($cfg);
+  # Check if configs are changing.
+  if (defined $cfg) {
+    # Fill in empty values with current values.
+    $cfg->{standby} = $self->{config}{standby} unless (defined $cfg->{standby});
+    $cfg->{filter} = $self->{config}{filter} unless (defined $cfg->{filter});
+    $cfg->{spi_enable} = $self->{config}{spi_enable} unless (defined $cfg->{spi_enable});
+    # Verify that values are within range.
+    die "Invalid standby config " . $cfg->{standby} unless (
+      $cfg->{standby} >= BOSCH280_STANDBY_X0 &&
+      $cfg->{standby} <= BOSCH280_STANDBY_X7
+    );
+    die "Invalid filter config " . $cfg->{filter} unless (
+      $cfg->{filter} >= BOSCH280_FILTER_OFF &&
+      $cfg->{filter} <= BOSCH280_FILTER_X16
+    );
+    die "Invalid spi_enable config " . $cfg->{spi_enable} unless (
+      $cfg->{spi_enable} == 0x00 || $cfg->{spi_enable} == 0x01
+    );
+    # Set the config to the new values, and return the values as set.
+    return $self->$_setConfig unless (defined $cfg);
+  }
+  # Return the currently set values.
+  return $self->$_getConfig ($cfg);
 }
 
 sub temperature {
