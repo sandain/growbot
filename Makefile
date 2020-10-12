@@ -3,11 +3,13 @@ GROWBOT_GROUP := growbot
 GROWBOT_HOME := /opt/growbot
 GROWBOT_SERVICE := /etc/systemd/system/growbot.service
 
-.PHONY: install update clean
+.PHONY: install adduser update clean
 
-install: update
-	useradd --system --user-group --create-home -K UMASK=0022 --home $(GROWBOT_HOME) $(GROWBOT_USER)
+install: adduser update
 	systemctl -f enable growbot.service;
+
+adduser:
+	useradd --system --user-group --create-home -K UMASK=0022 --home $(GROWBOT_HOME) $(GROWBOT_USER)
 
 update:
 	install -m 0755 growbot $(GROWBOT_HOME)
