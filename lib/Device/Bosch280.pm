@@ -12,7 +12,6 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   use warnings;
   use utf8;
   use v5.10;
-  use open qw/:std :utf8/;
   use Time::HiRes qw (usleep);
 
   use Device::Bosch280 qw (
@@ -67,7 +66,7 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   # Wait for the measurement to finish.
   usleep $bme280->measureTime;
   my ($im_update, $measuring) = $bme280->status;
-  while ($measuring) {q
+  while ($measuring) {
     usleep $bme280->maxMeasureTime - $bme280->measureTime;
     ($im_update, $measuring) = $bme280->status;
   }
