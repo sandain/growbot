@@ -94,10 +94,10 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   for (my $i = 0; $i < 10; $i ++) {
     # Wait for the measurement to finish.
     usleep $bme280->measureTime;
-    ($_, $measuring) = $bme280->status;
+    ($im_update, $measuring) = $bme280->status;
     while ($measuring) {
       usleep $bme280->maxMeasureTime - $bme280->measureTime;
-      ($_, $measuring) = $bme280->status;
+      ($im_update, $measuring) = $bme280->status;
     }
     # Get a measurement from the device.
     ($temperature, $pressure, $humidity) = $bme280->measure;
