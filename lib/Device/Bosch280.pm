@@ -125,11 +125,57 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
 Device::Bosch280 is a driver for Bosch BMP280 and BME280 environmental sensors.
 
 This driver is based on documentation found at:
-  https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf
-  https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf
+
+L<https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf>
+
+L<https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf>
 
 And reference C code provided by Bosch Sensortec:
-  https://github.com/BoschSensortec/BME280_driver
+
+L<https://github.com/BoschSensortec/BME280_driver>
+
+According to the documentation provided by Bosch Sensortec, the following modes
+of opperation are recommended:
+
+=over 12
+
+=item Weather Monitoring
+
+Low data rate needed. Noise in measurements are not a major concern. Monitor
+pressure, temperature, and humidity.
+
+  Sensor mode: forced, 1 sample / minute
+  Oversampling: pressure X1, temperature X1, humidity X1
+  IIR filter: off
+
+=item Humidity Sensing
+
+Low data rate needed. Noise in measurements are not a major concern. Monitor
+temperature and humidity.
+
+  Sensor mode: forced, 1 sample / second
+  Oversampling: pressure X0, temperature X1, humidity X1
+  IIR filter: off
+
+=item Indoor Navigation
+
+High data rate needed. Noise in pressure (altitude) a major concern. Monitor
+pressure, temperature, and humidity.
+
+  Sensor mode: normal, standby X0 (0.5 ms)
+  Oversampling: pressure X16, temperature X2, humidity X1
+  IIR filter: X16
+
+=item Gaming
+
+High data rate needed. Noise in pressure (altitude) a major concern. Monitor
+pressure and temperature.
+
+  Sensor mode: normal, standby X0 (0.5 ms)
+  Oversampling: pressure X4, temperature X2, humidity X0
+  IIR filter: X16
+
+=back
 
 =head2 Methods
 
@@ -204,15 +250,16 @@ Device::Bosch280 requires Perl version 5.10 or later.
 =head2 Reporting Bugs
 
 Report bugs to the GitHub issue tracker at:
-  https://github.com/sandain/growbot/issues
 
-=head1 AUTHOR - Jason M. Wood
+L<https://github.com/sandain/growbot/issues>
 
-Email sandain@hotmail.com
+=head1 AUTHOR
+
+Jason M. Wood L<sandain@hotmail.com|mailto:sandain@hotmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-  Copyright (c) 2020  Jason M. Wood <sandain@hotmail.com>
+  Copyright (c) 2020 Jason M. Wood
 
   All rights reserved.
 
