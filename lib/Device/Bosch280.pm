@@ -154,7 +154,7 @@ Low data rate needed. Noise in measurements are not a major concern. Monitor
 temperature and humidity.
 
   Sensor mode: forced, 1 sample / second
-  Oversampling: pressure X0, temperature X1, humidity X1
+  Oversampling: pressure off, temperature X1, humidity X1
   IIR filter: off
 
 =item Indoor Navigation
@@ -172,7 +172,7 @@ High data rate needed. Noise in pressure (altitude) a major concern. Monitor
 pressure and temperature.
 
   Sensor mode: normal, standby X0 (0.5 ms)
-  Oversampling: pressure X4, temperature X2, humidity X0
+  Oversampling: pressure X4, temperature X2, humidity off
   IIR filter: X16
 
 =back
