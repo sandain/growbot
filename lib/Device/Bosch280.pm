@@ -598,6 +598,8 @@ my $_setControls = sub {
   my ($ctrl) = @_;
   # Update the values stored locally.
   $self->{controls} = $ctrl;
+  $self->{measureTime} = $self->$_getMeasureTime;
+  $self->{maxMeasureTime} = $self->$_getMaxMeasureTime;
   # The humidity controls need to be set first.
   if ($self->{model} == BOSCH280_SENSOR_BME280) {
     # Write the controls for humidity.
@@ -614,6 +616,7 @@ my $_setConfig = sub {
   my ($cfg) = @_;
   # Update the values stored locally.
   $self->{config} = $cfg;
+  $self->{standbyTime} = $self->$_getStandybyTime;
   # Write the config.
   my $config = $cfg->{standby} << 5 | $cfg->{filter} << 2 | $cfg->{spi_enable};
   $self->{io}->writeByteData (BOSCH280_REG_CONFIG, $config);
@@ -688,14 +691,17 @@ sub new {
   $io->selectDevice ($address);
   # Bless ourselves with our class.
   my $self = bless {
-    i2c         => $i2c,
-    address     => $address,
-    io          => $io,
-    id          => undef,
-    model       => undef,
-    calibration => undef,
-    controls    => undef,
-    config      => undef
+    i2c            => $i2c,
+    address        => $address,
+    io             => $io,
+    id             => undef,
+    model          => undef,
+    calibration    => undef,
+    controls       => undef,
+    config         => undef,
+    measureTime    => undef,
+    maxMeasureTime => undef,
+    standbyTime    => undef
   }, $class;
   # Read the device id.
   $self->{id} = $io->readByteData (BOSCH280_REG_CHIP_ID);
@@ -820,17 +826,17 @@ sub measure {
 
 sub measureTime {
   my $self = shift;
-  return $self->$_getMeasureTime;
+  return $self->{measureTime};
 }
 
 sub maxMeasureTime {
   my $self = shift;
-  return $self->$_getMaxMeasureTime;
+  return $self->{maxMeasureTime};
 }
 
 sub standbyTime {
   my $self = shift;
-  return $self->$_getStandybyTime;
+  return $self->{standbyTime};
 }
 
 sub startupTime {
