@@ -1,5 +1,3 @@
-#!/usr/bin/env perl
-
 =encoding utf8
 
 =head1 NAME
@@ -126,20 +124,25 @@ Device::Bosch280 is a driver for Bosch BMP280 and BME280 environmental sensors.
 
 This driver is based on documentation found at:
 
+=over 12
+
+=item * BMP280 (temperature and pressure):
 L<https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf>
 
+=item * BME280 (temperature, pressure, and humidity):
 L<https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf>
 
-And reference C code provided by Bosch Sensortec:
-
+=item * Reference C code provided by Bosch Sensortec:
 L<https://github.com/BoschSensortec/BME280_driver>
+
+=back
 
 According to the documentation provided by Bosch Sensortec, the following modes
 of opperation are recommended:
 
 =over 12
 
-=item Weather Monitoring
+=item * Weather Monitoring
 
 Low data rate needed. Noise in measurements are not a major concern. Monitor
 pressure, temperature, and humidity.
@@ -148,7 +151,7 @@ pressure, temperature, and humidity.
   Oversampling: pressure X1, temperature X1, humidity X1
   IIR filter: off
 
-=item Humidity Sensing
+=item * Humidity Sensing
 
 Low data rate needed. Noise in measurements are not a major concern. Monitor
 temperature and humidity.
@@ -157,7 +160,7 @@ temperature and humidity.
   Oversampling: pressure off, temperature X1, humidity X1
   IIR filter: off
 
-=item Indoor Navigation
+=item * Indoor Navigation
 
 High data rate needed. Noise in pressure (altitude) a major concern. Monitor
 pressure, temperature, and humidity.
@@ -166,7 +169,7 @@ pressure, temperature, and humidity.
   Oversampling: pressure X16, temperature X2, humidity X1
   IIR filter: X16
 
-=item Gaming
+=item * Gaming
 
 High data rate needed. Noise in pressure (altitude) a major concern. Monitor
 pressure and temperature.
