@@ -503,19 +503,13 @@ my $_getMeasureTime = sub {
   my @coefficients = (0, 1, 2, 4, 8, 16);
   my $t_measure = 1;
   # Account for temperature oversampling.
-  unless ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_OFF) {
-    $t_measure += 2 * $coefficients[$self->{controls}->{temperature}];
-  }
+  $t_measure += 2 * $coefficients[$self->{controls}->{temperature}];
   # Account for pressure oversampling.
-  unless ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_OFF) {
-    $t_measure += 2 * $coefficients[$self->{controls}->{pressure}] + 0.5;
-  }
+  $t_measure += 2 * $coefficients[$self->{controls}->{pressure}] + 0.5;
   # Return measure time in μseconds if model is BMP280.
   return $t_measure * 1000 if ($self->{model} == BOSCH280_SENSOR_BMP280);
   # Account for humidity oversampling.
-  unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_OFF) {
-    $t_measure += 2 * $coefficients[$self->{controls}->{humidity}] + 0.5;
-  }
+  $t_measure += 2 * $coefficients[$self->{controls}->{humidity}] + 0.5;
   # Return measure time in μseconds.
   return $t_measure * 1000;
 };
@@ -525,19 +519,13 @@ my $_getMaxMeasureTime = sub {
   my @coefficients = (0, 1, 2, 4, 8, 16);
   my $t_measure = 1.25;
   # Account for temperature oversampling.
-  unless ($self->{controls}->{temperature} == BOSCH280_OVERSAMPLING_OFF) {
-    $t_measure += 2.3 * $coefficients[$self->{controls}->{temperature}];
-  }
+  $t_measure += 2.3 * $coefficients[$self->{controls}->{temperature}];
   # Account for pressure oversampling.
-  unless ($self->{controls}->{pressure} == BOSCH280_OVERSAMPLING_OFF) {
-    $t_measure += 2.3 * $coefficients[$self->{controls}->{pressure}] + 0.575;
-  }
+  $t_measure += 2.3 * $coefficients[$self->{controls}->{pressure}] + 0.575;
   # Return measure time in μseconds if model is BMP280.
   return $t_measure * 1000 if ($self->{model} == BOSCH280_SENSOR_BMP280);
   # Account for humidity oversampling.
-  unless ($self->{controls}->{humidity} == BOSCH280_OVERSAMPLING_OFF) {
-    $t_measure += 2.3 * $coefficients[$self->{controls}->{humidity}] + 0.575;
-  }
+  $t_measure += 2.3 * $coefficients[$self->{controls}->{humidity}] + 0.575;
   # Return measure time in μseconds.
   return $t_measure * 1000;
 };
