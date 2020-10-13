@@ -182,6 +182,10 @@ the current settings.
 
 Returns the standby time in µseconds (used in normal mode).
 
+=item C<startupTime>
+
+Returns the startup time in µseconds.
+
 =back
 
 =head1 DEPENDENCIES
@@ -311,6 +315,9 @@ use constant BOSCH280_STANDBY_X4_BME280 =>  500000;
 use constant BOSCH280_STANDBY_X5_BME280 => 1000000;
 use constant BOSCH280_STANDBY_X6_BME280 =>   10000;
 use constant BOSCH280_STANDBY_X7_BME280 =>   20000;
+
+# BME280 startup duration (μs).
+use constant BOSCH280_STARTUP_DURATION => 2000;
 
 # Register addresses.
 use constant BOSCH280_REG_CHIP_ID       => 0xD0;  # Chip Identifier.
@@ -826,6 +833,11 @@ sub maxMeasureTime {
 sub standbyTime {
   my $self = shift;
   return $self->$_getStandybyTime;
+}
+
+sub startupTime {
+  my $self = shift;
+  return BOSCH280_STARTUP_DURATION;
 }
 
 1;
