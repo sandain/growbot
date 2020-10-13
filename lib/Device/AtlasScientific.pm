@@ -27,6 +27,48 @@ Device::AtlasScientific - Driver for Atlas Scientific environmental robotic devi
 Device::AtlasScientific is a driver for the Atlas Scientific series of
 environmental robotic devices.
 
+This driver is based on documentation found at:
+
+=over 12
+
+=item * pH meter:
+L<https://atlas-scientific.com/files/pH_EZO_Datasheet.pdf>
+
+=item * Oxygen reduction potential meter:
+L<https://atlas-scientific.com/files/ORP_EZO_Datasheet.pdf>
+
+=item * Dissolved oxygen meter:
+L<https://atlas-scientific.com/files/DO_EZO_Datasheet.pdf>
+
+=item * Electrical conductivity meter:
+L<https://atlas-scientific.com/files/EC_EZO_Datasheet.pdf>
+
+=item * Carbon dioxide (gas) meter:
+L<https://atlas-scientific.com/files/EZO_CO2_Datasheet.pdf>
+
+=item * Oxygen (gas) meter:
+L<https://atlas-scientific.com/files/EZO_O2_datasheet.pdf>
+
+=item * Temperature meter:
+L<https://atlas-scientific.com/files/EZO_RTD_Datasheet.pdf>
+
+=item * Humidity meter:
+L<https://atlas-scientific.com/files/EZO-HUM-Datasheet.pdf>
+
+=item * Pressure meter:
+L<https://atlas-scientific.com/files/EZO-PRS-Datasheet.pdf>
+
+=item * Flow meter:
+L<https://atlas-scientific.com/files/flow_EZO_Datasheet.pdf>
+
+=item * Peristaltic pump:
+L<https://atlas-scientific.com/files/EZO_PMP_Datasheet.pdf>
+
+=item * Color sensing meter:
+L<https://atlas-scientific.com/files/EZO_RGB_Datasheet.pdf>
+
+=back
+
 =head2 Methods
 
 =over 12
