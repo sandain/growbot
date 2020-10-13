@@ -279,7 +279,7 @@ use constant BOSCH280_STANDBY_X5 => 0x05;  # BMP280  1000 ms    BME280 1000 ms
 use constant BOSCH280_STANDBY_X6 => 0x06;  # BMP280  2000 ms    BME280   10 ms
 use constant BOSCH280_STANDBY_X7 => 0x07;  # BMP280  4000 ms    BME280   20 ms
 
-# Filter settings.
+# IIR filter settings.
 use constant BOSCH280_FILTER_OFF => 0x00;
 use constant BOSCH280_FILTER_X2  => 0x01;
 use constant BOSCH280_FILTER_X4  => 0x02;
@@ -326,21 +326,21 @@ use constant BOSCH280_STANDBY_X7_BME280 =>   20000;
 use constant BOSCH280_STARTUP_DURATION => 2000;
 
 # Register addresses.
-use constant BOSCH280_REG_CHIP_ID       => 0xD0;  # Chip Identifier.
-use constant BOSCH280_REG_RESET         => 0xE0;  # Reset.
-use constant BOSCH280_REG_CTRL_HUM      => 0xF2;  # Control humidity oversampling (BME280 only).
-use constant BOSCH280_REG_STATUS        => 0xF3;  # Device status.
-use constant BOSCH280_REG_CTRL_MEAS     => 0xF4;  # Control temperature and pressure oversampling.
-use constant BOSCH280_REG_CONFIG        => 0xF5;  # Config IIR filter.
-use constant BOSCH280_REG_DATA          => 0xF7;  # Raw temperature, pressure, and pressure data.
-use constant BOSCH280_REG_CALIBRATION_0 => 0x88;  # Pressure and temperature.
-use constant BOSCH280_REG_CALIBRATION_1 => 0xE1;  # Humidity.
+use constant BOSCH280_REG_CHIP_ID       => 0xD0;
+use constant BOSCH280_REG_RESET         => 0xE0;
+use constant BOSCH280_REG_CTRL_HUM      => 0xF2;
+use constant BOSCH280_REG_STATUS        => 0xF3;
+use constant BOSCH280_REG_CTRL_MEAS     => 0xF4;
+use constant BOSCH280_REG_CONFIG        => 0xF5;
+use constant BOSCH280_REG_DATA          => 0xF7;
+use constant BOSCH280_REG_CALIBRATION_0 => 0x88;
+use constant BOSCH280_REG_CALIBRATION_1 => 0xE1;
 
 # Register lengths.
-use constant BOSCH280_DATA_LENGTH_0        =>  6;  # Length of temperature and pressure data.
-use constant BOSCH280_DATA_LENGTH_1        =>  2;  # Length of humidity data (BME280 only).
-use constant BOSCH280_CALIBRATION_LENGTH_0 => 26;  # Length of temperature and pressure calibration data.
-use constant BOSCH280_CALIBRATION_LENGTH_1 =>  7;  # Length of humidity calibration data (BME280 only).
+use constant BOSCH280_DATA_LENGTH_0        =>  6;
+use constant BOSCH280_DATA_LENGTH_1        =>  2;
+use constant BOSCH280_CALIBRATION_LENGTH_0 => 26;
+use constant BOSCH280_CALIBRATION_LENGTH_1 =>  7;
 
 # Reset command.
 use constant BOSCH280_CMD_RESET => 0xB6;
@@ -655,7 +655,7 @@ my $_compensateHumidity = sub {
   my $t = $cal->{t_fine} - 76800;
   my $humidity = $h - ($cal->{H4} * 64 + $cal->{H5} / 16384 * $t);
   $humidity *= $cal->{H2} / 65536;
-  $humidity *= 1 + $cal->{H6} / 67108864 * $t * (1 + $cal->{H3} / 67108864 * $t);
+  $humidity *= 1 + $cal->{H6} / 2 ** 26 * $t * (1 + $cal->{H3} / 2 ** 26 * $t);
   $humidity *= 1 - $cal->{H1} * $humidity / 524288;
   return BOSCH280_HUMIDITY_MIN if ($humidity < BOSCH280_HUMIDITY_MIN);
   return BOSCH280_HUMIDITY_MAX if ($humidity > BOSCH280_HUMIDITY_MAX);
@@ -695,7 +695,9 @@ sub new {
   $self->{id} = $io->readByteData (BOSCH280_REG_CHIP_ID);
   # Figure out the model of the device.
   $self->{model} = $self->$_getModel;
-  die "Error: Unrecognized device " . $self->{id} unless (defined $self->{model});
+  unless (defined $self->{model}) {
+    die "Error: Unrecognized device " . $self->{id};
+  }
   # Read the calibration data.
   $self->{calibration} = $self->$_getCalibration;
   # Read the environmental controls and the mode of operation.
@@ -728,9 +730,15 @@ sub controls {
   # Check if controls are changing.
   if (defined $ctrl) {
     # Fill in empty values with current values.
-    $ctrl->{temperature} = $self->{controls}{temperature} unless (defined $ctrl->{temperature});
-    $ctrl->{pressure} = $self->{controls}{pressure} unless (defined $ctrl->{pressure});
-    $ctrl->{humidity} = $self->{controls}{humidity} unless (defined $ctrl->{humidity});
+    unless (defined $ctrl->{temperature}) {
+      $ctrl->{temperature} = $self->{controls}{temperature};
+    }
+    unless (defined $ctrl->{pressure}) {
+      $ctrl->{pressure} = $self->{controls}{pressure};
+    }
+    unless (defined $ctrl->{humidity}) {
+      $ctrl->{humidity} = $self->{controls}{humidity};
+    }
     $ctrl->{mode} = $self->{controls}{mode} unless (defined $ctrl->{mode});
     # Verify that values are within range.
     die "Invalid temperature control " . $ctrl->{temperature} unless (
@@ -763,9 +771,15 @@ sub config {
   # Check if configs are changing.
   if (defined $cfg) {
     # Fill in empty values with current values.
-    $cfg->{standby} = $self->{config}{standby} unless (defined $cfg->{standby});
-    $cfg->{filter} = $self->{config}{filter} unless (defined $cfg->{filter});
-    $cfg->{spi_enable} = $self->{config}{spi_enable} unless (defined $cfg->{spi_enable});
+    unless (defined $cfg->{standby}) {
+      $cfg->{standby} = $self->{config}{standby};
+    }
+    unless (defined $cfg->{filter}) {
+      $cfg->{filter} = $self->{config}{filter};
+    }
+    unless (defined $cfg->{spi_enable}) {
+      $cfg->{spi_enable} = $self->{config}{spi_enable};
+    }
     # Verify that values are within range.
     die "Invalid standby config " . $cfg->{standby} unless (
       $cfg->{standby} >= BOSCH280_STANDBY_X0 &&
