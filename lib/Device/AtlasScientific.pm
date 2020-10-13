@@ -1,5 +1,3 @@
-#!/usr/bin/env perl
-
 =encoding utf8
 
 =head1 NAME
@@ -12,9 +10,8 @@ Device::AtlasScientific - Driver for Atlas Scientific environmental robotic devi
   use warnings;
   use utf8;
   use v5.10;
-  use open qw/:std :utf8/;
 
-  use Device::AtlasScientific qw ();
+  use Device::AtlasScientific;
 
   # The I2C device file.
   my $device = '/dev/i2c-1';
@@ -49,15 +46,16 @@ Device::AtlasScientific requires Perl version 5.10 or later.
 =head2 Reporting Bugs
 
 Report bugs to the GitHub issue tracker at:
-  https://github.com/sandain/growbot/issues
 
-=head1 AUTHOR - Jason M. Wood
+L<https://github.com/sandain/growbot/issues>
 
-Email sandain@hotmail.com
+=head1 AUTHOR
+
+Jason M. Wood L<sandain@hotmail.com|mailto:sandain@hotmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-  Copyright (c) 2020  Jason M. Wood <sandain@hotmail.com>
+  Copyright (c) 2020 Jason M. Wood
 
   All rights reserved.
 
