@@ -55,6 +55,13 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   # Perform a soft reset on the device.
   $bme280->reset;
 
+  # Wait for the startup to finish.
+  my ($im_update, $measuring) = $bme280->status;
+  while ($im_update) {
+    usleep $bme280->startupTime;
+    ($im_update, $measuring) = $bme280->status;
+  }
+
   # Modify the controls to use forced mode and X2 sampling.
   my $ctrl = $bme280->controls;
   $ctrl->{temperature} = BOSCH280_OVERSAMPLING_X2;
@@ -65,7 +72,7 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
 
   # Wait for the measurement to finish.
   usleep $bme280->measureTime;
-  my ($im_update, $measuring) = $bme280->status;
+  ($im_update, $measuring) = $bme280->status;
   while ($measuring) {
     usleep $bme280->maxMeasureTime - $bme280->measureTime;
     ($im_update, $measuring) = $bme280->status;
@@ -242,7 +249,6 @@ use v5.10;
 use Device::I2C;
 use IO::File;
 use Exporter qw (import);
-use Time::HiRes qw (usleep);
 
 ## Public constants.
 
@@ -713,14 +719,6 @@ sub id {
 sub reset {
   my $self = shift;
   $self->{io}->writeByteData (BOSCH280_REG_RESET, BOSCH280_CMD_RESET);
-  # The startup time is 2 ms for both BME280 and BMP280. However, in case it
-  # takes longer to copy the NVM data, monitor the status before returning
-  # control.
-  my $im_update = 1;
-  while ($im_update) {
-    usleep 2000;
-    ($im_update, $_) = $self->status;
-  }
 }
 
 sub status {
