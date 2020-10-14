@@ -43,7 +43,7 @@ Get a measurement from the device.
 =head1 DEPENDENCIES
 
 Device::lm_sensors requires Perl version 5.10 or later, lm-sensors version
-3.6.0 or later, and libjson-perl.
+3.6.0 or later, and Mojo::JSON (or any other JSON::XS compatible parser).
 
 =head1 FEEDBACK
 
@@ -92,7 +92,7 @@ use strict;
 use warnings;
 use utf8;
 use v5.10;
-use JSON;
+use Mojo::JSON qw(decode_json);
 
 my $DEFAULT_BIN = '/usr/bin/sensors';
 my $MIN_VERSION = '3.6.0';
