@@ -136,7 +136,8 @@ sub new {
 
 sub measure {
   my $self = shift;
-  my $json = decode_json `$self->{bin} $self->{chip} -A -j 2>/dev/null`;
+  my $sensors = `$self->{bin} $self->{chip} -A -j 2>/dev/null`;
+  my $json = decode_json $sensors;
   # Make sure the chip, device, and value are found fields are found.
   unless (defined $json->{$self->{chip}}) {
     die "Error: Chip not found " . $self->{chip};
