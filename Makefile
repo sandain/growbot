@@ -12,7 +12,7 @@ adduser:
 	useradd --system --user-group --create-home -K UMASK=0022 --home $(GROWBOT_HOME) $(GROWBOT_USER)
 
 update:
-	install -m 0755 growbot $(GROWBOT_HOME)
+	install -m 0755 growbot-mojo $(GROWBOT_HOME)
 	install -m 0644 growbot.service $(GROWBOT_SERVICE);
 	cp -R public $(GROWBOT_HOME)
 	cp -R templates $(GROWBOT_HOME)

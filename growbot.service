@@ -8,8 +8,8 @@ After=network.target
 User=growbot
 Group=growbot
 PIDFile=/opt/growbot/hypnotoad.pid
-ExecStart=/usr/bin/hypnotoad /opt/growbot/growbot
-ExecReload=/usr/bin/hypnotoad /opt/growbot/growbot
+ExecStart=/usr/bin/hypnotoad /opt/growbot/growbot-mojo
+ExecReload=/usr/bin/hypnotoad /opt/growbot/growbot-mojo
 KillMode=process
 
 [Install]
