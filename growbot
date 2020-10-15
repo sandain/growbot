@@ -62,8 +62,6 @@ use v5.10;
 use Mojolicious::Lite;
 
 use lib qw(lib);
-use Device::Bosch280;
-use Device::AtlasScientific;
 
 =head2 Helper Functions
 
