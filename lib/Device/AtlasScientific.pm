@@ -135,6 +135,35 @@ use Device::I2C;
 use IO::File;
 use Exporter qw(import);
 
+use constant ATLAS_SCIENTIFIC_EZO_RTD  => 0x01; # Temperature
+use constant ATLAS_SCIENTIFIC_EZO_PH   => 0x02; # pH
+use constant ATLAS_SCIENTIFIC_EZO_EC   => 0x03; # Electrical conductivity
+use constant ATLAS_SCIENTIFIC_EZO_ORP  => 0x04; # Oxidation-reduction potential
+use constant ATLAS_SCIENTIFIC_EZO_DO   => 0x05; # Dissolved oxygen
+use constant ATLAS_SCIENTIFIC_EZO_PMP  => 0x06; # Peristaltic pump
+use constant ATLAS_SCIENTIFIC_EZO_CO2  => 0x07; # Carbon dioxide (gas)
+use constant ATLAS_SCIENTIFIC_EZO_O2   => 0x08; # Oxygen (gas)
+use constant ATLAS_SCIENTIFIC_EZO_HUM  => 0x09; # Humidity
+use constant ATLAS_SCIENTIFIC_EZO_PRS  => 0x0A; # Pressure
+use constant ATLAS_SCIENTIFIC_EZO_FLOW => 0x0B; # Flow
+use constant ATLAS_SCIENTIFIC_EZO_RGB  => 0x0C; # RGB
+
+
+our @EXPORT_OK = qw (
+  ATLAS_SCIENTIFIC_EZO_RTD
+  ATLAS_SCIENTIFIC_EZO_PH
+  ATLAS_SCIENTIFIC_EZO_EC
+  ATLAS_SCIENTIFIC_EZO_ORP
+  ATLAS_SCIENTIFIC_EZO_DO
+  ATLAS_SCIENTIFIC_EZO_PMP
+  ATLAS_SCIENTIFIC_EZO_CO2
+  ATLAS_SCIENTIFIC_EZO_O2
+  ATLAS_SCIENTIFIC_EZO_HUM
+  ATLAS_SCIENTIFIC_EZO_PRS
+  ATLAS_SCIENTIFIC_EZO_FLOW
+  ATLAS_SCIENTIFIC_EZO_RGB
+);
+
 sub new {
   my $class = shift;
   die "Usage: $class->new (i2c, address)" unless (@_ == 2);
