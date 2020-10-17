@@ -152,6 +152,16 @@ use constant EZO_PRS  => 0x0A; # Pressure
 use constant EZO_FLOW => 0x0B; # Flow
 use constant EZO_RGB  => 0x0C; # RGB
 
+## Private constants.
+
+# Response delay (μs).
+use constant EZO_RESPONSE_DELAY => 300000;
+
+# Response codes.
+use constant EZO_RESPONSE_SUCCESS => 0x01;
+use constant EZO_RESPONSE_ERROR   => 0x02;
+use constant EZO_RESPONSE_BUSY    => 0xfe;
+use constant EZO_RESPONSE_NO_DATA => 0xff;
 
 our @EXPORT_OK = qw (
   EZO_RTD
