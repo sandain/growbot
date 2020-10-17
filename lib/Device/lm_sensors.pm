@@ -117,7 +117,7 @@ sub new {
   my ($chip, $device, $value) = @_;
   # Make sure we can find the lm-sensors program.
   my $bin = `which sensors || echo $DEFAULT_BIN`;
-  $bin =~ s/[\r\n]//g;
+  $bin =~ s/[\r\n]+//g;
   die "Error: Unable to find lm-sensors" unless (-e $bin);
   # Bless ourselves with our class.
   my $self = bless {
