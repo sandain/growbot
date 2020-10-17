@@ -132,8 +132,9 @@ use utf8;
 use v5.10;
 
 use Device::I2C;
-use IO::File;
 use Exporter qw(import);
+use IO::File;
+use Time::HiRes qw (usleep);
 
 ## Public constants.
 
