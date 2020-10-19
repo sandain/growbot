@@ -91,25 +91,12 @@ package Device::lm_sensors;
 use strict;
 use warnings;
 use utf8;
+use version;
 use v5.10;
 use Mojo::JSON qw(decode_json);
 
 my $DEFAULT_BIN = '/usr/bin/sensors';
 my $MIN_VERSION = '3.6.0';
-
-my $_version_compare = sub {
-  my $self = shift;
-  my ($a, $b) = @_;
-  my ($a_major, $a_minor, $a_patch) = split /\./, $a;
-  my ($b_major, $b_minor, $b_patch) = split /\./, $b;
-  return -1 if ($a_major < $b_major);
-  return 1 if ($a_major > $b_major);
-  return -1 if ($a_minor < $b_minor);
-  return 1 if ($a_minor > $b_minor);
-  return -1 if ($a_patch < $b_patch);
-  return 1 if ($a_patch > $b_patch);
-  return 0;
-};
 
 sub new {
   my $class = shift;
@@ -130,7 +117,7 @@ sub new {
   my $version_string = `$self->{bin} -v 2>/dev/null`;
   ($_, $_, my $version, $_) = split / /, $version_string, 4;
   die "Error: lm-sensors version $version is too old, $MIN_VERSION is required."
-    unless ($self->$_version_compare ($version, $MIN_VERSION) >= 0);
+    unless (version->parse ($version) >= version->parse ($MIN_VERSION));
   return $self;
 }
 
