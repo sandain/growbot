@@ -2,7 +2,8 @@
 
 =head1 NAME
 
-Device::AtlasScientific - Driver for Atlas Scientific environmental robotic devices.
+Device::AtlasScientific - Driver for Atlas Scientific series of environmental
+robotic devices.
 
 =head1 SYNOPSIS
 
@@ -16,11 +17,14 @@ Device::AtlasScientific - Driver for Atlas Scientific environmental robotic devi
   # The I2C device file.
   my $device = '/dev/i2c-1';
 
-  # The address of the Atlas Scientific sensor.
+  # The address of the Atlas Scientific pH sensor device.
   my $address = 0x63;
 
-  # Load this driver.
+  # Load this driver for the pH sensor.
   my $pH = Device::AtlasScientific->new ($device, $address);
+
+  # Print out a pH measurement.
+  printf "ph: %0.2f\n", $ph->measure;
 
 =head1 DESCRIPTION
 
