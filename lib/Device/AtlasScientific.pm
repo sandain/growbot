@@ -154,9 +154,6 @@ use constant EZO_RGB  => 0x0C; # RGB
 
 ## Private constants.
 
-# Response delay (μs).
-use constant EZO_RESPONSE_DELAY => 300000;
-
 # Response codes.
 use constant EZO_RESPONSE_SUCCESS => 0x01;
 use constant EZO_RESPONSE_ERROR   => 0x02;
