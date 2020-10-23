@@ -81,6 +81,11 @@ L<https://atlas-scientific.com/files/EZO_RGB_Datasheet.pdf>
 
 Returns a new Device::AtlasScientific object.
 
+=item C<find>
+
+Rapidly blink the LED on the device until a new command is sent. Used to help
+find the device.
+
 =item C<information>
 
 Returns the device model and firmware version.
@@ -154,6 +159,7 @@ package Device::AtlasScientific;
 use strict;
 use warnings;
 use utf8;
+use version;
 use v5.10;
 
 use Device::I2C;
@@ -274,6 +280,15 @@ my $_getInformation = sub {
   return ($model, $firmware);
 };
 
+my $_require_firmware = sub {
+  my $self = shift;
+  my ($model, $version) = @_;
+  die "Feature not available on firmware < $version for $model" if (
+    $self->{model} eq $model &&
+    version->parse ($self->{firmware}) < version->parse ($version)
+  );
+};
+
 ## Public methods.
 
 sub new {
@@ -300,6 +315,18 @@ sub new {
   # Retrieve the device model and firmware version.
   ($self->{model}, $self->{firmware}) = $self->$_getInformation;
   return $self;
+}
+
+sub find {
+  my $self = shift;
+  # Make sure the firmware supports this feature on this device.
+  $self->$_require_firmware (EZO_RTD, "2.10");
+  $self->$_require_firmware (EZO_PH, "2.10");
+  $self->$_require_firmware (EZO_EC, "2.10");
+  $self->$_require_firmware (EZO_ORP, "2.10");
+  $self->$_require_firmware (EZO_DO, "2.10");
+  # Send the find command.
+  $self->$_sendCommand ("Find");
 }
 
 sub information {
