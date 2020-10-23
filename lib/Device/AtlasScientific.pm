@@ -95,6 +95,11 @@ Returns the device model and firmware version.
 Returns the name of the device. Sets the name of the device if provided. Names
 can only contain printable characters and no spaces.
 
+=item C<plock>
+
+Returns the status of the protocol lock. Sets the protocol lock if provided.
+A value of 1 enables the protocol lock. A value of 0 disables the protocl lock.
+
 =item C<reading>
 
 Returns a single reading from the device.
@@ -354,6 +359,31 @@ sub name {
     die "Invalid response from device" unless (uc $n eq "?NAME");
   }
   return $name;
+}
+
+sub plock {
+  my $self = shift;
+  my ($plock) = @_;
+  # Make sure the firmware supports this feature on this device.
+  $self->$_require_firmware (EZO_RTD, "1.02");
+  $self->$_require_firmware (EZO_PH, "1.95");
+  $self->$_require_firmware (EZO_EC, "1.95");
+  $self->$_require_firmware (EZO_ORP, "1.95");
+  $self->$_require_firmware (EZO_DO, "1.95");
+  if (defined $plock) {
+    die "Invalid plock option $plock" unless ($plock == 0 || $plock == 1);
+    $self->$_sendCommand ("Plock," . $plock);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  else {
+    $self->$_sendCommand ("Plock,?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    (my $p, $plock) = split /,/, $self->$_getResponse;
+    die "Invalid response from device" unless (uc $p eq "?PLOCK");
+  }
+  return $plock;
 }
 
 sub reading {
