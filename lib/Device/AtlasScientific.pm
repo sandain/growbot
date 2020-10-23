@@ -94,6 +94,10 @@ can only contain printable characters and no spaces.
 
 Returns a single reading from the device.
 
+=item C<sleep>
+
+Put the device to sleep.
+
 =item C<status>
 
 Returns the reason for the last restart and the voltage at the Vcc pin.
@@ -345,6 +349,11 @@ sub reading {
   # Give the device a moment to respond.
   usleep $delay;
   return $self->$_getResponse;
+}
+
+sub sleep {
+  my $self = shift;
+  $self->$_sendCommand ("Sleep");
 }
 
 sub status {
