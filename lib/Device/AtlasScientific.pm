@@ -85,6 +85,11 @@ Returns a new Device::AtlasScientific object.
 
 Returns the device model and firmware version.
 
+=item C<name>
+
+Returns the name of the device. Sets the name of the device if provided. Names
+can only contain printable characters and no spaces.
+
 =item C<status>
 
 Returns the reason for the last restart and the voltage at the Vcc pin.
@@ -292,6 +297,28 @@ sub new {
 sub information {
   my $self = shift;
   return ($self->{model}, $self->{firmware});
+}
+
+sub name {
+  my $self = shift;
+  my ($name) = @_;
+  if (defined $name) {
+    die "Name cannot be longer than 16 characters" if (length $name > 16);
+    die "Name can only include printable characters, excluding spaces" unless (
+      $name =~ /^[[:graph:]]*$/
+    );
+    $self->$_sendCommand ("Name," . $name);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  else {
+    $self->$_sendCommand ("Name,?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    (my $n, $name) = split /,/, $self->$_getResponse;
+    die "Invalid response from device" unless (uc $n eq "?NAME");
+  }
+  return $name;
 }
 
 sub status {
