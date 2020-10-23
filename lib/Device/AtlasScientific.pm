@@ -98,7 +98,7 @@ can only contain printable characters and no spaces.
 =item C<plock>
 
 Returns the status of the protocol lock. Sets the protocol lock if provided.
-A value of 1 enables the protocol lock. A value of 0 disables the protocl lock.
+A value of 1 enables the protocol lock. A value of 0 disables the protocol lock.
 
 =item C<reading>
 
