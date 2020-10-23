@@ -85,6 +85,10 @@ Returns a new Device::AtlasScientific object.
 
 Returns the device model and firmware version.
 
+=item C<status>
+
+Returns the reason for the last restart and the voltage at the Vcc pin.
+
 =back
 
 =head1 DEPENDENCIES
@@ -160,6 +164,13 @@ use constant EZO_PRS  => 'PRS';  # Pressure
 use constant EZO_FLOW => 'FLOW'; # Flow
 use constant EZO_RGB  => 'RGB';  # RGB
 
+# Restart reason from status command.
+use constant EZO_RESTART_REASON_POWEROFF => 'P';
+use constant EZO_RESTART_REASON_RESET    => 'S';
+use constant EZO_RESTART_REASON_BROWNOUT => 'B';
+use constant EZO_RESTART_REASON_WATCHDOG => 'W';
+use constant EZO_RESTART_REASON_UNKOWN   => 'U';
+
 ## Private constants.
 
 # Maximum response length.
@@ -184,6 +195,11 @@ our @EXPORT_OK = qw (
   EZO_PRS
   EZO_FLOW
   EZO_RGB
+  EZO_RESTART_REASON_POWEROFF
+  EZO_RESTART_REASON_RESET
+  EZO_RESTART_REASON_BROWNOUT
+  EZO_RESTART_REASON_WATCHDOG
+  EZO_RESTART_REASON_UNKOWN
 );
 
 ## Private methods.
@@ -276,6 +292,23 @@ sub new {
 sub information {
   my $self = shift;
   return ($self->{model}, $self->{firmware});
+}
+
+sub status {
+  my $self = shift;
+  $self->$_sendCommand ("Status");
+  # Give the device a moment to respond.
+  usleep 300000;
+  my ($s, $p, $voltage) = split /,/, $self->$_getResponse;
+  die "Invalid response from device" unless (uc $s eq "?STATUS");
+  my $reason;
+  $reason = EZO_RESTART_REASON_POWEROFF if ($p eq EZO_RESTART_REASON_POWEROFF);
+  $reason = EZO_RESTART_REASON_RESET if ($p eq EZO_RESTART_REASON_RESET);
+  $reason = EZO_RESTART_REASON_BROWNOUT if ($p eq EZO_RESTART_REASON_BROWNOUT);
+  $reason = EZO_RESTART_REASON_WATCHDOG if ($p eq EZO_RESTART_REASON_WATCHDOG);
+  $reason = EZO_RESTART_REASON_UNKOWN if ($p eq EZO_RESTART_REASON_UNKOWN);
+  die "Error detecting reason $p" unless (defined $reason);
+  return ($reason, $voltage);
 }
 
 1;
