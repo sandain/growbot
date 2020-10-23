@@ -81,6 +81,10 @@ L<https://atlas-scientific.com/files/EZO_RGB_Datasheet.pdf>
 
 Returns a new Device::AtlasScientific object.
 
+=item C<information>
+
+Returns the device model and firmware version.
+
 =back
 
 =head1 DEPENDENCIES
