@@ -90,6 +90,10 @@ Returns the device model and firmware version.
 Returns the name of the device. Sets the name of the device if provided. Names
 can only contain printable characters and no spaces.
 
+=item C<reading>
+
+Returns a single reading from the device.
+
 =item C<status>
 
 Returns the reason for the last restart and the voltage at the Vcc pin.
@@ -319,6 +323,28 @@ sub name {
     die "Invalid response from device" unless (uc $n eq "?NAME");
   }
   return $name;
+}
+
+sub reading {
+  my $self = shift;
+  $self->$_sendCommand ("R");
+  # Each model has a different delay.
+  my $delay;
+  $delay = 600000 if ($self->{model} eq EZO_RTD);
+  $delay = 900000 if ($self->{model} eq EZO_PH);
+  $delay = 600000 if ($self->{model} eq EZO_EC);
+  $delay = 900000 if ($self->{model} eq EZO_ORP);
+  $delay = 600000 if ($self->{model} eq EZO_DO);
+  $delay = 300000 if ($self->{model} eq EZO_PMP);
+  $delay = 900000 if ($self->{model} eq EZO_CO2);
+  $delay = 900000 if ($self->{model} eq EZO_O2);
+  $delay = 300000 if ($self->{model} eq EZO_HUM);
+  $delay = 900000 if ($self->{model} eq EZO_PRS);
+  $delay = 300000 if ($self->{model} eq EZO_FLOW);
+  $delay = 300000 if ($self->{model} eq EZO_RGB);
+  # Give the device a moment to respond.
+  usleep $delay;
+  return $self->$_getResponse;
 }
 
 sub status {
