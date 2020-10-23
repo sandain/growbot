@@ -158,6 +158,9 @@ use constant EZO_RGB  => 'RGB';  # RGB
 
 ## Private constants.
 
+# Maximum response length.
+use constant EZO_RESPONSE_LENGTH => 40;
+
 # Response codes.
 use constant EZO_RESPONSE_SUCCESS => 0x01;
 use constant EZO_RESPONSE_ERROR   => 0x02;
@@ -179,6 +182,67 @@ our @EXPORT_OK = qw (
   EZO_RGB
 );
 
+## Private methods.
+
+my $_sendCommand = sub {
+  my $self = shift;
+  my ($command) = @_;
+  # Send the command to the device.
+  my @bytes = unpack 'C*', $command;
+  my $comm = shift @bytes;
+  $self->{io}->writeBlockData ($comm, \@bytes);
+};
+
+my $_getResponse = sub {
+  my $self = shift;
+  my $comm = 0x00; # Undocumented, but this works.
+  my @response = $self->{io}->readBlockData ($comm, EZO_RESPONSE_LENGTH);
+  # Get the device response code, wait for it to not be busy.
+  my $code = shift @response;
+  while ($code == EZO_RESPONSE_BUSY) {
+    usleep 1000;
+    @response = $self->{io}->readBlockData ($comm, EZO_RESPONSE_LENGTH);
+    $code = shift @response;
+  }
+  # Check for syntax error in the command.
+  die "Syntax error" if ($code == EZO_RESPONSE_ERROR);
+  # Check for valid response.
+  if ($code == EZO_RESPONSE_SUCCESS) {
+    my $response;
+    foreach my $byte (@response) {
+      last if ($byte == 0x00);
+      $response .= pack 'C*', $byte;
+    }
+    return $response;
+  }
+};
+
+my $_getInformation = sub {
+  my $self = shift;
+  $self->$_sendCommand ("I");
+  # Give the device a moment to respond.
+  usleep 300000;
+  my ($i, $m, $firmware) = split /,/, $self->$_getResponse;
+  die "Invalid response from device" unless (uc $i eq "?I");
+  my $model;
+  $model = EZO_RTD if (uc $m eq EZO_RTD);
+  $model = EZO_PH if (uc $m eq EZO_PH);
+  $model = EZO_EC if (uc $m eq EZO_EC);
+  $model = EZO_ORP if (uc $m eq EZO_ORP);
+  $model = EZO_DO if (uc $m eq EZO_DO);
+  $model = EZO_PMP if (uc $m eq EZO_PMP);
+  $model = EZO_CO2 if (uc $m eq EZO_CO2);
+  $model = EZO_O2 if (uc $m eq EZO_O2);
+  $model = EZO_HUM if (uc $m eq EZO_HUM);
+  $model = EZO_PRS if (uc $m eq EZO_PRS);
+  $model = EZO_FLOW if (uc $m eq EZO_FLOW);
+  $model = EZO_RGB if (uc $m eq EZO_RGB);
+  die "Unsupported device $m" unless (defined $model);
+  return ($model, $firmware);
+};
+
+## Public methods.
+
 sub new {
   my $class = shift;
   die "Usage: $class->new (i2c, address)" unless (@_ == 2);
@@ -196,9 +260,18 @@ sub new {
   my $self = bless {
     i2c         => $i2c,
     address     => $address,
-    io          => $io
+    io          => $io,
+    model       => undef,
+    firmware    => undef
   }, $class;
+  # Retrieve the device model and firmware version.
+  ($self->{model}, $self->{firmware}) = $self->$_getInformation;
   return $self;
+}
+
+sub information {
+  my $self = shift;
+  return ($self->{model}, $self->{firmware});
 }
 
 1;
