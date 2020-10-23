@@ -193,7 +193,7 @@ use constant EZO_RESTART_REASON_POWEROFF => 'P';
 use constant EZO_RESTART_REASON_RESET    => 'S';
 use constant EZO_RESTART_REASON_BROWNOUT => 'B';
 use constant EZO_RESTART_REASON_WATCHDOG => 'W';
-use constant EZO_RESTART_REASON_UNKOWN   => 'U';
+use constant EZO_RESTART_REASON_UNKNOWN  => 'U';
 
 ## Private constants.
 
@@ -223,7 +223,7 @@ our @EXPORT_OK = qw (
   EZO_RESTART_REASON_RESET
   EZO_RESTART_REASON_BROWNOUT
   EZO_RESTART_REASON_WATCHDOG
-  EZO_RESTART_REASON_UNKOWN
+  EZO_RESTART_REASON_UNKNOWN
 );
 
 ## Private methods.
@@ -425,7 +425,7 @@ sub status {
   $reason = EZO_RESTART_REASON_RESET if ($p eq EZO_RESTART_REASON_RESET);
   $reason = EZO_RESTART_REASON_BROWNOUT if ($p eq EZO_RESTART_REASON_BROWNOUT);
   $reason = EZO_RESTART_REASON_WATCHDOG if ($p eq EZO_RESTART_REASON_WATCHDOG);
-  $reason = EZO_RESTART_REASON_UNKOWN if ($p eq EZO_RESTART_REASON_UNKOWN);
+  $reason = EZO_RESTART_REASON_UNKNOWN if ($p eq EZO_RESTART_REASON_UNKNOWN);
   die "Error detecting reason $p" unless (defined $reason);
   return ($reason, $voltage);
 }
