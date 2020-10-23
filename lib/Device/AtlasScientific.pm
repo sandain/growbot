@@ -24,7 +24,7 @@ robotic devices.
   my $pH = Device::AtlasScientific->new ($device, $address);
 
   # Print out a pH measurement.
-  printf "ph: %0.2f\n", $ph->measure;
+  printf "ph: %0.2f\n", $ph->reading;
 
 =head1 DESCRIPTION
 
