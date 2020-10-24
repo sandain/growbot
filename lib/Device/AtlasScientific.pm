@@ -81,6 +81,11 @@ L<https://atlas-scientific.com/files/EZO_RGB_Datasheet.pdf>
 
 Returns a new Device::AtlasScientific object.
 
+=item C<baud>
+
+Changes the device to use serial mode at the given baud rate. Warning: This
+driver does not currently support serial mode.
+
 =item C<find>
 
 Rapidly blink the LED on the device until a new command is sent. Used to help
@@ -320,6 +325,24 @@ sub new {
   # Retrieve the device model and firmware version.
   ($self->{model}, $self->{firmware}) = $self->$_getInformation;
   return $self;
+}
+
+sub baud {
+  my $self = shift;
+  my ($rate) = @_;
+  my $command = "Baud";
+  # Prior to RTD v.2.01 command is called Serial.
+  $command = "Serial" if (
+    $self->{model} eq EZO_RTD &&
+    version->parse ($self->{firmware}) < version->parse ("2.01")
+  );
+  die "Invalid baud rate" unless (
+    $rate == 300 || $rate == 1200 || $rate == 2400 || $rate == 9600 ||
+    $rate == 19200 || $rate == 38400 || $rate == 57600 || $rate == 115200
+  );
+  # Send the command to the device.
+  $self->$_sendCommand ($command . "," . $rate);
+  # Device will reboot.
 }
 
 sub find {
