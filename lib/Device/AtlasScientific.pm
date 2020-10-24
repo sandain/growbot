@@ -91,6 +91,11 @@ driver does not currently support serial mode.
 Rapidly blink the LED on the device until a new command is sent. Used to help
 find the device.
 
+=item C<i2c>
+
+Changes the I2C address of the device. Warning: This device will become
+unreachable until a new driver is instantiated.
+
 =item C<information>
 
 Returns the device model and firmware version.
@@ -355,6 +360,15 @@ sub find {
   $self->$_require_firmware (EZO_DO, "2.10");
   # Send the find command.
   $self->$_sendCommand ("Find");
+}
+
+sub i2c {
+  my $self = shift;
+  my ($address) = @_;
+  die "Invalid I2C address $address" unless ($address >= 1 && $address <= 127);
+  $self->{address} = $address;
+  $self->$_sendCommand ("I2C," . $address);
+  # Device will reboot.
 }
 
 sub information {
