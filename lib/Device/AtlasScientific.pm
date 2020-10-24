@@ -207,7 +207,8 @@ use constant EZO_RESTART_REASON_UNKNOWN  => 'U';
 
 ## Private constants.
 
-# Maximum response length.
+# Response location and maximum response length.
+use constant EZO_RESPONSE_LOCATION => 0x00;
 use constant EZO_RESPONSE_LENGTH => 52;
 
 # Response codes.
@@ -249,13 +250,16 @@ my $_sendCommand = sub {
 
 my $_getResponse = sub {
   my $self = shift;
-  my $comm = 0x00; # Undocumented, but this works.
-  my @response = $self->{io}->readBlockData ($comm, EZO_RESPONSE_LENGTH);
+  my @response = $self->{io}->readBlockData (
+    EZO_RESPONSE_LOCATION, EZO_RESPONSE_LENGTH
+  );
   # Get the device response code, wait for it to not be busy.
   my $code = shift @response;
   while ($code == EZO_RESPONSE_BUSY) {
     usleep 1000;
-    @response = $self->{io}->readBlockData ($comm, EZO_RESPONSE_LENGTH);
+    @response = $self->{io}->readBlockData (
+      EZO_RESPONSE_LOCATION, EZO_RESPONSE_LENGTH
+    );
     $code = shift @response;
   }
   # Check for syntax error in the command.
