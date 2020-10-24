@@ -175,18 +175,18 @@ use Time::HiRes qw (usleep);
 ## Public constants.
 
 # Supported devices.
-use constant EZO_RTD  => 'RTD';  # Temperature
-use constant EZO_PH   => 'PH';   # pH
-use constant EZO_EC   => 'EC';   # Electrical conductivity
-use constant EZO_ORP  => 'ORP';  # Oxidation-reduction potential
-use constant EZO_DO   => 'DO';   # Dissolved oxygen
-use constant EZO_PMP  => 'PMP';  # Peristaltic pump
-use constant EZO_CO2  => 'CO2';  # Carbon dioxide (gas)
-use constant EZO_O2   => 'O2';   # Oxygen (gas)
-use constant EZO_HUM  => 'HUM';  # Humidity
-use constant EZO_PRS  => 'PRS';  # Pressure
-use constant EZO_FLOW => 'FLOW'; # Flow
-use constant EZO_RGB  => 'RGB';  # RGB
+use constant EZO_RTD  => 'RTD'; # Temperature
+use constant EZO_PH   => 'PH';  # pH
+use constant EZO_EC   => 'EC';  # Electrical conductivity
+use constant EZO_ORP  => 'ORP'; # Oxidation-reduction potential
+use constant EZO_DO   => 'DO';  # Dissolved oxygen
+use constant EZO_PMP  => 'PMP'; # Peristaltic pump
+use constant EZO_CO2  => 'CO2'; # Carbon dioxide (gas)
+use constant EZO_O2   => 'O2';  # Oxygen (gas)
+use constant EZO_HUM  => 'HUM'; # Humidity
+use constant EZO_PRS  => 'PRS'; # Pressure
+use constant EZO_FLOW => 'FLO'; # Flow
+use constant EZO_RGB  => 'RGB'; # RGB
 
 # Restart reason from status command.
 use constant EZO_RESTART_REASON_POWEROFF => 'P';
