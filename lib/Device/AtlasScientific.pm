@@ -104,6 +104,11 @@ unreachable until a new driver is instantiated.
 
 Returns the device model and firmware version.
 
+=item C <ledIndicator>
+
+Returns whether the indicator LED is currently on or off. Turns the indicator
+LED on or off if provided.
+
 =item C<name>
 
 Returns the name of the device. Sets the name of the device if provided. Names
@@ -407,6 +412,27 @@ sub i2c {
 sub information {
   my $self = shift;
   return ($self->{model}, $self->{firmware});
+}
+
+sub ledIndicator {
+  my $self = shift;
+  my ($led) = @_;
+  my $command = "L";
+  $command = "iL" if ($self->{model} eq EZO_RGB);
+  if (defined $led) {
+    die "Invalid LED option $led" unless ($led == 0 || $led == 1);
+    $self->$_sendCommand ($command . "," . $led);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  else {
+    $self->$_sendCommand ($command . ",?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    (my $l, $led) = split /,/, $self->$_getResponse;
+    die "Invalid response from device" unless (uc $l eq "?L" or uc $l eq "?IL");
+  }
+  return $led;
 }
 
 sub name {
