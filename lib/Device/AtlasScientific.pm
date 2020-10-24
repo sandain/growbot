@@ -208,7 +208,7 @@ use constant EZO_RESTART_REASON_UNKNOWN  => 'U';
 ## Private constants.
 
 # Maximum response length.
-use constant EZO_RESPONSE_LENGTH => 40;
+use constant EZO_RESPONSE_LENGTH => 52;
 
 # Response codes.
 use constant EZO_RESPONSE_SUCCESS => 0x01;
