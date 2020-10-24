@@ -86,6 +86,10 @@ Returns a new Device::AtlasScientific object.
 Changes the device to use serial mode at the given baud rate. Warning: This
 driver does not currently support serial mode.
 
+=item C<factoryReset>
+
+Clear custom configuration and reboot the device.
+
 =item C<find>
 
 Rapidly blink the LED on the device until a new command is sent. Used to help
@@ -351,6 +355,31 @@ sub baud {
   );
   # Send the command to the device.
   $self->$_sendCommand ($command . "," . $rate);
+  # Device will reboot.
+}
+
+sub factoryReset {
+  my $self = shift;
+  my $command = "Factory";
+  # Some firmware versions call this command X.
+  $command = "X" if (
+    $self->{model} eq EZO_PH &&
+    version->parse ($self->{firmware}) < version->parse ("1.07")
+  );
+  $command = "X" if (
+    $self->{model} eq EZO_EC &&
+    version->parse ($self->{firmware}) < version->parse ("1.08")
+  );
+  $command = "X" if (
+    $self->{model} eq EZO_ORP &&
+    version->parse ($self->{firmware}) < version->parse ("1.07")
+  );
+  $command = "X" if (
+    $self->{model} eq EZO_DO &&
+    version->parse ($self->{firmware}) < version->parse ("1.07")
+  );
+  # Send the factory reset command.
+  $self->$_sendCommand ($command);
   # Device will reboot.
 }
 
