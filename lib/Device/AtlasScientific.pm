@@ -86,6 +86,79 @@ Returns a new Device::AtlasScientific object.
 Changes the device to use serial mode at the given baud rate. Warning: This
 driver does not currently support serial mode.
 
+=item C<calibration>
+
+Perform a calibration on the device. Returns whether or not the device is
+calibrated. If arguments are provided, they are passed on to the device.
+
+Generic arguments:
+
+=over 12
+
+=item C<clear>
+
+Clear the calibration of the device.
+
+=item C<numeric value>
+
+Calibrate the device at the provided value.
+
+=back
+
+EZO pH options:
+
+=over 12
+
+=item C<mid>
+
+Single point calibration at mid point.
+
+=item C<low>
+
+Two point calibration at low point.
+
+=item C<high>
+
+Three point calibration at high point.
+
+=back
+
+EZO EC options:
+
+=over 12
+
+=item C<low>
+
+Low end calibration, numeric value required.
+
+=item C<high>
+
+High end calibration, numeric value required.
+
+=item C<dry>
+
+Dry calibration.
+
+=back
+
+EZO DO options:
+
+=over 12
+
+=item C<atm>
+
+Calibrate to atmospheric oxygen levels.
+
+=back
+
+=item C<calibrationExport>
+
+Export the calibration string from the device.
+
+=item C<calibrationImport>
+
+Import a calibration string into the device.
+
 =item C<factoryReset>
 
 Clear custom configuration and reboot the device.
@@ -308,6 +381,11 @@ my $_getInformation = sub {
   return ($model, $firmware);
 };
 
+my $_is_number = sub {
+  my $self = shift;
+  return shift =~ /^[-]?\d*\.?\d*$/;
+};
+
 my $_require_firmware = sub {
   my $self = shift;
   my ($model, $version) = @_;
@@ -360,6 +438,227 @@ sub baud {
   );
   # Send the command to the device.
   $self->$_sendCommand ($command . "," . $rate);
+  # Give the device a moment to reboot.
+  usleep 1000000;
+}
+
+sub calibration {
+  my $self = shift;
+  my ($arg, $value) = @_;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} if (
+    $self->{model} eq EZO_HUM or
+    $self->{model} eq EZO_PRS or
+    $self->{model} eq EZO_FLOW
+  );
+  # Handle EZO_RGB device calibration. There are no arguments to handle.
+  if ($self->{model} eq EZO_RGB) {
+    # Send the calibration command.
+    $self->$_sendCommand ("Cal");
+    # Give the device a moment to respond.
+    usleep 300000;
+    # Return indicating that the device is calibrated.
+    return 1;
+  }
+  # If no argument was provided, check if the device is calibrated.
+  if (not defined $arg) {
+    # Check if the device is calibrated.
+    $self->$_sendCommand ("Cal,?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    my ($c, $num) = split /,/, $self->$_getResponse;
+    die "Invalid response from device" unless (uc $c eq "?CAL");
+    # Return with the current state of calibration.
+    return $num;
+  }
+  # Handle the clear calibration option.
+  if (uc $arg eq "CLEAR") {
+    # Send the clear command.
+    $self->$_sendCommand ("Cal,clear");
+    # Give the device a moment to respond.
+    usleep 300000;
+    # Return indicating that the device is not calibrated.
+    return 0;
+  }
+  # Handle EZO_RTD device calibration.
+  if ($self->{model} eq EZO_RTD) {
+    # Make sure arg is a valid number.
+    die "Invalid calibration point: $arg"
+      unless (defined $arg and $self->$_is_number ($arg));
+    # Send the calibration command with the provided temperature.
+    $self->$_sendCommand ("Cal," . $arg);
+    # Give the device a moment to respond.
+    usleep 600000;
+    # Return indicating that the device is calibrated.
+    return 1;
+  }
+  # Handle EZO_PH device calibration.
+  if ($self->{model} eq EZO_PH) {
+    die "Invalid calibration point" unless (
+      defined $arg and
+      uc $arg eq 'LOW' or uc $arg eq 'MID' or $arg eq 'HIGH'
+    );
+    # Make sure value is a valid number.
+    die "Invalid calibration pH: $arg" unless ($self->$_is_number ($value));
+    # Send the calibration command with the provided pH.
+    $self->$_sendCommand ("Cal," . $arg . "," . $value);
+    # Give the device a moment to respond.
+    usleep 900000;
+    # Return indicating that the device is calibrated.
+    return 1;
+  }
+  # Handle EZO_EC device calibration.
+  if ($self->{model} eq EZO_EC) {
+    die "Invalid calibration point: $arg" unless (
+      defined $arg and
+      uc $arg eq 'LOW' or uc $arg eq 'HIGH' or $arg eq 'DRY' or
+      $self->$_is_number ($arg)
+    );
+    die "Invalid calibration point: $value" if (
+      (uc $arg eq 'LOW' or uc $arg eq 'HIGH') and
+      defined $value and $self->$_is_number ($value)
+    );
+    # Send the desired calibration command.
+    $self->$_sendCommand ("Cal,dry") if (uc $arg eq 'DRY');
+    $self->$_sendCommand ("Cal,low," . $value) if (uc $arg eq 'LOW');
+    $self->$_sendCommand ("Cal,high," . $value) if (uc $arg eq 'HIGH');
+    $self->$_sendCommand ("Cal," . $arg) if ($self->$_is_number ($arg));
+    # Give the device a moment to respond.
+    usleep 600000;
+    # Return indicating that the device is calibrated.
+    return 1;
+  }
+  # Handle EZO_ORP device calibration.
+  if ($self->{model} eq EZO_ORP) {
+    # Make sure arg is a valid number.
+    die "Invalid calibration point: $arg"
+      unless (defined $arg and $self->$_is_number ($arg));
+    # Send the calibration command with the provided ORP value.
+    $self->$_sendCommand ("Cal," . $arg);
+    # Give the device a moment to respond.
+    usleep 900000;
+    # Return indicating that the device is calibrated.
+    return 1;
+  }
+  # Handle EZO_DO device calibration.
+  if ($self->{model} eq EZO_DO) {
+    die "Invalid calibration point: $arg" unless (
+      defined $arg and uc $arg eq 'ATM' or $self->$_is_number ($arg)
+    );
+    # Send the desired calibration command.
+    $self->$_sendCommand ("Cal") if (uc $arg eq 'ATM');
+    $self->$_sendCommand ("Cal," . $arg) if ($self->$_is_number ($arg));
+    # Give the device a moment to respond.
+    usleep 1300000;
+    # Return indicating that the device is calibrated.
+    return 1;
+  }
+  # Handle EZO_PMP device calibration.
+  if ($self->{model} eq EZO_PMP) {
+    die "Invalid calibration point: $arg" unless (
+      defined $arg and $self->$_is_number ($arg)
+    );
+    # Send the desired calibration command.
+    $self->$_sendCommand ("Cal," . $arg) if ($self->$_is_number ($arg));
+    # Give the device a moment to respond.
+    usleep 300000;
+    # Return indicating that the device is calibrated.
+    return 1;
+  }
+  # Handle EZO_CO2 device calibration.
+  if ($self->{model} eq EZO_CO2) {
+    die "Invalid calibration point: $arg" unless (
+      defined $arg and $self->$_is_number ($arg)
+    );
+    # Send the desired calibration command.
+    $self->$_sendCommand ("Cal," . $arg) if ($self->$_is_number ($arg));
+    # Give the device a moment to respond.
+    usleep 900000;
+    # Return indicating that the device is calibrated.
+    return 1;
+  }
+  # Handle EZO_O2 device calibration.
+  if ($self->{model} eq EZO_O2) {
+    die "Invalid calibration point: $arg" unless (
+      defined $arg and $self->$_is_number ($arg)
+    );
+    # Send the desired calibration command.
+    $self->$_sendCommand ("Cal," . $arg) if ($self->$_is_number ($arg));
+    # Give the device a moment to respond.
+    usleep 1300000;
+    # Return indicating that the device is calibrated.
+    return 1;
+  }
+}
+
+sub calibrationExport {
+  my $self = shift;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} if (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_O2 or
+    $self->{model} eq EZO_HUM or
+    $self->{model} eq EZO_PRS or
+    $self->{model} eq EZO_FLOW or
+    $self->{model} eq EZO_RGB
+  );
+  # Make sure the firmware supports this feature on this device.
+  $self->$_require_firmware (EZO_RTD, "2.10");
+  $self->$_require_firmware (EZO_PH, "2.10");
+  $self->$_require_firmware (EZO_EC, "2.10");
+  $self->$_require_firmware (EZO_ORP, "2.10");
+  $self->$_require_firmware (EZO_DO, "2.10");
+  # First ask for the calibration string info.
+  $self->$_sendCommand ("Export,?");
+  # Give the device a moment to respond.
+  usleep 300000;
+  my ($e, $num, $bytes) = split /,/, $self->$_getResponse;
+  # The number of calibration strings is off by one when the number of bytes is
+  # divisible by 12.
+  $num -- if ($bytes % 12 == 0);
+  die "Invalid response from device" unless (uc $e eq "?EXPORT");
+  # Ask for each calibration string.
+  my @calibration;
+  for (my $i = 0; $i < $num; $i ++) {
+    $self->$_sendCommand ("Export");
+    # Give the device a moment to respond.
+    usleep 300000;
+    my $response = $self->$_getResponse;
+    push @calibration, $response;
+  }
+  $self->$_sendCommand ("Export");
+  # Give the device a moment to respond.
+  usleep 300000;
+  die "Error exporting calibration" unless (uc $self->$_getResponse eq "*DONE");
+  my $b = eval join '+', map { length $_ } @calibration;
+  die "Invalid calibration" unless ($bytes == $b);
+  return @calibration;
+}
+
+sub calibrationImport {
+  my $self = shift;
+  my @calibration = @_;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} if (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_O2 or
+    $self->{model} eq EZO_HUM or
+    $self->{model} eq EZO_PRS or
+    $self->{model} eq EZO_FLOW or
+    $self->{model} eq EZO_RGB
+  );
+  # Make sure the firmware supports this feature on this device.
+  $self->$_require_firmware (EZO_RTD, "2.10");
+  $self->$_require_firmware (EZO_PH, "2.10");
+  $self->$_require_firmware (EZO_EC, "2.10");
+  $self->$_require_firmware (EZO_ORP, "2.10");
+  $self->$_require_firmware (EZO_DO, "2.10");
+  # Import the calibration.
+  foreach my $cal (@calibration) {
+    $self->$_sendCommand ("Import," . $cal);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
   # Give the device a moment to reboot.
   usleep 1000000;
 }
