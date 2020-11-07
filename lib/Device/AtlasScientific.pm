@@ -104,7 +104,7 @@ unreachable until a new driver is instantiated.
 
 Returns the device model and firmware version.
 
-=item C <ledIndicator>
+=item C<ledIndicator>
 
 Returns whether the indicator LED is currently on or off. Turns the indicator
 LED on or off if provided.
