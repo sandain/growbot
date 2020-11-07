@@ -360,7 +360,8 @@ sub baud {
   );
   # Send the command to the device.
   $self->$_sendCommand ($command . "," . $rate);
-  # Device will reboot.
+  # Give the device a moment to reboot.
+  usleep 1000000;
 }
 
 sub factoryReset {
@@ -385,7 +386,8 @@ sub factoryReset {
   );
   # Send the factory reset command.
   $self->$_sendCommand ($command);
-  # Device will reboot.
+  # Give the device a moment to reboot.
+  usleep 1000000;
 }
 
 sub find {
@@ -406,7 +408,8 @@ sub i2c {
   die "Invalid I2C address $address" unless ($address >= 1 && $address <= 127);
   $self->{address} = $address;
   $self->$_sendCommand ("I2C," . $address);
-  # Device will reboot.
+  # Give the device a moment to reboot.
+  usleep 1000000;
 }
 
 sub information {
