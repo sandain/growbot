@@ -708,7 +708,9 @@ sub i2c {
   my ($address) = @_;
   # Make sure the address is numeric instead of a string.
   $address = hex $address if ($address & ~$address);
+  # Make sure the address is within range.
   die "Invalid I2C address $address" unless ($address >= 1 && $address <= 127);
+  # Set the address for the device.
   $self->{address} = $address;
   $self->$_sendCommand ("I2C," . $address);
   # Give the device a moment to reboot.
