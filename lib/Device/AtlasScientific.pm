@@ -26,6 +26,9 @@ robotic devices.
   # Print out a pH measurement.
   printf "ph: %0.2f\n", $ph->reading;
 
+  # Close the device.
+  $ph->close;
+
 =head1 DESCRIPTION
 
 Device::AtlasScientific is a driver for the Atlas Scientific series of
@@ -80,6 +83,10 @@ L<https://atlas-scientific.com/files/EZO_RGB_Datasheet.pdf>
 =item C<new>
 
 Returns a new Device::AtlasScientific object.
+
+=item C<close>
+
+Closes input/output to the device.
 
 =item C<baud>
 
@@ -423,6 +430,11 @@ sub new {
   # Retrieve the device model and firmware version.
   ($self->{model}, $self->{firmware}) = $self->$_getInformation;
   return $self;
+}
+
+sub close {
+  my $self = shift;
+  $self->{io}->close;
 }
 
 sub baud {
