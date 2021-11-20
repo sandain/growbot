@@ -22,6 +22,9 @@ Device::lm_sensors - Driver for sensors supported by lm-sensors.
   # Measure and print the CPU temperature.
   printf "CPU temperature: %s °C\n\n", $lm_sensors->measure;
 
+  # Close the device.
+  $lm_sensors->close;
+
 =head1 DESCRIPTION
 
 Device::lm_sensors is a driver for sensors supported by lm-sensors.
@@ -33,6 +36,10 @@ Device::lm_sensors is a driver for sensors supported by lm-sensors.
 =item C<new>
 
 Returns a new Device::lm_sensors object.
+
+=item C<close>
+
+Closes input/output to the device.
 
 =item C<measure>
 
@@ -119,6 +126,10 @@ sub new {
   die "Error: lm-sensors version $version is too old, $MIN_VERSION is required."
     unless (version->parse ($version) >= version->parse ($MIN_VERSION));
   return $self;
+}
+
+sub close {
+  my $self = shift;
 }
 
 sub measure {
