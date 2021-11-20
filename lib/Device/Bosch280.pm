@@ -118,6 +118,9 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   $ctrl->{mode} = BOSCH280_MODE_SLEEP;
   $bme280->controls ($ctrl);
 
+  # Close the device.
+  $bme280->close ();
+
 =head1 DESCRIPTION
 
 Device::Bosch280 is a driver for Bosch BMP280 and BME280 environmental sensors.
@@ -187,6 +190,10 @@ pressure and temperature.
 =item C<new>
 
 Returns a new Device::Bosch280 object.
+
+=item C<close>
+
+Closes input/output to the device.
 
 =item C<id>
 
@@ -757,6 +764,11 @@ sub new {
   # Read the config.
   $self->{config} = $self->$_getConfig;
   return $self;
+}
+
+sub close {
+  my $self = shift;
+  $self->{io}->close;
 }
 
 sub id {
