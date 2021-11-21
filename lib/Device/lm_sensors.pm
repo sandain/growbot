@@ -20,7 +20,8 @@ Device::lm_sensors - Driver for sensors supported by lm-sensors.
   my $lm_sensors = Device::lm_sensors->new ($chip, $device, $value);
 
   # Measure and print the CPU temperature.
-  printf "CPU temperature: %s °C\n\n", $lm_sensors->measure;
+  my $measure = $lm_sensors->measure;
+  printf "CPU temperature: %s °C\n\n", $measure->{temperature};
 
   # Close the device.
   $lm_sensors->close;
