@@ -61,7 +61,7 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   }
 
   # Modify the controls to use forced mode and X2 sampling.
-  my $ctrl = $bme280->controls;
+  my $ctrl;
   $ctrl->{temperature} = BOSCH280_OVERSAMPLING_X2;
   $ctrl->{pressure} = BOSCH280_OVERSAMPLING_X2;
   $ctrl->{humidity} = BOSCH280_OVERSAMPLING_X2;
@@ -83,7 +83,7 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   printf "Humidity:\t%.2f %%\n", $humidity;
 
   # Modify the configuration to use standby X0 (500 µs) and filter to off.
-  my $cfg = $bme280->config;
+  my $cfg;
   $cfg->{standby} = BOSCH280_STANDBY_X0;
   $cfg->{filter} = BOSCH280_FILTER_OFF;
   $bme280->config ($cfg);
