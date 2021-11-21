@@ -119,7 +119,7 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   $bme280->controls ($ctrl);
 
   # Close the device.
-  $bme280->close ();
+  $bme280->close;
 
 =head1 DESCRIPTION
 
