@@ -50,37 +50,18 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   # Verify the model of the device.
   die "Unexpected model" unless ($bme280->{model} == BOSCH280_SENSOR_BME280);
 
-  # Perform a soft reset on the device.
-  $bme280->reset;
-
-  # Wait for the startup to finish.
-  my ($im_update, $measuring) = $bme280->status;
-  while ($im_update) {
-    usleep $bme280->startupTime;
-    ($im_update, $measuring) = $bme280->status;
-  }
-
-  # Modify the controls to use forced mode and X2 sampling.
+  # Modify the controls to use X2 sampling.
   my $ctrl;
   $ctrl->{temperature} = BOSCH280_OVERSAMPLING_X2;
   $ctrl->{pressure} = BOSCH280_OVERSAMPLING_X2;
   $ctrl->{humidity} = BOSCH280_OVERSAMPLING_X2;
-  $ctrl->{mode} = BOSCH280_MODE_FORCED;
   $bme280->controls ($ctrl);
 
-  # Wait for the measurement to finish.
-  usleep $bme280->measureTime;
-  ($im_update, $measuring) = $bme280->status;
-  while ($measuring) {
-    usleep $bme280->maxMeasureTime - $bme280->measureTime;
-    ($im_update, $measuring) = $bme280->status;
-  }
-
   # Get a measurement from the device.
-  my ($temperature, $pressure, $humidity) = $bme280->measure;
-  printf "Temperature:\t%.2f °C\n", $temperature;
-  printf "Pressure:\t%.2f hPa\n", $pressure / 100;
-  printf "Humidity:\t%.2f %%\n", $humidity;
+  my $measure = $bme280->measure;
+  printf "Temperature:\t%.2f °C\n", $measure->{temperature};
+  printf "Pressure:\t%.2f hPa\n", $measure->{pressure} / 100;
+  printf "Humidity:\t%.2f %%\n", $measure->{humidity};
 
   # Modify the configuration to use standby X0 (500 µs) and filter to off.
   my $cfg;
@@ -88,30 +69,19 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   $cfg->{filter} = BOSCH280_FILTER_OFF;
   $bme280->config ($cfg);
 
-  # Modify the controls to use normal mode and X4 sampling.
+  # Modify the controls to use X4 sampling.
   $ctrl->{temperature} = BOSCH280_OVERSAMPLING_X4;
   $ctrl->{pressure} = BOSCH280_OVERSAMPLING_X4;
   $ctrl->{humidity} = BOSCH280_OVERSAMPLING_X4;
-  $ctrl->{mode} = BOSCH280_MODE_NORMAL;
   $bme280->controls ($ctrl);
 
-  # Get ten measurements.
+  # Get ten measurements using normal mode.
   for (my $i = 0; $i < 10; $i ++) {
-    # Wait for the measurement to finish.
-    usleep $bme280->measureTime;
-    ($im_update, $measuring) = $bme280->status;
-    while ($measuring) {
-      usleep $bme280->maxMeasureTime - $bme280->measureTime;
-      ($im_update, $measuring) = $bme280->status;
-    }
     # Get a measurement from the device.
-    ($temperature, $pressure, $humidity) = $bme280->measure;
-    printf "%2d: temperature:\t%.2f °C\n", $i, $temperature;
-    printf "%2d: pressure:   \t%.2f hPa\n", $i, $pressure / 100;
-    printf "%2d: humidity:   \t%.2f %%\n", $i, $humidity;
-
-    # Wait for the standby time.
-    usleep $bme280->standbyTime;
+    $measure = $bme280->measure (BOSCH280_MODE_NORMAL);
+    printf "%2d: temperature:\t%.2f °C\n", $i, $measure->{temperature};
+    printf "%2d: pressure:   \t%.2f hPa\n", $i, $measure->{pressure} / 100;
+    printf "%2d: humidity:   \t%.2f %%\n", $i, $measure->{humidity};
   }
 
   # Modify the controls to use sleep mode.
@@ -306,6 +276,7 @@ use v5.10;
 use Device::I2C;
 use IO::File;
 use Exporter qw (import);
+use Time::HiRes qw (usleep);
 
 ## Public constants.
 
@@ -405,6 +376,15 @@ use constant BOSCH280_CALIBRATION_LENGTH_1 =>  7;
 
 # Reset command.
 use constant BOSCH280_CMD_RESET => 0xB6;
+
+# Default settings, based on recommended settings for weather monitoring.
+use constant DEFAULT_FILTER                    => BOSCH280_FILTER_OFF;
+use constant DEFAULT_STANDBY                   => BOSCH280_STANDBY_X0;
+use constant DEFAULT_SPI                       => BOSCH280_SPI_ENABLE_FALSE;
+use constant DEFAULT_MEASURE_MODE              => BOSCH280_MODE_FORCED;
+use constant DEFAULT_TEMPERATURE_OVERSAMPLING  => BOSCH280_OVERSAMPLING_X1;
+use constant DEFAULT_PRESSURE_OVERSAMPLING     => BOSCH280_OVERSAMPLING_X1;
+use constant DEFAULT_HUMIDITY_OVERSAMPLING     => BOSCH280_OVERSAMPLING_X1;
 
 our @EXPORT_OK = qw (
   BOSCH280_SENSOR_BMP280
@@ -769,6 +749,24 @@ sub new {
   $self->{controls} = $self->$_getControls;
   # Read the config.
   $self->{config} = $self->$_getConfig;
+  # Reset the device.
+  $self->reset;
+  my ($im_update, $measuring) = $self->status;
+  while ($im_update) {
+    usleep $self->startupTime;
+    ($im_update, $measuring) = $self->status;
+  }
+  # Set default settings.
+  $self->config ({
+    filter => DEFAULT_FILTER,
+    standby => DEFAULT_STANDBY,
+    spi_enable => DEFAULT_SPI
+  });
+  $self->controls ({
+    temperature => DEFAULT_TEMPERATURE_OVERSAMPLING,
+    pressure => DEFAULT_PRESSURE_OVERSAMPLING,
+    humidity => DEFAULT_HUMIDITY_OVERSAMPLING,
+  });
   return $self;
 }
 
@@ -892,7 +890,24 @@ sub humidity {
 
 sub measure {
   my $self = shift;
+  my ($mode) = @_;
+  $mode = DEFAULT_MEASURE_MODE unless (defined $mode);
+  # Setup the device.
+  $self->controls ({ mode => $mode });
+  usleep $self->measureTime;
+  my ($im_update, $measuring) = $self->status;
+  while ($measuring) {
+    usleep $self->maxMeasureTime - $self->measureTime;
+    ($im_update, $measuring) = $self->status;
+  }
+  # Get the measurements.
   my $data = $self->$_getData;
+  # Wait for the standby time if in normal mode.
+  if ($mode eq BOSCH280_MODE_NORMAL) {
+    # Wait for the standby time.
+    usleep $self->standbyTime;
+  }
+  # Return the compensated measurements.
   return {
     temperature => $self->$_compensateTemperature ($data->{temperature}),
     pressure => $self->$_compensatePressure ($data->{pressure}),
