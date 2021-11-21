@@ -147,7 +147,9 @@ sub measure {
     die "Error: Value not found " . $self->{value};
   }
   # Return the measured value.
-  return $json->{$self->{chip}}->{$self->{device}}->{$self->{value}};
+  return {
+    temperature => $json->{$self->{chip}}->{$self->{device}}->{$self->{value}}
+  };
 }
 
 1;
