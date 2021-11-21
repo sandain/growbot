@@ -379,6 +379,10 @@ use constant BOSCH280_STANDBY_X5_BME280 => 1000000;
 use constant BOSCH280_STANDBY_X6_BME280 =>   10000;
 use constant BOSCH280_STANDBY_X7_BME280 =>   20000;
 
+# BME280 SPI enable.
+use constant BOSCH280_SPI_ENABLE_FALSE => 0x00;
+use constant BOSCH280_SPI_ENABLE_TRUE  => 0x01;
+
 # BME280 startup duration (μs).
 use constant BOSCH280_STARTUP_DURATION => 2000;
 
@@ -422,6 +426,8 @@ our @EXPORT_OK = qw (
   BOSCH280_STANDBY_X5
   BOSCH280_STANDBY_X6
   BOSCH280_STANDBY_X7
+  BOSCH280_SPI_ENABLE_FALSE
+  BOSCH280_SPI_ENABLE_TRUE
   BOSCH280_FILTER_OFF
   BOSCH280_FILTER_X2
   BOSCH280_FILTER_X4
@@ -856,7 +862,8 @@ sub config {
       $cfg->{filter} <= BOSCH280_FILTER_X16
     );
     die "Invalid spi_enable config " . $cfg->{spi_enable} unless (
-      $cfg->{spi_enable} == 0x00 || $cfg->{spi_enable} == 0x01
+      $cfg->{spi_enable} == BOSCH280_SPI_ENABLE_FALSE ||
+      $cfg->{spi_enable} == BOSCH280_SPI_ENABLE_TRUE
     );
     # Set the config to the new values, and return the values as set.
     return $self->$_setConfig ($cfg);
