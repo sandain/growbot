@@ -884,10 +884,11 @@ sub humidity {
 sub measure {
   my $self = shift;
   my $data = $self->$_getData;
-  my $t = $self->$_compensateTemperature ($data->{temperature});
-  my $p = $self->$_compensatePressure ($data->{pressure});
-  my $h = $self->$_compensateHumidity ($data->{humidity});
-  return ($t, $p, $h);
+  return {
+    temperature => $self->$_compensateTemperature ($data->{temperature}),
+    pressure => $self->$_compensatePressure ($data->{pressure}),
+    humidity => $self->$_compensateHumidity ($data->{humidity})
+  };
 }
 
 sub measureTime {
