@@ -803,7 +803,9 @@ sub controls {
     unless (defined $ctrl->{humidity}) {
       $ctrl->{humidity} = $self->{controls}{humidity};
     }
-    $ctrl->{mode} = $self->{controls}{mode} unless (defined $ctrl->{mode});
+    unless (defined $ctrl->{mode}) {
+      $ctrl->{mode} = $self->{controls}{mode};
+    }
     # Verify that values are within range.
     die "Invalid temperature control " . $ctrl->{temperature} unless (
       $ctrl->{temperature} >= BOSCH280_OVERSAMPLING_OFF &&
