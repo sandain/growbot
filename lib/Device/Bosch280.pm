@@ -201,24 +201,6 @@ Get a humidity measurement from the device.
 
 Get a temperature, pressure, and humidity measure from the device.
 
-=item C<measureTime>
-
-Returns the amount of time in µseconds for a measurement to run based on the
-current settings.
-
-=item C<maxMeasureTime>
-
-Returns the maximum amount of time in µseconds for a measurement to run based on
-the current settings.
-
-=item C<standbyTime>
-
-Returns the standby time in µseconds (used in normal mode).
-
-=item C<startupTime>
-
-Returns the startup time in µseconds.
-
 =back
 
 =head1 DEPENDENCIES
@@ -753,7 +735,7 @@ sub new {
   $self->reset;
   my ($im_update, $measuring) = $self->status;
   while ($im_update) {
-    usleep $self->startupTime;
+    usleep BOSCH280_STARTUP_DURATION;
     ($im_update, $measuring) = $self->status;
   }
   # Set default settings.
@@ -894,10 +876,10 @@ sub measure {
   $mode = DEFAULT_MEASURE_MODE unless (defined $mode);
   # Setup the device.
   $self->controls ({ mode => $mode });
-  usleep $self->measureTime;
+  usleep $self->{measureTime};
   my ($im_update, $measuring) = $self->status;
   while ($measuring) {
-    usleep $self->maxMeasureTime - $self->measureTime;
+    usleep $self->{maxMeasureTime} - $self->{measureTime};
     ($im_update, $measuring) = $self->status;
   }
   # Get the measurements.
@@ -905,7 +887,7 @@ sub measure {
   # Wait for the standby time if in normal mode.
   if ($mode eq BOSCH280_MODE_NORMAL) {
     # Wait for the standby time.
-    usleep $self->standbyTime;
+    usleep $self->{standbyTime};
   }
   # Return the compensated measurements.
   return {
@@ -913,26 +895,6 @@ sub measure {
     pressure => $self->$_compensatePressure ($data->{pressure}),
     humidity => $self->$_compensateHumidity ($data->{humidity})
   };
-}
-
-sub measureTime {
-  my $self = shift;
-  return $self->{measureTime};
-}
-
-sub maxMeasureTime {
-  my $self = shift;
-  return $self->{maxMeasureTime};
-}
-
-sub standbyTime {
-  my $self = shift;
-  return $self->{standbyTime};
-}
-
-sub startupTime {
-  my $self = shift;
-  return BOSCH280_STARTUP_DURATION;
 }
 
 1;
