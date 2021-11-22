@@ -108,8 +108,8 @@ my $MIN_VERSION = '3.6.0';
 
 sub new {
   my $class = shift;
-  die "Usage: $class->new (chip, device, value)" unless (@_ == 3);
-  my ($chip, $device, $value) = @_;
+  die "Usage: $class->new (chip, device, value, type, unit)" unless (@_ == 5);
+  my ($chip, $device, $value, $type, $unit) = @_;
   # Make sure we can find the lm-sensors program.
   my $bin = `which sensors || echo $DEFAULT_BIN`;
   $bin =~ s/[\r\n]+//g;
@@ -119,6 +119,8 @@ sub new {
     chip   => $chip,
     device => $device,
     value  => $value,
+    type   => $type,
+    unit   => $unit,
     bin    => $bin
   }, $class;
   # Make sure lm-sensors is recent enough.
@@ -148,9 +150,12 @@ sub measure {
     die "Error: Value not found " . $self->{value};
   }
   # Return the measured value.
-  return {
-    temperature => $json->{$self->{chip}}->{$self->{device}}->{$self->{value}}
+  my $measure;
+  $measure->{$self->{type}} = {
+    value => $json->{$self->{chip}}->{$self->{device}}->{$self->{value}},
+    unit => $self->{unit}
   };
+  return $measure;
 }
 
 1;
