@@ -263,9 +263,8 @@ package Device::AtlasScientific;
 use strict;
 use warnings;
 use utf8;
-use version;
 use v5.10;
-
+use version;
 use Device::I2C;
 use Exporter qw(import);
 use IO::File;
