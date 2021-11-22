@@ -59,9 +59,12 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
 
   # Get a measurement from the device.
   my $measure = $bme280->measure;
-  printf "Temperature:\t%.2f °C\n", $measure->{temperature};
-  printf "Pressure:\t%.2f hPa\n", $measure->{pressure} / 100;
-  printf "Humidity:\t%.2f %%\n", $measure->{humidity};
+  printf "Temperature:\t%.2f %s\n",
+    $measure->{temperature}{value}, $measure->{temperature}{unit};
+  printf "Pressure:\t%.2f %s\n",
+    $measure->{pressure}{value}, $measure->{pressure}{unit};
+  printf "Humidity:\t%.2f %s\n",
+    $measure->{humidity}{value}, $measure->{humidity}{unit};
 
   # Modify the configuration to use standby X0 (500 µs) and filter to off.
   my $cfg;
@@ -79,9 +82,12 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   for (my $i = 0; $i < 10; $i ++) {
     # Get a measurement from the device.
     $measure = $bme280->measure (BOSCH280_MODE_NORMAL);
-    printf "%2d: temperature:\t%.2f °C\n", $i, $measure->{temperature};
-    printf "%2d: pressure:   \t%.2f hPa\n", $i, $measure->{pressure} / 100;
-    printf "%2d: humidity:   \t%.2f %%\n", $i, $measure->{humidity};
+    printf "%2d: temperature:\t%.2f %s\n",
+      $i, $measure->{temperature}{value}, $measure->{temperature}{unit};
+    printf "%2d: pressure:   \t%.2f %s\n",
+      $i, $measure->{pressure}{value}, $measure->{pressure}{unit};
+    printf "%2d: humidity:   \t%.2f %s\n",
+      $i, $measure->{humidity}{value}, $measure->{humidity}{unit};
   }
 
   # Modify the controls to use sleep mode.
