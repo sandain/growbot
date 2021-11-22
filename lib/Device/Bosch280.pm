@@ -185,18 +185,6 @@ Get or set the controls of the device.
 
 Get or set the configuration of the device.
 
-=item C<temperature>
-
-Get a temperature measurement from the device.
-
-=item C<pressure>
-
-Get a presssure measurement from the device.
-
-=item C<humidity>
-
-Get a humidity measurement from the device.
-
 =item C<measure>
 
 Get a temperature, pressure, and humidity measure from the device.
@@ -850,24 +838,6 @@ sub config {
   }
   # Return the currently set values.
   return $self->$_getConfig;
-}
-
-sub temperature {
-  my $self = shift;
-  my $data = $self->$_getData;
-  return $self->$_compensateTemperature ($data->{temperature});
-}
-
-sub pressure {
-  my $self = shift;
-  my $data = $self->$_getData;
-  return $self->$_compensatePressure ($data->{pressure});
-}
-
-sub humidity {
-  my $self = shift;
-  my $data = $self->$_getData;
-  return $self->$_compensateHumidity ($data->{humidity});
 }
 
 sub measure {
