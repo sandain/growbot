@@ -171,6 +171,10 @@ Returns a new Device::Bosch280 object.
 
 Closes input/output to the device.
 
+=item C<measure>
+
+Get a temperature, pressure, and humidity measure from the device.
+
 =item C<id>
 
 Returns the identifier of the device.
@@ -190,10 +194,6 @@ Get or set the controls of the device.
 =item C<config>
 
 Get or set the configuration of the device.
-
-=item C<measure>
-
-Get a temperature, pressure, and humidity measure from the device.
 
 =back
 
@@ -751,6 +751,43 @@ sub close {
   $self->{io}->close;
 }
 
+sub measure {
+  my $self = shift;
+  my ($mode) = @_;
+  $mode = DEFAULT_MEASURE_MODE unless (defined $mode);
+  # Setup the device.
+  $self->controls ({ mode => $mode });
+  usleep $self->{measureTime};
+  my ($im_update, $measuring) = $self->status;
+  while ($measuring) {
+    usleep $self->{maxMeasureTime} - $self->{measureTime};
+    ($im_update, $measuring) = $self->status;
+  }
+  # Get the measurements.
+  my $data = $self->$_getData;
+  # Wait for the standby time if in normal mode.
+  if ($mode eq BOSCH280_MODE_NORMAL) {
+    # Wait for the standby time.
+    usleep $self->{standbyTime};
+  }
+  # Return the compensated measurements.
+  my $measure;
+  $measure->{temperature} = {
+    value => $self->$_compensateTemperature ($data->{temperature}),
+    unit => "°C"
+  };
+  $measure->{pressure} = {
+    value => $self->$_compensatePressure ($data->{pressure}) / 100,
+    unit => "hPa"
+  };
+  return $measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
+  $measure->{humidity} = {
+    value => $self->$_compensateHumidity ($data->{humidity}),
+    unit => "%"
+  };
+  return $measure;
+}
+
 sub id {
   my $self = shift;
   return $self->{id};
@@ -844,43 +881,6 @@ sub config {
   }
   # Return the currently set values.
   return $self->$_getConfig;
-}
-
-sub measure {
-  my $self = shift;
-  my ($mode) = @_;
-  $mode = DEFAULT_MEASURE_MODE unless (defined $mode);
-  # Setup the device.
-  $self->controls ({ mode => $mode });
-  usleep $self->{measureTime};
-  my ($im_update, $measuring) = $self->status;
-  while ($measuring) {
-    usleep $self->{maxMeasureTime} - $self->{measureTime};
-    ($im_update, $measuring) = $self->status;
-  }
-  # Get the measurements.
-  my $data = $self->$_getData;
-  # Wait for the standby time if in normal mode.
-  if ($mode eq BOSCH280_MODE_NORMAL) {
-    # Wait for the standby time.
-    usleep $self->{standbyTime};
-  }
-  # Return the compensated measurements.
-  my $measure;
-  $measure->{temperature} = {
-    value => $self->$_compensateTemperature ($data->{temperature}),
-    unit => "°C"
-  };
-  $measure->{pressure} = {
-    value => $self->$_compensatePressure ($data->{pressure}) / 100,
-    unit => "hPa"
-  };
-  return $measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
-  $measure->{humidity} = {
-    value => $self->$_compensateHumidity ($data->{humidity}),
-    unit => "%"
-  };
-  return $measure;
 }
 
 1;
