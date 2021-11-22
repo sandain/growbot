@@ -335,82 +335,12 @@ our @EXPORT_OK = qw (
   EZO_RESTART_REASON_UNKNOWN
 );
 
-## Private methods.
-
-my $_sendCommand = sub {
-  my $self = shift;
-  my ($command) = @_;
-  # Send the command to the device.
-  my @bytes = unpack 'C*', $command;
-  my $comm = shift @bytes;
-  $self->{io}->writeBlockData ($comm, \@bytes);
-};
-
-my $_getResponse = sub {
-  my $self = shift;
-  my @response = $self->{io}->readBlockData (
-    EZO_RESPONSE_LOCATION, EZO_RESPONSE_LENGTH
-  );
-  # Get the device response code, wait for it to not be busy.
-  my $code = shift @response;
-  while ($code == EZO_RESPONSE_BUSY) {
-    usleep 1000;
-    @response = $self->{io}->readBlockData (
-      EZO_RESPONSE_LOCATION, EZO_RESPONSE_LENGTH
-    );
-    $code = shift @response;
-  }
-  # Check for syntax error in the command.
-  die "Syntax error" if ($code == EZO_RESPONSE_ERROR);
-  # Check for valid response.
-  if ($code == EZO_RESPONSE_SUCCESS) {
-    my $response;
-    foreach my $byte (@response) {
-      last if ($byte == 0x00);
-      $response .= pack 'C*', $byte;
-    }
-    return $response;
-  }
-};
-
-my $_getInformation = sub {
-  my $self = shift;
-  $self->$_sendCommand ("I");
-  # Give the device a moment to respond.
-  usleep 300000;
-  my ($i, $m, $firmware) = split /,/, $self->$_getResponse;
-  die "Invalid response from device" unless (uc $i eq "?I");
-  my $model;
-  $model = EZO_RTD if (uc $m eq EZO_RTD);
-  $model = EZO_PH if (uc $m eq EZO_PH);
-  $model = EZO_EC if (uc $m eq EZO_EC);
-  $model = EZO_ORP if (uc $m eq EZO_ORP);
-  $model = EZO_DO if (uc $m eq EZO_DO);
-  $model = EZO_PMP if (uc $m eq EZO_PMP);
-  $model = EZO_PMPL if (uc $m eq EZO_PMPL);
-  $model = EZO_CO2 if (uc $m eq EZO_CO2);
-  $model = EZO_O2 if (uc $m eq EZO_O2);
-  $model = EZO_HUM if (uc $m eq EZO_HUM);
-  $model = EZO_PRS if (uc $m eq EZO_PRS);
-  $model = EZO_FLOW if (uc $m eq EZO_FLOW);
-  $model = EZO_RGB if (uc $m eq EZO_RGB);
-  die "Unsupported device $m" unless (defined $model);
-  return ($model, $firmware);
-};
-
-my $_is_number = sub {
-  my $self = shift;
-  return shift =~ /^[-]?\d*\.?\d*$/;
-};
-
-my $_require_firmware = sub {
-  my $self = shift;
-  my ($model, $version) = @_;
-  die "Feature not available on firmware < $version for $model" if (
-    $self->{model} eq $model &&
-    version->parse ($self->{firmware}) < version->parse ($version)
-  );
-};
+# Private methods. Defined below.
+my $_sendCommand;
+my $_getResponse;
+my $_getInformation;
+my $_is_number;
+my $_require_firmware;
 
 ## Public methods.
 
@@ -914,5 +844,82 @@ sub status {
   die "Error detecting reason $p" unless (defined $reason);
   return ($reason, $voltage);
 }
+
+## Private methods.
+
+$_sendCommand = sub {
+  my $self = shift;
+  my ($command) = @_;
+  # Send the command to the device.
+  my @bytes = unpack 'C*', $command;
+  my $comm = shift @bytes;
+  $self->{io}->writeBlockData ($comm, \@bytes);
+};
+
+$_getResponse = sub {
+  my $self = shift;
+  my @response = $self->{io}->readBlockData (
+    EZO_RESPONSE_LOCATION, EZO_RESPONSE_LENGTH
+  );
+  # Get the device response code, wait for it to not be busy.
+  my $code = shift @response;
+  while ($code == EZO_RESPONSE_BUSY) {
+    usleep 1000;
+    @response = $self->{io}->readBlockData (
+      EZO_RESPONSE_LOCATION, EZO_RESPONSE_LENGTH
+    );
+    $code = shift @response;
+  }
+  # Check for syntax error in the command.
+  die "Syntax error" if ($code == EZO_RESPONSE_ERROR);
+  # Check for valid response.
+  if ($code == EZO_RESPONSE_SUCCESS) {
+    my $response;
+    foreach my $byte (@response) {
+      last if ($byte == 0x00);
+      $response .= pack 'C*', $byte;
+    }
+    return $response;
+  }
+};
+
+$_getInformation = sub {
+  my $self = shift;
+  $self->$_sendCommand ("I");
+  # Give the device a moment to respond.
+  usleep 300000;
+  my ($i, $m, $firmware) = split /,/, $self->$_getResponse;
+  die "Invalid response from device" unless (uc $i eq "?I");
+  my $model;
+  $model = EZO_RTD if (uc $m eq EZO_RTD);
+  $model = EZO_PH if (uc $m eq EZO_PH);
+  $model = EZO_EC if (uc $m eq EZO_EC);
+  $model = EZO_ORP if (uc $m eq EZO_ORP);
+  $model = EZO_DO if (uc $m eq EZO_DO);
+  $model = EZO_PMP if (uc $m eq EZO_PMP);
+  $model = EZO_PMPL if (uc $m eq EZO_PMPL);
+  $model = EZO_CO2 if (uc $m eq EZO_CO2);
+  $model = EZO_O2 if (uc $m eq EZO_O2);
+  $model = EZO_HUM if (uc $m eq EZO_HUM);
+  $model = EZO_PRS if (uc $m eq EZO_PRS);
+  $model = EZO_FLOW if (uc $m eq EZO_FLOW);
+  $model = EZO_RGB if (uc $m eq EZO_RGB);
+  die "Unsupported device $m" unless (defined $model);
+  return ($model, $firmware);
+};
+
+$_is_number = sub {
+  my $self = shift;
+  return shift =~ /^[-]?\d*\.?\d*$/;
+};
+
+$_require_firmware = sub {
+  my $self = shift;
+  my ($model, $version) = @_;
+  die "Feature not available on firmware < $version for $model" if (
+    $self->{model} eq $model &&
+    version->parse ($self->{firmware}) < version->parse ($version)
+  );
+};
 
 1;
