@@ -56,6 +56,9 @@ L<https://atlas-scientific.com/files/DO_EZO_Datasheet.pdf>
 =item * Peristaltic pump:
 L<https://atlas-scientific.com/files/EZO_PMP_Datasheet.pdf>
 
+=item * Large Peristaltic pump:
+L <https://atlas-scientific.com/files/EZO_PMP_L_Datasheet.pdf>
+
 =item * Carbon dioxide (gas) meter:
 L<https://atlas-scientific.com/files/EZO_CO2_Datasheet.pdf>
 
@@ -273,18 +276,19 @@ use Time::HiRes qw (usleep);
 ## Public constants.
 
 # Supported devices.
-use constant EZO_RTD  => 'RTD'; # Temperature
-use constant EZO_PH   => 'PH';  # pH
-use constant EZO_EC   => 'EC';  # Electrical conductivity
-use constant EZO_ORP  => 'ORP'; # Oxidation-reduction potential
-use constant EZO_DO   => 'DO';  # Dissolved oxygen
-use constant EZO_PMP  => 'PMP'; # Peristaltic pump
-use constant EZO_CO2  => 'CO2'; # Carbon dioxide (gas)
-use constant EZO_O2   => 'O2';  # Oxygen (gas)
-use constant EZO_HUM  => 'HUM'; # Humidity
-use constant EZO_PRS  => 'PRS'; # Pressure
-use constant EZO_FLOW => 'FLO'; # Flow
-use constant EZO_RGB  => 'RGB'; # RGB
+use constant EZO_RTD  => 'RTD';  # Temperature
+use constant EZO_PH   => 'PH';   # pH
+use constant EZO_EC   => 'EC';   # Electrical conductivity
+use constant EZO_ORP  => 'ORP';  # Oxidation-reduction potential
+use constant EZO_DO   => 'DO';   # Dissolved oxygen
+use constant EZO_PMP  => 'PMP';  # Peristaltic pump
+use constant EZO_PMPL => 'PMPL'; # Large Peristaltic pump
+use constant EZO_CO2  => 'CO2';  # Carbon dioxide (gas)
+use constant EZO_O2   => 'O2';   # Oxygen (gas)
+use constant EZO_HUM  => 'HUM';  # Humidity
+use constant EZO_PRS  => 'PRS';  # Pressure
+use constant EZO_FLOW => 'FLO';  # Flow
+use constant EZO_RGB  => 'RGB';  # RGB
 
 # Restart reason from status command.
 use constant EZO_RESTART_REASON_POWEROFF => 'P';
@@ -312,6 +316,7 @@ our @EXPORT_OK = qw (
   EZO_ORP
   EZO_DO
   EZO_PMP
+  EZO_PMPL
   EZO_CO2
   EZO_O2
   EZO_HUM
@@ -377,6 +382,7 @@ my $_getInformation = sub {
   $model = EZO_ORP if (uc $m eq EZO_ORP);
   $model = EZO_DO if (uc $m eq EZO_DO);
   $model = EZO_PMP if (uc $m eq EZO_PMP);
+  $model = EZO_PMPL if (uc $m eq EZO_PMPL);
   $model = EZO_CO2 if (uc $m eq EZO_CO2);
   $model = EZO_O2 if (uc $m eq EZO_O2);
   $model = EZO_HUM if (uc $m eq EZO_HUM);
@@ -566,8 +572,8 @@ sub calibration {
     # Return indicating that the device is calibrated.
     return 1;
   }
-  # Handle EZO_PMP device calibration.
-  if ($self->{model} eq EZO_PMP) {
+  # Handle EZO_PMP and EZO_PMPL device calibration.
+  if ($self->{model} eq EZO_PMP || $self->{model} eq EZO_PMPL) {
     die "Invalid calibration point: $arg" unless (
       defined $arg and $self->$_is_number ($arg)
     );
@@ -609,6 +615,7 @@ sub calibrationExport {
   # Make sure this feature is supported on this device.
   die "Feature not available on " . $self->{model} if (
     $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL or
     $self->{model} eq EZO_O2 or
     $self->{model} eq EZO_HUM or
     $self->{model} eq EZO_PRS or
@@ -654,6 +661,7 @@ sub calibrationImport {
   # Make sure this feature is supported on this device.
   die "Feature not available on " . $self->{model} if (
     $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL or
     $self->{model} eq EZO_O2 or
     $self->{model} eq EZO_HUM or
     $self->{model} eq EZO_PRS or
@@ -812,6 +820,7 @@ sub reading {
   $delay = 900000 if ($self->{model} eq EZO_ORP);
   $delay = 600000 if ($self->{model} eq EZO_DO);
   $delay = 300000 if ($self->{model} eq EZO_PMP);
+  $delay = 300000 if ($self->{model} eq EZO_PMPL);
   $delay = 900000 if ($self->{model} eq EZO_CO2);
   $delay = 900000 if ($self->{model} eq EZO_O2);
   $delay = 300000 if ($self->{model} eq EZO_HUM);
