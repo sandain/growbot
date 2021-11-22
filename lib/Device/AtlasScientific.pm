@@ -197,6 +197,11 @@ LED on or off if provided.
 Returns the name of the device. Sets the name of the device if provided. Names
 can only contain printable characters and no spaces.
 
+=item C<options>
+
+Returns currently configured options. Sets the options for the device if
+provided. Requires both and option name, and value (0 or 1).
+
 =item C<plock>
 
 Returns the status of the protocol lock. Sets the protocol lock if provided.
@@ -782,6 +787,62 @@ sub name {
     die "Invalid response from device" unless (uc $n eq "?NAME");
   }
   return $name;
+}
+
+sub options {
+  my $self = shift;
+  my ($param, $value) = @_;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} if (
+    $self->{model} eq EZO_RTD or
+    $self->{model} eq EZO_PH or
+    $self->{model} eq EZO_ORP or
+    $self->{model} eq EZO_PRS
+  );
+  if (defined $param && defined $value) {
+    $param = uc $param;
+    # Validate parameter usage by model.
+    die "Invalid parameter '$param'\n" unless (
+      ($self->{model} eq EZO_EC and
+        ($param eq 'EC' or $param eq 'TDS' or $param eq 'S' or $param eq 'SG')
+      ) or
+      ($self->{model} eq EZO_DO and
+        ($param eq 'MG' or $param eq '%')
+      ) or
+      ($self->{model} eq EZO_CO2 and
+        ($param eq 'T')) or
+      ($self->{model} eq EZO_O2 and
+        ($param eq 'PPT' or $param eq '%')
+      ) or
+      ($self->{model} eq EZO_HUM and
+        ($param eq 'HUM' or $param eq 'T' or $param eq 'DEW')
+      ) or
+      ($self->{model} eq EZO_PMP and
+        ($param eq 'V' or $param eq 'TV' or $param eq 'ATV')
+      ) or
+      ($self->{model} eq EZO_PMPL and
+        ($param eq 'V' or $param eq 'TV' or $param eq 'ATV')
+      ) or
+      ($self->{model} eq EZO_RGB and
+        ($param eq 'RGB' or $param eq 'LUX' or $param eq 'CIE')
+      ) or
+      ($self->{model} eq EZO_FLOW and
+        ($param eq 'TV' or $param eq 'FR')
+      )
+    );
+    die "Invalid parameter value" unless ($value == 0 or $value == 1);
+    $self->$_sendCommand ("O," . $param . "," . $value);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  else {
+    $self->$_sendCommand ("O,?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    (my $o, $param) = split /,/, $self->$_getResponse, 2;
+    die "Invalid response from device" unless (uc $o eq "?O");
+  }
+  return $param;
 }
 
 sub plock {
