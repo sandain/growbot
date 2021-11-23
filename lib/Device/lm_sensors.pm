@@ -9,7 +9,7 @@ Device::lm_sensors - Driver for sensors supported by lm-sensors.
   use strict;
   use warnings;
   use utf8;
-  use v5.10;
+  use v5.14;
 
   use Device::lm_sensors;
 
@@ -17,14 +17,16 @@ Device::lm_sensors - Driver for sensors supported by lm-sensors.
   my $chip = 'cpu_thermal-virtual-0';
   my $device = 'temp1';
   my $value = 'temp1_input';
-  my $lm_sensors = Device::lm_sensors->new ($chip, $device, $value);
+  my $type = 'temperature';
+  my $unit = '°C';
+  my $cpu_temp = Device::lm_sensors->new ($chip, $device, $value, $type, $unit);
 
   # Measure and print the CPU temperature.
-  my $measure = $lm_sensors->measure;
-  printf "CPU temperature: %s °C\n\n", $measure->{temperature};
+  my $measure = $cpu_temp->measure;
+  printf "CPU temperature: %s %s\n", $measure->{temperature}, $measure->{unit};
 
   # Close the device.
-  $lm_sensors->close;
+  $cpu_temp->close;
 
 =head1 DESCRIPTION
 
@@ -100,7 +102,7 @@ use strict;
 use warnings;
 use utf8;
 use version;
-use v5.10;
+use v5.14;
 use Mojo::JSON qw(decode_json);
 
 my $DEFAULT_BIN = '/usr/bin/sensors';
