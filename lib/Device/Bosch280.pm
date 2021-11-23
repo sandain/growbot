@@ -9,8 +9,7 @@ Device::Bosch280 - Driver for Bosch BMP280 and BME280 environmental sensors.
   use strict;
   use warnings;
   use utf8;
-  use v5.10;
-  use Time::HiRes qw (usleep);
+  use v5.14;
 
   use Device::Bosch280 qw (
     BOSCH280_SENSOR_BME280
@@ -247,7 +246,7 @@ package Device::Bosch280;
 use strict;
 use warnings;
 use utf8;
-use v5.10;
+use v5.14;
 
 use Device::I2C;
 use IO::File;
