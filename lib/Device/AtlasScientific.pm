@@ -24,7 +24,7 @@ robotic devices.
   my $pH = Device::AtlasScientific->new ($device, $address);
 
   # Print out a pH measurement.
-  printf "ph: %0.2f\n", $ph->reading;
+  printf "ph: %0.2f\n", $ph->measure;
 
   # Close the device.
   $ph->close;
@@ -90,6 +90,10 @@ Returns a new Device::AtlasScientific object.
 =item C<close>
 
 Closes input/output to the device.
+
+=item C<measure>
+
+Returns a single measurement from the device.
 
 =item C<baud>
 
@@ -206,10 +210,6 @@ provided. Requires both and option name, and value (0 or 1).
 
 Returns the status of the protocol lock. Sets the protocol lock if provided.
 A value of 1 enables the protocol lock. A value of 0 disables the protocol lock.
-
-=item C<reading>
-
-Returns a single reading from the device.
 
 =item C<sleep>
 
@@ -375,6 +375,29 @@ sub new {
 sub close {
   my $self = shift;
   $self->{io}->close;
+}
+
+sub measure {
+  my $self = shift;
+  $self->$_sendCommand ("R");
+  # Each model has a different delay.
+  my $delay;
+  $delay = 600000 if ($self->{model} eq EZO_RTD);
+  $delay = 900000 if ($self->{model} eq EZO_PH);
+  $delay = 600000 if ($self->{model} eq EZO_EC);
+  $delay = 900000 if ($self->{model} eq EZO_ORP);
+  $delay = 600000 if ($self->{model} eq EZO_DO);
+  $delay = 300000 if ($self->{model} eq EZO_PMP);
+  $delay = 300000 if ($self->{model} eq EZO_PMPL);
+  $delay = 900000 if ($self->{model} eq EZO_CO2);
+  $delay = 900000 if ($self->{model} eq EZO_O2);
+  $delay = 300000 if ($self->{model} eq EZO_HUM);
+  $delay = 900000 if ($self->{model} eq EZO_PRS);
+  $delay = 300000 if ($self->{model} eq EZO_FLOW);
+  $delay = 300000 if ($self->{model} eq EZO_RGB);
+  # Give the device a moment to respond.
+  usleep $delay;
+  return $self->$_getResponse;
 }
 
 sub baud {
@@ -798,29 +821,6 @@ sub plock {
     die "Invalid response from device" unless (uc $p eq "?PLOCK");
   }
   return $plock;
-}
-
-sub reading {
-  my $self = shift;
-  $self->$_sendCommand ("R");
-  # Each model has a different delay.
-  my $delay;
-  $delay = 600000 if ($self->{model} eq EZO_RTD);
-  $delay = 900000 if ($self->{model} eq EZO_PH);
-  $delay = 600000 if ($self->{model} eq EZO_EC);
-  $delay = 900000 if ($self->{model} eq EZO_ORP);
-  $delay = 600000 if ($self->{model} eq EZO_DO);
-  $delay = 300000 if ($self->{model} eq EZO_PMP);
-  $delay = 300000 if ($self->{model} eq EZO_PMPL);
-  $delay = 900000 if ($self->{model} eq EZO_CO2);
-  $delay = 900000 if ($self->{model} eq EZO_O2);
-  $delay = 300000 if ($self->{model} eq EZO_HUM);
-  $delay = 900000 if ($self->{model} eq EZO_PRS);
-  $delay = 300000 if ($self->{model} eq EZO_FLOW);
-  $delay = 300000 if ($self->{model} eq EZO_RGB);
-  # Give the device a moment to respond.
-  usleep $delay;
-  return $self->$_getResponse;
 }
 
 sub sleep {
