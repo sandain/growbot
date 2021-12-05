@@ -504,16 +504,22 @@ sub measure {
   # Return the compensated measurements.
   my $measure;
   $measure->{temperature} = {
-    value => $self->$_compensateTemperature ($data->{temperature}),
+    value => sprintf ("%.3f",
+      $self->$_compensateTemperature ($data->{temperature})
+    ),
     unit => "°C"
   };
   $measure->{pressure} = {
-    value => $self->$_compensatePressure ($data->{pressure}) / 100,
+    value => sprintf ("%.3f",
+      $self->$_compensatePressure ($data->{pressure}) / 100
+    ),
     unit => "hPa"
   };
   return $measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
   $measure->{humidity} = {
-    value => $self->$_compensateHumidity ($data->{humidity}),
+    value => sprintf ("%.3f",
+      $self->$_compensateHumidity ($data->{humidity})
+    ),
     unit => "%"
   };
   return $measure;
