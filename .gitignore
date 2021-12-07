@@ -1,0 +1,5 @@
+# Don't track custom configurations.
+config.json
+
+# Don't track measurement data.
+data/*
