@@ -10,7 +10,7 @@ robotic devices.
   use strict;
   use warnings;
   use utf8;
-  use v5.10;
+  use v5.14;
 
   use Device::AtlasScientific;
 
@@ -271,7 +271,7 @@ package Device::AtlasScientific;
 use strict;
 use warnings;
 use utf8;
-use v5.10;
+use v5.14;
 use version;
 use Device::I2C;
 use Exporter qw(import);
