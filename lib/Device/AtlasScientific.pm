@@ -798,6 +798,48 @@ sub options {
   return $param;
 }
 
+sub pressureUnit {
+  my $self = shift;
+  my ($unit) = @_;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} if (
+    $self->{model} eq EZO_RTD or
+    $self->{model} eq EZO_PH or
+    $self->{model} eq EZO_EC or
+    $self->{model} eq EZO_ORP or
+    $self->{model} eq EZO_DO or
+    $self->{model} eq EZO_CO2 or
+    $self->{model} eq EZO_O2 or
+    $self->{model} eq EZO_HUM or
+    $self->{model} eq EZO_FLOW or
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL or
+    $self->{model} eq EZO_RGB
+  );
+  if (defined $unit) {
+    die "Invalid unit option $unit" unless (
+      $unit == 0 or $unit == 1 or
+      $unit eq 'psi' or
+      $unit eq 'atm' or
+      $unit eq 'bar' or
+      $unit eq 'kPa' or
+      $unit eq 'inh2o' or
+      $unit eq 'cmh20'
+    );
+    $self->$_sendCommand ("U," . $unit);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  else {
+    $self->$_sendCommand ("U,?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    (my $u, $unit) = split /,/, $self->$_getResponse;
+    die "Invalid response from device" unless (uc $u eq "?U");
+  }
+  return $unit;
+}
+
 sub plock {
   my $self = shift;
   my ($plock) = @_;
