@@ -845,7 +845,7 @@ sub options {
     (my $o, $param) = split /,/, $self->$_getResponse, 2;
     die "Invalid response from device" unless (uc $o eq "?O");
   }
-  return $param;
+  return split ",", $param;
 }
 
 sub pressureUnit {
