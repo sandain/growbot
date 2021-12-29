@@ -796,7 +796,7 @@ sub options {
   my $self = shift;
   my ($param, $value) = @_;
   # Make sure this feature is supported on this device.
-  die "Feature not available on " . $self->{model} if (
+  return if (
     $self->{model} eq EZO_RTD or
     $self->{model} eq EZO_PH or
     $self->{model} eq EZO_ORP or
