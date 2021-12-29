@@ -211,6 +211,12 @@ provided. Requires both and option name, and value (0 or 1).
 Returns the status of the protocol lock. Sets the protocol lock if provided.
 A value of 1 enables the protocol lock. A value of 0 disables the protocol lock.
 
+=item C<pressureUnit>
+
+Modify the pressure unit returned for EZO-PRS devices. Valid options include
+1/0 to add/remove unit from output, psi, atm, bar, kPa, inh2o, and cmh2o. The
+current unit will be returned given no input.
+
 =item C<sleep>
 
 Put the device to sleep.
