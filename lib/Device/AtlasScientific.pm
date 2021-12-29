@@ -182,6 +182,12 @@ Clear custom configuration and reboot the device.
 Rapidly blink the LED on the device until a new command is sent. Used to help
 find the device.
 
+=item C<flowRateUnit>
+
+Modify the time unit for the flow rate returned for EZO-FLOW devices. Valid
+options include s, m, and h. The current time unit for the flow rate will be
+returned given no input.
+
 =item C<i2c>
 
 Changes the I2C address of the device. Warning: This device will become
@@ -684,6 +690,44 @@ sub find {
   $self->$_require_firmware (EZO_DO, "2.10");
   # Send the find command.
   $self->$_sendCommand ("Find");
+}
+
+sub flowRateUnit {
+  my $self = shift;
+  my ($unit) = @_;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} if (
+    $self->{model} eq EZO_RTD or
+    $self->{model} eq EZO_PH or
+    $self->{model} eq EZO_EC or
+    $self->{model} eq EZO_ORP or
+    $self->{model} eq EZO_DO or
+    $self->{model} eq EZO_CO2 or
+    $self->{model} eq EZO_O2 or
+    $self->{model} eq EZO_HUM or
+    $self->{model} eq EZO_FLOW or
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL or
+    $self->{model} eq EZO_RGB
+  );
+  if (defined $unit) {
+    die "Invalid unit option $unit" unless (
+      $unit eq 's' or
+      $unit eq 'm' or
+      $unit eq 'h'
+    );
+    $self->$_sendCommand ("Frp," . $unit);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  else {
+    $self->$_sendCommand ("Frp,?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    (my $frp, $unit) = split /,/, $self->$_getResponse;
+    die "Invalid response from device" unless (uc $frp eq "?Frp");
+  }
+  return $unit;
 }
 
 sub i2c {
