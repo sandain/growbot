@@ -409,7 +409,154 @@ sub measure {
   $delay = 300000 if ($self->{model} eq EZO_RGB);
   # Give the device a moment to respond.
   usleep $delay;
-  return $self->$_getResponse;
+  my @response = split ",", $self->$_getResponse;
+  # Read the device options.
+  my @options = $self->options;
+  # Extract the measurement(s) from the response based on the model.
+  my $measure;
+  if ($self->{model} eq EZO_RTD) {
+    $measure->{temperature} = {
+      value => $response[0],
+      unit  => "°C"
+    };
+  }
+  if ($self->{model} eq EZO_PH) {
+    $measure->{pH} = {
+      value => $response[0],
+      unit  => "pH"
+    };
+  }
+  if ($self->{model} eq EZO_EC) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{conductivity} = {
+        value => $response[$i],
+        unit  => "μS/cm"
+      } if ($options[$i] eq 'EC');
+      $measure->{total_dissolved_solids} = {
+        value => $response[$i],
+        unit  => "PPM"
+      } if ($options[$i] eq 'TDS');
+      $measure->{salinity} = {
+        value => $response[$i],
+        unit  => "PSU"
+      } if ($options[$i] eq 'S');
+      $measure->{specific_gravity} = {
+        value => $response[$i],
+        unit  => ""
+      } if ($options[$i] eq 'SG');
+    }
+  }
+  if ($self->{model} eq EZO_ORP) {
+    $measure->{oxygen_reduction_potential} = {
+      value => $response[0],
+      unit  => "mV"
+    };
+  }
+  if ($self->{model} eq EZO_DO) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{dissolved_oxygen} = {
+        value => $response[$i],
+        unit  => "mg/L"
+      } if ($options[$i] eq 'MG');
+      $measure->{saturation} = {
+        value => $response[$i],
+        unit  => "%"
+      } if ($options[$i] eq '%');
+    }
+  }
+  if ($self->{model} eq EZO_PMP or $self->{model} eq EZO_PMPL) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{volume} = {
+        value => $response[$i],
+        unit  => "mL"
+      } if ($options[$i] eq 'V');
+      $measure->{total_volume} = {
+        value => $response[$i],
+        unit  => "mL"
+      } if ($options[$i] eq 'TV');
+      $measure->{absolute_total_volume} = {
+        value => $response[$i],
+        unit  => "mL"
+      } if ($options[$i] eq 'ATV');
+    }
+  }
+  if ($self->{model} eq EZO_CO2) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{carbon_dioxide} = {
+        value => $response[$i],
+        unit  => "PPM"
+      } if ($options[$i] eq 'PPM');
+      $measure->{temperature} = {
+        value => $response[$i],
+        unit  => "°C"
+      } if ($options[$i] eq 'T');
+    }
+  }
+  if ($self->{model} eq EZO_O2) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{oxygen} = {
+        value => $response[$i],
+        unit  => "PPT"
+      } if ($options[$i] eq 'PPT');
+      $measure->{percent} = {
+        value => $response[$i],
+        unit  => "%"
+      } if ($options[$i] eq '%');
+    }
+  }
+  if ($self->{model} eq EZO_HUM) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{humidity} = {
+        value => $response[$i],
+        unit  => "%"
+      } if ($options[$i] eq 'HUM');
+      $measure->{temperature} = {
+        value => $response[$i],
+        unit  => "°C"
+      } if ($options[$i] eq 'T');
+      $measure->{dew_point} = {
+        value => $response[$i],
+        unit  => "°C"
+      } if ($options[$i] eq 'DEW');
+    }
+  }
+  if ($self->{model} eq EZO_PRS) {
+    my $unit = $self->pressureUnit;
+    $unit = $response[1] if ($unit == 1);
+    $measure->{pressure} = {
+      value => $response[0],
+      unit  => $unit
+    };
+  }
+  if ($self->{model} eq EZO_FLOW) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{total_volume} = {
+        value => $response[$i],
+        unit  => "L"
+      } if ($options[$i] eq 'TV');
+      $measure->{flow_rate} = {
+        value => $response[$i],
+        unit  => sprintf "L/%s", $self->flowRateUnit
+      } if ($options[$i] eq 'FR');
+    }
+  }
+  if ($self->{model} eq EZO_RGB) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{RGB} = {
+        value => $response[$i],
+        unit  => "RGB"
+      } if ($options[$i] eq 'RGB');
+      $measure->{LUX} = {
+        value => $response[$i],
+        unit  => "LUX"
+      } if ($options[$i] eq 'LUX');
+      $measure->{CIE} = {
+        value => $response[$i],
+        unit  => "CIE"
+      } if ($options[$i] eq 'CIE');
+    }
+  }
+  return $measure;
 }
 
 sub baud {
