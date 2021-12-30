@@ -582,10 +582,17 @@ sub calibration {
   my $self = shift;
   my ($arg, $value) = @_;
   # Make sure this feature is supported on this device.
-  die "Feature not available on " . $self->{model} if (
-    $self->{model} eq EZO_HUM or
-    $self->{model} eq EZO_PRS or
-    $self->{model} eq EZO_FLOW
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_RTD or
+    $self->{model} eq EZO_PH or
+    $self->{model} eq EZO_EC or
+    $self->{model} eq EZO_ORP or
+    $self->{model} eq EZO_DO or
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL or
+    $self->{model} eq EZO_CO2 or
+    $self->{model} eq EZO_O2 or
+    $self->{model} eq EZO_RGB
   );
   # Handle EZO_RGB device calibration. There are no arguments to handle.
   if ($self->{model} eq EZO_RGB) {
@@ -730,14 +737,12 @@ sub calibration {
 sub calibrationExport {
   my $self = shift;
   # Make sure this feature is supported on this device.
-  die "Feature not available on " . $self->{model} if (
-    $self->{model} eq EZO_PMP or
-    $self->{model} eq EZO_PMPL or
-    $self->{model} eq EZO_O2 or
-    $self->{model} eq EZO_HUM or
-    $self->{model} eq EZO_PRS or
-    $self->{model} eq EZO_FLOW or
-    $self->{model} eq EZO_RGB
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_RTD or
+    $self->{model} eq EZO_PH or
+    $self->{model} eq EZO_EC or
+    $self->{model} eq EZO_ORP or
+    $self->{model} eq EZO_DO
   );
   # Make sure the firmware supports this feature on this device.
   $self->$_require_firmware (EZO_RTD, "2.10");
@@ -776,14 +781,12 @@ sub calibrationImport {
   my $self = shift;
   my @calibration = @_;
   # Make sure this feature is supported on this device.
-  die "Feature not available on " . $self->{model} if (
-    $self->{model} eq EZO_PMP or
-    $self->{model} eq EZO_PMPL or
-    $self->{model} eq EZO_O2 or
-    $self->{model} eq EZO_HUM or
-    $self->{model} eq EZO_PRS or
-    $self->{model} eq EZO_FLOW or
-    $self->{model} eq EZO_RGB
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_RTD or
+    $self->{model} eq EZO_PH or
+    $self->{model} eq EZO_EC or
+    $self->{model} eq EZO_ORP or
+    $self->{model} eq EZO_DO
   );
   # Make sure the firmware supports this feature on this device.
   $self->$_require_firmware (EZO_RTD, "2.10");
@@ -843,19 +846,8 @@ sub flowRateUnit {
   my $self = shift;
   my ($unit) = @_;
   # Make sure this feature is supported on this device.
-  die "Feature not available on " . $self->{model} if (
-    $self->{model} eq EZO_RTD or
-    $self->{model} eq EZO_PH or
-    $self->{model} eq EZO_EC or
-    $self->{model} eq EZO_ORP or
-    $self->{model} eq EZO_DO or
-    $self->{model} eq EZO_CO2 or
-    $self->{model} eq EZO_O2 or
-    $self->{model} eq EZO_HUM or
-    $self->{model} eq EZO_FLOW or
-    $self->{model} eq EZO_PMP or
-    $self->{model} eq EZO_PMPL or
-    $self->{model} eq EZO_RGB
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_FLOW
   );
   if (defined $unit) {
     die "Invalid unit option $unit" unless (
@@ -999,19 +991,8 @@ sub pressureUnit {
   my $self = shift;
   my ($unit) = @_;
   # Make sure this feature is supported on this device.
-  die "Feature not available on " . $self->{model} if (
-    $self->{model} eq EZO_RTD or
-    $self->{model} eq EZO_PH or
-    $self->{model} eq EZO_EC or
-    $self->{model} eq EZO_ORP or
-    $self->{model} eq EZO_DO or
-    $self->{model} eq EZO_CO2 or
-    $self->{model} eq EZO_O2 or
-    $self->{model} eq EZO_HUM or
-    $self->{model} eq EZO_FLOW or
-    $self->{model} eq EZO_PMP or
-    $self->{model} eq EZO_PMPL or
-    $self->{model} eq EZO_RGB
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PRS
   );
   if (defined $unit) {
     die "Invalid unit option $unit" unless (
