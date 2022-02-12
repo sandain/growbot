@@ -73,9 +73,9 @@ use lib qw(lib);
 
 helper 'sensor' => sub {
   my $self = shift;
-  my ($address) = @_;
+  my ($name) = @_;
   
-  return sprintf "{ \"address\":\"%s\" }", $address;
+  return sprintf "{ \"name\":\"%s\" }", $name;
 
 };
 
@@ -93,15 +93,15 @@ get '/' => sub {
   $self->render (template => 'dashboard');
 };
 
-=head3 get /sensor/<i2c address>
+=head3 get /sensor/<sensor name>
 
   Renders the dashboard.
 
 =cut
 
-get '/sensor/:address' => sub {
+get '/sensor/:name' => sub {
   my $self = shift;
-  my $address = $self->param ('address');
+  my $name = $self->param ('name');
   $self->render (template => 'sensor');
 };
 
