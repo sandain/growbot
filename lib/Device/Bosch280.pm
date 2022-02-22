@@ -507,20 +507,26 @@ sub measure {
     value => sprintf ("%.3f",
       $self->$_compensateTemperature ($data->{temperature})
     ),
-    unit => "°C"
+    unit => "°C",
+    minimum => -40,
+    maximum => 85
   };
   $measure->{pressure} = {
     value => sprintf ("%.3f",
       $self->$_compensatePressure ($data->{pressure}) / 100
     ),
-    unit => "hPa"
+    unit => "hPa",
+    minimum => 300,
+    maximum => 1100
   };
   return $measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
   $measure->{humidity} = {
     value => sprintf ("%.3f",
       $self->$_compensateHumidity ($data->{humidity})
     ),
-    unit => "%"
+    unit => "%",
+    minimum => 0,
+    maximum => 100
   };
   return $measure;
 }
