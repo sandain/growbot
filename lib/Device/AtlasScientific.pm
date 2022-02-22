@@ -417,50 +417,68 @@ sub measure {
   if ($self->{model} eq EZO_RTD) {
     $measure->{temperature} = {
       value => $response[0],
-      unit  => "°C"
+      unit  => "°C",
+      minimum => -126.000,
+      maximum => 1254
     };
   }
   if ($self->{model} eq EZO_PH) {
     $measure->{pH} = {
       value => $response[0],
-      unit  => "pH"
+      unit  => "pH",
+      minimum => 0.001,
+      maximum => 14.000
     };
   }
   if ($self->{model} eq EZO_EC) {
     for (my $i = 0; $i < @options; $i ++) {
       $measure->{conductivity} = {
         value => $response[$i],
-        unit  => "μS/cm"
+        unit  => "μS/cm",
+        minimum => 0.07,
+        maximum => 500000
       } if ($options[$i] eq 'EC');
       $measure->{total_dissolved_solids} = {
         value => $response[$i],
-        unit  => "PPM"
+        unit  => "PPM",
+        minimum => 0,
+        maximum => 500000
       } if ($options[$i] eq 'TDS');
       $measure->{salinity} = {
         value => $response[$i],
-        unit  => "PSU"
+        unit  => "PSU",
+        minimum => 0.00,
+        maximum => 42.00
       } if ($options[$i] eq 'S');
       $measure->{specific_gravity} = {
         value => $response[$i],
-        unit  => ""
+        unit  => "",
+        minimum => 1.00,
+        maximum =>1.300
       } if ($options[$i] eq 'SG');
     }
   }
   if ($self->{model} eq EZO_ORP) {
     $measure->{oxygen_reduction_potential} = {
       value => $response[0],
-      unit  => "mV"
+      unit  => "mV",
+      minimum => -1019.9,
+      maximum => 1019.9
     };
   }
   if ($self->{model} eq EZO_DO) {
     for (my $i = 0; $i < @options; $i ++) {
       $measure->{dissolved_oxygen} = {
         value => $response[$i],
-        unit  => "mg/L"
+        unit  => "mg/L",
+        minimum => 0.01,
+        maximum => 100
       } if ($options[$i] eq 'MG');
       $measure->{saturation} = {
         value => $response[$i],
-        unit  => "%"
+        unit  => "%",
+        minimum => 0.1,
+        maximum => 400
       } if ($options[$i] eq '%');
     }
   }
@@ -468,15 +486,21 @@ sub measure {
     for (my $i = 0; $i < @options; $i ++) {
       $measure->{volume} = {
         value => $response[$i],
-        unit  => "mL"
+        unit  => "mL",
+        minimum => 0,
+        maximum => 45000
       } if ($options[$i] eq 'V');
       $measure->{total_volume} = {
         value => $response[$i],
-        unit  => "mL"
+        unit  => "mL",
+        minimum => 0,
+        maximum => 45000
       } if ($options[$i] eq 'TV');
       $measure->{absolute_total_volume} = {
         value => $response[$i],
-        unit  => "mL"
+        unit  => "mL",
+        minimum => 0,
+        maximum => 45000
       } if ($options[$i] eq 'ATV');
     }
   }
@@ -484,11 +508,15 @@ sub measure {
     for (my $i = 0; $i < @options; $i ++) {
       $measure->{carbon_dioxide} = {
         value => $response[$i],
-        unit  => "PPM"
+        unit  => "PPM",
+        minimum => 0,
+        maximum => 10000
       } if ($options[$i] eq 'PPM');
       $measure->{temperature} = {
         value => $response[$i],
-        unit  => "°C"
+        unit  => "°C",
+        minimum => -20,
+        maximum => 50
       } if ($options[$i] eq 'T');
     }
   }
@@ -496,11 +524,15 @@ sub measure {
     for (my $i = 0; $i < @options; $i ++) {
       $measure->{oxygen} = {
         value => $response[$i],
-        unit  => "PPT"
+        unit  => "PPT",
+        minimum => 0,
+        maximum => 10000
       } if ($options[$i] eq 'PPT');
       $measure->{percent} = {
         value => $response[$i],
-        unit  => "%"
+        unit  => "%",
+        minimum => 0,
+        maximum => 42
       } if ($options[$i] eq '%');
     }
   }
@@ -508,35 +540,55 @@ sub measure {
     for (my $i = 0; $i < @options; $i ++) {
       $measure->{humidity} = {
         value => $response[$i],
-        unit  => "%"
+        unit  => "%",
+        minimum => 0,
+        maximum => 100
       } if ($options[$i] eq 'HUM');
       $measure->{temperature} = {
         value => $response[$i],
-        unit  => "°C"
+        unit  => "°C",
+        minimum => -20,
+        maximum => 50
       } if ($options[$i] eq 'T');
       $measure->{dew_point} = {
         value => $response[$i],
-        unit  => "°C"
+        unit  => "°C",
+        minimum => -20,
+        maximum => 50
       } if ($options[$i] eq 'DEW');
     }
   }
   if ($self->{model} eq EZO_PRS) {
     my $unit = $self->pressureUnit;
     $unit = $response[1] if ($unit == 1);
+    # Max depends on the unit.
+    my $max;
+    $max = 50.000 if ($unit eq "psi");
+    $max = 3.402 if ($unit eq "atm");
+    $max = 3.447 if ($unit eq "bar");
+    $max = 344.738 if ($unit eq "kPa");
+    $max = 1385.38 if ($unit eq "in h2o");
+    $max = 3515.34 if ($unit eq "cm h2o");
     $measure->{pressure} = {
       value => $response[0],
-      unit  => $unit
+      unit  => $unit,
+      minimum => 0,
+      maximum => $max
     };
   }
   if ($self->{model} eq EZO_FLOW) {
     for (my $i = 0; $i < @options; $i ++) {
       $measure->{total_volume} = {
         value => $response[$i],
-        unit  => "L"
+        unit  => "L",
+        minimum => 0,
+        maximum => 100000
       } if ($options[$i] eq 'TV');
       $measure->{flow_rate} = {
         value => $response[$i],
-        unit  => sprintf "L/%s", $self->flowRateUnit
+        unit  => sprintf "L/%s", $self->flowRateUnit,
+        minimum => 0,
+        maximum => 1000
       } if ($options[$i] eq 'FR');
     }
   }
@@ -544,15 +596,21 @@ sub measure {
     for (my $i = 0; $i < @options; $i ++) {
       $measure->{RGB} = {
         value => $response[$i],
-        unit  => "RGB"
+        unit  => "RGB",
+        minimum => 0,
+        maximum => 255
       } if ($options[$i] eq 'RGB');
       $measure->{LUX} = {
         value => $response[$i],
-        unit  => "LUX"
+        unit  => "LUX",
+        minimum => 0,
+        maximum => 65535
       } if ($options[$i] eq 'LUX');
       $measure->{CIE} = {
         value => $response[$i],
-        unit  => "CIE"
+        unit  => "CIE",
+        minimum => 0,
+        maximum => 100
       } if ($options[$i] eq 'CIE');
     }
   }
@@ -1001,8 +1059,8 @@ sub pressureUnit {
       $unit eq 'atm' or
       $unit eq 'bar' or
       $unit eq 'kPa' or
-      $unit eq 'inh2o' or
-      $unit eq 'cmh20'
+      $unit eq 'in h2o' or
+      $unit eq 'cm h20'
     );
     $self->$_sendCommand ("U," . $unit);
     # Give the device a moment to respond.
