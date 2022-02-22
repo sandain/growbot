@@ -110,8 +110,8 @@ my $MIN_VERSION = '3.6.0';
 
 sub new {
   my $class = shift;
-  die "Usage: $class->new (chip, device, value, type, unit)" unless (@_ == 5);
-  my ($chip, $device, $value, $type, $unit) = @_;
+  die "Usage: $class->new (chip, device, value, type, unit, min, max)" unless (@_ == 7);
+  my ($chip, $device, $value, $type, $unit, $min, $max) = @_;
   # Make sure we can find the lm-sensors program.
   my $bin = `which sensors || echo $DEFAULT_BIN`;
   $bin =~ s/[\r\n]+//g;
@@ -123,7 +123,9 @@ sub new {
     value  => $value,
     type   => $type,
     unit   => $unit,
-    bin    => $bin
+    bin    => $bin,
+    min    => $min,
+    max    => $max
   }, $class;
   # Make sure lm-sensors is recent enough.
   my $version_string = `$self->{bin} -v 2>/dev/null`;
@@ -155,7 +157,9 @@ sub measure {
   my $measure;
   $measure->{$self->{type}} = {
     value => $json->{$self->{chip}}->{$self->{device}}->{$self->{value}},
-    unit => $self->{unit}
+    unit => $self->{unit},
+    minimum => $self->{min},
+    maximum => $self->{max},
   };
   return $measure;
 }
