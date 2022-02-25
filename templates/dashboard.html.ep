@@ -1,3 +1,20 @@
 % layout 'default';
-% title 'Welcome';
-<h1>Welcome to the Mojolicious real-time web framework!</h1>
+% title 'Growbot';
+
+<div class="container">
+  <div class="row">
+  % foreach my $device (@{stash ('enabled_devices')}) {
+    <div class="col-lg-4 col-sm-6 portfolio-item">
+      <div class="card h-100">
+        <div class="card-body">
+          <a href="/device/<%= $device %>">
+            <h4 class="card-title" id="device-<%= $device %>">
+              <%= $device %>
+            </h4>
+          </a>
+        </div>
+      </div>
+    </div>
+  % }
+  </div>
+</div>
