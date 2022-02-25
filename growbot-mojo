@@ -57,21 +57,21 @@ Email sandain@hotmail.com
 use strict;
 use warnings;
 use utf8;
-use v5.10;
+use v5.14;
 
 use Mojolicious::Lite;
 
-use lib qw(lib);
+use lib qw (lib);
 
 =head2 Helper Functions
 
-=head3 sensor
+=head3 device
 
-  Return the sensor data for the selected device.
+  Return device data.
 
 =cut
 
-helper 'sensor' => sub {
+helper 'device' => sub {
   my $self = shift;
   my ($name) = @_;
   
@@ -93,16 +93,16 @@ get '/' => sub {
   $self->render (template => 'dashboard');
 };
 
-=head3 get /sensor/<sensor name>
+=head3 get /device/<device name>
 
   Renders the dashboard.
 
 =cut
 
-get '/sensor/:name' => sub {
+get '/device/:name' => sub {
   my $self = shift;
   my $name = $self->param ('name');
-  $self->render (template => 'sensor');
+  $self->render (template => 'device');
 };
 
 app->start;
