@@ -1,0 +1,16 @@
+% layout 'default';
+
+% use utf8;
+% use open qw (:std :utf8);
+% use Mojo::JSON qw (decode_json);
+
+% my $device = decode_json device ($name);
+
+<h1><%= $device->{name} %></h1>
+<p>Type: <%= $device->{type} %></p>
+
+% foreach my $measurement (sort keys %{$device->{measurements}}) {
+%  my $m = $device->{measurements}{$measurement};
+<p><%= sprintf "%s: %s %s", ucfirst $measurement, $m->{measure}, $m->{unit} %></p>
+<img src="<%= sprintf "%s/%s.svg", $name, $measurement %>"/>
+% }

@@ -3,7 +3,7 @@
 
 <div class="container">
   <div class="row">
-  % foreach my $device (@{stash ('enabled_devices')}) {
+  % foreach my $device (devices) {
     <div class="col-lg-4 col-sm-6 portfolio-item">
       <div class="card h-100">
         <div class="card-body">
