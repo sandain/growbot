@@ -8,6 +8,9 @@ use v5.14;
 use lib qw (lib);
 use GrowBot;
 
+# Set the script name.
+$0 = "growbot";
+
 my $configFile = "config.json";
 
 my $growbot = GrowBot->new ($configFile);
