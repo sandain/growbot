@@ -11,8 +11,10 @@ use GrowBot;
 # Set the script name.
 $0 = "growbot";
 
+# The configuration file to load.
 my $configFile = "config.json";
 
+# Create a new GrowBot using the configuration file.
 my $growbot = GrowBot->new ($configFile);
 
 # Capture SIGHUP to allow for the configuration file to be reloaded.
@@ -24,10 +26,10 @@ $SIG{INT} = $SIG{TERM} = sub { $growbot->{running} = 0 };
 
 printf "%s %s\n", $growbot->name, $growbot->version;
 
-
+# Start the GrowBot.
 $growbot->start;
 
-
+# Close the Growbot.
 $growbot->close;
 
 printf "Done.\n";
