@@ -277,10 +277,14 @@ $_deviceMeasure = sub {
       xlim => [ $start, $end ],
       ylim => [ $min, $max ]
     );
-    $file = sprintf "%s/%s.svg", $folder, $type;
-    open $fh, '>', $file or die "Can't output sensor data: $!\n";
+    $file = sprintf "%s/%s", $folder, $type;
+    # Write the svg data to a temporary file.
+    open $fh, '>', $file . ".tmp" or die "Can't output sensor data: $!\n";
     printf $fh "%s\n", $painter->paint;
     $fh->close;
+    # Rename the temporary file.
+    unlink $file . ".svg" if (-e $file . ".svg");
+    rename $file . ".tmp", $file . ".svg";
   }
 };
 
