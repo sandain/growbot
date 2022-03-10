@@ -1,4 +1,6 @@
 % layout 'default';
+% title $name;
+% content_for description => sprintf "Data from device %s", $name;
 
 % use utf8;
 % use open qw (:std :utf8);
