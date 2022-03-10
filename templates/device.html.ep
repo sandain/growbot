@@ -9,10 +9,10 @@
 % my $device = decode_json device ($name);
 
 <h1><%= $device->{name} %></h1>
-<p>Type: <%= $device->{type} %></p>
+<h2>Type: <%= $device->{type} %></h2>
 
 % foreach my $measurement (sort keys %{$device->{measurements}}) {
 %  my $m = $device->{measurements}{$measurement};
-<p><%= sprintf "%s: %s %s", ucfirst $measurement, $m->{measure}, $m->{unit} %></p>
+<h3><%= sprintf "%s: %s %s", ucfirst $measurement, $m->{measure}, $m->{unit} %></h3>
 <img src="<%= sprintf "%s/%s.svg", $name, $measurement %>"/>
 % }
