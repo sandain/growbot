@@ -1,35 +1,34 @@
 % layout 'default';
 % title 'Growbot';
 % content_for description => 'Growbot Dashboard';
-
 % use Mojo::JSON qw (decode_json);
 
-<div class="container">
-  <div class="row">
-  % foreach my $name (devices) {
-  %   my $device = decode_json device ($name);
-  %   foreach my $measurement (sort keys %{$device->{measurements}}) {
-  %     my $src = sprintf "device/%s/%s.svg", $name, $measurement;
-  %     my $alt = sprintf "%s data from device %s", ucfirst $measurement, $device->{name};
-  %     my $m = $device->{measurements}{$measurement};
-    <div class="col-lg-4 col-sm-6 portfolio-item">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="card-title" id="device-<%= $name %>">
-            <a href="/device/<%= $name %>"><%= $device->{name} %></a>
-            -
-            <a href="/device/<%= $name %>/<%= $measurement %>"><%= ucfirst $measurement %></a>
-          </h4>
-          <p><%= sprintf "%s %s", $m->{measure}, $m->{unit} %></p>
-          <a href="/device/<%= $name %>/<%= $measurement %>">
-            <figure>
-              <img src="<%= $src %>" alt="<%= $alt %>" width="1000" height="500" style="position:relative; left:5%; width:90%; height:90%;"/>
-            </figure>
-          </a>
+    <div class="container">
+      <div class="row">
+      % foreach my $name (devices) {
+      %   my $device = decode_json device ($name);
+      %   foreach my $measurement (sort keys %{$device->{measurements}}) {
+      %     my $src = sprintf "device/%s/%s.svg", $name, $measurement;
+      %     my $alt = sprintf "%s data from device %s", ucfirst $measurement, $device->{name};
+      %     my $m = $device->{measurements}{$measurement};
+        <div class="col-lg-4 col-sm-6 portfolio-item">
+          <div class="card h-100">
+            <div class="card-body">
+              <h4 class="card-title" id="device-<%= $name %>">
+                <a href="/device/<%= $name %>"><%= $device->{name} %></a>
+                -
+                <a href="/device/<%= $name %>/<%= $measurement %>"><%= ucfirst $measurement %></a>
+              </h4>
+              <p><%= sprintf "%s %s", $m->{measure}, $m->{unit} %></p>
+              <a href="/device/<%= $name %>/<%= $measurement %>">
+                <figure>
+                  <img src="<%= $src %>" alt="<%= $alt %>" width="1000" height="500" style="position:relative; left:5%; width:90%; height:90%;"/>
+                </figure>
+              </a>
+            </div>
+          </div>
         </div>
+      %   }
+      % }
       </div>
     </div>
-  %   }
-  % }
-  </div>
-</div>
