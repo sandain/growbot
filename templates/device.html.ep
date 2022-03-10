@@ -13,6 +13,8 @@
 
 % foreach my $measurement (sort keys %{$device->{measurements}}) {
 %  my $m = $device->{measurements}{$measurement};
+%  my $src = sprintf "%s/%s.svg", $name, $measurement;
+%  my $alt = sprintf "%s data from device %s", ucfirst $measurement, $device->{name};
 <h3><%= sprintf "%s: %s %s", ucfirst $measurement, $m->{measure}, $m->{unit} %></h3>
-<img src="<%= sprintf "%s/%s.svg", $name, $measurement %>"/>
+<img src="<%= $src %>" alt="<%= $alt %>" style="width:100%;"/>
 % }
