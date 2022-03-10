@@ -4,13 +4,13 @@
 
 <div class="container">
   <div class="row">
-  % foreach my $device (devices) {
+  % foreach my $name (devices) {
     <div class="col-lg-4 col-sm-6 portfolio-item">
       <div class="card h-100">
         <div class="card-body">
-          <a href="/device/<%= $device %>">
-            <h4 class="card-title" id="device-<%= $device %>">
-              <%= $device %>
+          <a href="/device/<%= $name %>">
+            <h4 class="card-title" id="device-<%= $name %>">
+              <%= $name %>
             </h4>
           </a>
         </div>
