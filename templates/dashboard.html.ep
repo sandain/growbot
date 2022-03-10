@@ -14,12 +14,14 @@
         <div class="col-lg-4 col-sm-6 portfolio-item">
           <div class="card h-100">
             <div class="card-body">
-              <h4 class="card-title" id="device-<%= $name %>">
+              <h4 class="card-title text-center" id="device-<%= $name %>">
                 <a href="/device/<%= $name %>"><%= $device->{name} %></a>
-                -
-                <a href="/device/<%= $name %>/<%= $measurement %>"><%= ucfirst $measurement %></a>
               </h4>
-              <p><%= sprintf "%s %s", $m->{measure}, $m->{unit} %></p>
+              <p class="text-center">
+                <a href="/device/<%= $name %>/<%= $measurement %>"><%= ucfirst $measurement %></a>
+                <br/>
+                <%= sprintf "%s %s", $m->{measure}, $m->{unit} %>
+              </p>
               <a href="/device/<%= $name %>/<%= $measurement %>">
                 <figure>
                   <img src="<%= $src %>" alt="<%= $alt %>" width="1000" height="500" style="position:relative; left:5%; width:90%; height:90%; border-color:black; border-style:solid; border-width:2px;"/>
