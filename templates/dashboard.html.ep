@@ -2,20 +2,32 @@
 % title 'Growbot';
 % content_for description => 'Growbot Dashboard';
 
+% use Mojo::JSON qw (decode_json);
+
 <div class="container">
   <div class="row">
   % foreach my $name (devices) {
+  %   my $device = decode_json device ($name);
+  %   foreach my $measurement (sort keys %{$device->{measurements}}) {
+  %     my $src = sprintf "device/%s/%s.svg", $name, $measurement;
+  %     my $alt = sprintf "%s data from device %s", ucfirst $measurement, $device->{name};
+  %     my $m = $device->{measurements}{$measurement};
     <div class="col-lg-4 col-sm-6 portfolio-item">
       <div class="card h-100">
         <div class="card-body">
-          <a href="/device/<%= $name %>">
-            <h4 class="card-title" id="device-<%= $name %>">
-              <%= $name %>
-            </h4>
+          <h4 class="card-title" id="device-<%= $name %>">
+            <a href="/device/<%= $name %>"><%= $device->{name} %></a>
+            -
+            <a href="/device/<%= $name %>/<%= $measurement %>"><%= ucfirst $measurement %></a>
+          </h4>
+          <p><%= sprintf "%s %s", $m->{measure}, $m->{unit} %></p>
+          <a href="/device/<%= $name %>/<%= $measurement %>">
+            <img src="<%= $src %>" alt="<%= $alt %>" style="width:90%;"/>
           </a>
         </div>
       </div>
     </div>
+  %   }
   % }
   </div>
 </div>
