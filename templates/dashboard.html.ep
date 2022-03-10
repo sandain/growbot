@@ -1,5 +1,6 @@
 % layout 'default';
 % title 'Growbot';
+% content_for description => 'Growbot Dashboard';
 
 <div class="container">
   <div class="row">
