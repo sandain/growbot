@@ -22,7 +22,9 @@
           </h4>
           <p><%= sprintf "%s %s", $m->{measure}, $m->{unit} %></p>
           <a href="/device/<%= $name %>/<%= $measurement %>">
-            <img src="<%= $src %>" alt="<%= $alt %>" width="1000" height="500" style="position:relative; left:5%; width:90%; height:90%;"/>
+            <figure>
+              <img src="<%= $src %>" alt="<%= $alt %>" width="1000" height="500" style="position:relative; left:5%; width:90%; height:90%;"/>
+            </figure>
           </a>
         </div>
       </div>
