@@ -38,3 +38,6 @@ $growbot->start;
 $growbot->close;
 
 printf "Done.\n";
+
+# Remove the PID file.
+unlink "growbot.pid" or die "Count not remove PID file: $!";
