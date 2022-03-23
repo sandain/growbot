@@ -3,3 +3,6 @@ config.json
 
 # Don't track measurement data.
 data/*
+
+# Don't track PID files.
+*.pid
