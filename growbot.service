@@ -1,0 +1,15 @@
+[Unit]
+Description=GrowBot
+Documentation=https://github.com/sandain/growbot
+
+[Service]
+User=growbot
+Group=growbot
+WorkingDirectory=/opt/growbot
+PIDFile=/opt/growbot/growbot.pid
+ExecStart=/opt/growbot/growbot
+ExecReload=/opt/growbot/growbot
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
