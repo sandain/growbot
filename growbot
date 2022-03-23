@@ -14,6 +14,11 @@ $0 = "growbot";
 # The configuration file to load.
 my $configFile = "config.json";
 
+# Create a PID file.
+open my $pid, ">", "growbot.pid" or die "Could not write to PID file: $!";
+print $pid "$$\n";
+close $pid;
+
 # Create a new GrowBot using the configuration file.
 my $growbot = GrowBot->new ($configFile);
 
