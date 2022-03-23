@@ -7,6 +7,7 @@ After=network.target
 [Service]
 User=growbot
 Group=growbot
+WorkingDirectory=/opt/growbot
 PIDFile=/opt/growbot/hypnotoad.pid
 ExecStart=/usr/bin/hypnotoad /opt/growbot/growbot-mojo
 ExecReload=/usr/bin/hypnotoad /opt/growbot/growbot-mojo
