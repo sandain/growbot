@@ -15,8 +15,15 @@ of sensor data is the only feature currently supported).
     * Add PWM controller for fans and other PWM controlled devices.
     * Update other drivers to depend on same library as the PWM controller.
     * Add missing functionality to the AtlasScientfic driver.
-* Add configuration user interface with authentication.
-* Add unit conversion.
-* Add support for responding to events (e.g., increase fan speed if air temperature
-  gets too high).
-* Rework device command queue and fix shutdown sequence.
+* User Interface
+    * Add configuration user interface with authentication.
+    * Create a theme and make the UI nice to look at.
+* General
+    * Add unit conversion.
+    * Add support for responding to events (e.g., increase fan speed if air
+      temperature gets too high).
+    * Rework device command queue to be more responsive and fix the shutdown
+      sequence.
+* Documentation
+    * Document config.json.
+    * Add installation instructions.
