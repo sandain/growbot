@@ -2,6 +2,7 @@
 config.json
 
 # Don't track measurement data.
+data
 data/*
 
 # Don't track PID files.
