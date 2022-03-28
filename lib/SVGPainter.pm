@@ -203,7 +203,12 @@ $_loadData = sub {
     next unless (-f "$folder/$file");
     my $type = $self->{type};
     if ($file =~ /^$type-(\d\d\d\d)-(\d\d)-(\d\d)\.txt/) {
-      my $date = DateTime->new (year => $1, month => $2, day => $3, time_zone => $self->{timeZone});
+      my $date = DateTime->new (
+        year => $1,
+        month => $2,
+        day => $3,
+        time_zone => $self->{timeZone}
+      );
       next if (DateTime->compare ($date, $start) == -1);
       next if (DateTime->compare ($date, $end) == 1);
       open my $fh, '<', "$folder/$file" or die "Unable to open data file $file: $!";
