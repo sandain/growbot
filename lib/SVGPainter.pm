@@ -83,9 +83,10 @@ use DateTime;
 use DateTime::Duration;
 use DateTime::Format::ISO8601;
 use SVG;
-use POSIX qw (ceil floor);
+use POSIX qw (ceil floor fmod);
 use constant DEFAULT_WIDTH  => 1000;
 use constant DEFAULT_HEIGHT => 500;
+use constant EPSILON => 1e-14;
 
 our @EXPORT_OK = qw ();
 
@@ -324,7 +325,7 @@ $_xTics = sub {
   my @xtics;
   for (my $i = 0; $i < @times; $i ++) {
     my $loc = $self->$_xCoordinate ($times[$i], $left, $right);
-    if ($i % $labelSkip == 0) {
+    if (abs (fmod ($i, $labelSkip)) < EPSILON) {
       push @xtics, {
         loc => $loc,
         length => 15,
@@ -332,7 +333,7 @@ $_xTics = sub {
         background => 1
       };
     }
-    elsif ($i % $longSkip == 0) {
+    elsif (abs (fmod ($i, $longSkip)) < EPSILON) {
       push @xtics, {
         loc => $loc,
         length => 15,
@@ -389,13 +390,17 @@ $_yTics = sub {
     }
   }
   my $start = $self->{ylim}[0];
-  $start = ceil ($start / $interval) * $interval unless ($start % $interval == 0);
+  $start = ceil ($start / $interval) * $interval
+    if (abs fmod ($start, $interval) > EPSILON);
   my $end = $self->{ylim}[1];
-  $end = floor ($end / $interval) * $interval unless ($end % $interval == 0);
+  $end = floor ($end / $interval) * $interval
+    if (abs fmod ($end, $interval) > EPSILON);
   my @ytics;
   for (my $i = $start; $i <= $end; $i += $interval) {
     my $loc = $self->$_yCoordinate ($i, $top, $bottom);
-    if ($i % $labelSkip == 0) {
+    my $label = abs (fmod ($i, $labelSkip));
+    my $long = abs (fmod ($i, $longSkip));
+    if ($label < EPSILON or $labelSkip - $label < EPSILON) {
       push @ytics, {
         loc => $loc,
         length => 15,
@@ -403,7 +408,7 @@ $_yTics = sub {
         background => 1
       };
     }
-    elsif ($i % $longSkip == 0) {
+    elsif ($long < EPSILON or $longSkip - $long < EPSILON) {
       push @ytics, {
         loc => $loc,
         length => 15,
