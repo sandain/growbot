@@ -354,58 +354,39 @@ $_yTics = sub {
   my $self = shift;
   my ($top, $bottom) = @_;
   my $distance = abs $self->{ylim}[1] - $self->{ylim}[0];
-  my $interval = 1;
-  my $labelSkip = 2;
-  my $longSkip = 2;
-  if ($distance > 500000) {
-    $interval = 50000;
-    $labelSkip = 100000;
-    $longSkip = 50000;
-  }
-  elsif ($distance > 100000) {
-    $interval = 10000;
-    $labelSkip = 100000;
-    $longSkip = 50000;
-  }
-  elsif ($distance > 50000) {
-    $interval = 5000;
-    $labelSkip = 10000;
-    $longSkip = 5000;
-  }
-  elsif ($distance > 10000) {
-    $interval = 1000;
-    $labelSkip = 10000;
-    $longSkip = 5000;
-  }
-  elsif ($distance > 5000) {
-    $interval = 500;
-    $labelSkip = 1000;
-    $longSkip = 500;
-  }
-  elsif ($distance > 1000) {
-    $interval = 100;
-    $labelSkip = 1000;
-    $longSkip = 500;
-  }
-  elsif ($distance > 500) {
-    $interval = 50;
-    $labelSkip = 100;
-    $longSkip = 50;
-  }
-  elsif ($distance > 100) {
-    $interval = 10;
-    $labelSkip = 100;
-    $longSkip = 50;
-  }
-  elsif ($distance > 50) {
-    $interval = 5;
-    $labelSkip = 10;
-    $longSkip = 5;
-  }
-  elsif ($distance > 10) {
-    $interval = 1;
-    $labelSkip = 10;
-    $longSkip = 5;
+  my $interval;
+  my $labelSkip;
+  my $longSkip;
+  my @distances = (
+    5e6, 1e6,
+    5e5, 1e5,
+    5e4, 1e4,
+    5e3, 1e3,
+    5e2, 1e2,
+    5e1, 1e1,
+    5e0, 1e0,
+    5e-1, 1e-1,
+    5e-2, 1e-2,
+    5e-3, 1e-3,
+    5e-4, 1e-4,
+    5e-5, 1e-5,
+    5e-6, 1e-6
+  );
+  my $i;
+  for ($i = 0; $i < @distances; $i ++) {
+    if ($distance >= $distances[$i]) {
+      if ($i % 2 == 0) {
+        $interval = $distances[$i] / 50;
+        $longSkip = $distances[$i] / 10;
+        $labelSkip = $distances[$i] / 5;
+      }
+      else {
+        $interval = $distances[$i] / 20;
+        $longSkip = $distances[$i] / 10;
+        $labelSkip = $distances[$i] / 5;
+      }
+      last;
+    }
   }
   my $start = $self->{ylim}[0];
   $start = ceil ($start / $interval) * $interval unless ($start % $interval == 0);
