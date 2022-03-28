@@ -311,8 +311,15 @@ $_xTics = sub {
     $longSkip = 2;
   }
   my @times;
+  my $dst = $start->is_dst;
   for (my $t = $start; DateTime->compare ($t, $end) <= 0; $t += $interval) {
+    # Account for Daylight Savings Time if it happened during this interval.
+    $t += DateTime::Duration->new (hours => 1) if ($dst and ! $t->is_dst);
+    $t -= DateTime::Duration->new (hours => 1) if (! $dst and $t->is_dst);
+    # Add the time to the list.
     push @times, $t;
+    # Keep track of where the switch to Daylight Savings Time occurs.
+    $dst = $t->is_dst;
   }
   my @xtics;
   for (my $i = 0; $i < @times; $i ++) {
