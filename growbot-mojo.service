@@ -1,7 +1,7 @@
 [Unit]
 Description=GrowBot-Mojo
 Documentation=https://github.com/sandain/growbot
-Requires=network.target growbot.service
+Requires=network.target
 
 [Service]
 User=growbot
