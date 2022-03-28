@@ -148,14 +148,11 @@ sub new {
 
 sub paint {
   my $self = shift;
-
   # Calculate the location of the plot area.
   my $plotLeft = int ($self->{width} * 0.08);
   my $plotRight = int ($self->{width} * 0.99);
   my $plotTop = int ($self->{height} * 0.01);
   my $plotBottom = int ($self->{height} * 0.8);
-
-
   # Paint the background.
   $self->$_paintBackground;
   # Paint the Title.
@@ -244,7 +241,6 @@ $_xTics = sub {
   my $start = $self->{xlim}[0];
   my $end = $self->{xlim}[1];
   my $duration = $end - $start;
-
   my $interval = DateTime::Duration->new (seconds => 1);
   my $format = "%S";
   my $labelSkip = 10;
@@ -339,7 +335,6 @@ $_xTics = sub {
       };
     }
   }
-
   return @xtics;
 };
 
@@ -350,7 +345,6 @@ $_yTics = sub {
   my $interval = 1;
   my $labelSkip = 2;
   my $longSkip = 2;
-
   if ($distance > 500000) {
     $interval = 50000;
     $labelSkip = 100000;
@@ -509,7 +503,6 @@ $_paintXAxis = sub {
       -cdata => $tic->{label}
     );
   }
-
 };
 
 $_paintYAxis = sub {
@@ -601,7 +594,6 @@ $_paintData = sub {
       r => 2
     );
   }
-
 };
 
 1;
