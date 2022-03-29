@@ -15,6 +15,9 @@ of sensor data is the only feature currently supported).
     - [ ] Add PWM controller for fans and other PWM controlled devices.
     - [ ] Update other drivers to depend on same library as the PWM controller.
     - [ ] Add missing functionality to the AtlasScientfic driver.
+        * Support for temperature, pH, electrical conductivity, oxygen reduction
+          potential, and dissolved oxygen sensors are mostly complete, but not
+          fully tested. Support for other devices is limited to basic functions.
     - [ ] Add a soil moisture driver.
         * [Vegetronix VH400](https://www.vegetronix.com/Products/VH400/) is one hardware option.
 * User Interface
