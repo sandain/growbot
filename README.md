@@ -15,6 +15,8 @@ of sensor data is the only feature currently supported).
     * Add PWM controller for fans and other PWM controlled devices.
     * Update other drivers to depend on same library as the PWM controller.
     * Add missing functionality to the AtlasScientfic driver.
+    * Add a soil moisture driver.
+        * [Vegetronix VH400](https://www.vegetronix.com/Products/VH400/) is one hardware option.
 * User Interface
     * Add configuration user interface with authentication.
     * Create a theme and make the UI nice to look at.
