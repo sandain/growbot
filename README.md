@@ -19,7 +19,11 @@ of sensor data is the only feature currently supported).
           potential, and dissolved oxygen sensors are mostly complete, but not
           fully tested. Support for other devices is limited to basic functions.
     - [ ] Add a soil moisture driver.
-        * [Vegetronix VH400](https://www.vegetronix.com/Products/VH400/) is one hardware option.
+        * [Vegetronix VH400](https://www.vegetronix.com/Products/VH400/) is one
+          hardware option.
+        * [Here](https://www.instructables.com/Soil-Moisture-Sensor-Raspberry-Pi/)
+          is another option.
+        * [Here](https://www.adafruit.com/product/4026) is one more option.
 * User Interface
     - [ ] Add configuration user interface with authentication.
     - [ ] Create a theme and make the UI nice to look at.
