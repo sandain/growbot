@@ -392,6 +392,9 @@ $_startDevice = sub {
         $running = 0;
         last;
       }
+      # Make sure the action exists in the configuration.
+      die "Unknown action $action"
+        unless (defined $self->{config}{Actions}{$action});
       # Respond to the action based on its type.
       my $action_type = $self->{config}{Actions}{$action}{Type};
       if ($action_type eq 'Measure') {
