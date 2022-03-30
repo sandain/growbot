@@ -131,8 +131,7 @@ sub new {
     config => undef,
     devices => undef,
     threads => undef,
-    queue => undef,
-    running => 1
+    queue => undef
   }, $class;
   # Load the configuration file.
   $self->{configFile} = $configFile;
@@ -380,13 +379,19 @@ $_startDevice = sub {
   my $child = Child->new (sub {
     open my $queueFH, '<', $self->{queue}{$device} or
       die "Unable to read from $device queue: $!";
-    while ($self->{running}) {
+    my $running = 1;
+    while ($running) {
      # Pop off an action from the queue.
       my $action = <$queueFH>;
       # Use the default action if there was nothing on the queue.
       $action = $self->{config}{Devices}{$device}{DefaultAction}
         unless (defined $action);
       $action =~ s/[\r\n]+//;
+      # Respond to the close action.
+      if ($action eq 'Close') {
+        $running = 0;
+        last;
+      }
       # Respond to the action based on its type.
       my $action_type = $self->{config}{Actions}{$action}{Type};
       if ($action_type eq 'Measure') {
@@ -395,7 +400,6 @@ $_startDevice = sub {
       if ($action_type eq 'Calibrate') {
         $self->$_deviceCalibrate ($device);
       }
-
       # Sleep for the defined interval.
       sleep $self->{config}{Actions}{$action}{Interval}
         if (defined $self->{config}{Actions}{$action}{Interval});

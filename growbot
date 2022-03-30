@@ -22,12 +22,12 @@ close $pid;
 # Create a new GrowBot using the configuration file.
 my $growbot = GrowBot->new ($configFile);
 
-# Capture SIGHUP to allow for the configuration file to be reloaded.
-$SIG{HUP} = sub {
-  $growbot = GrowBot->new ($configFile);
-};
 # Capture SIGINT, and SIGTERM to allow for a graceful exit.
-$SIG{INT} = $SIG{TERM} = sub { $growbot->{running} = 0 };
+$SIG{INT} = $SIG{TERM} = sub {
+  foreach my $device ($growbot->devices) {
+    $growbot->enqueueCommand ($device, "Close");
+  }
+};
 
 printf "%s %s\n", $growbot->name, $growbot->version;
 
