@@ -27,6 +27,8 @@ of sensor data is the only feature currently supported).
 * User Interface
     - [ ] Add configuration user interface with authentication.
     - [ ] Create a theme and make the UI nice to look at.
+    - [ ] Use websockets to update data display. Alternatively, auto-refresh the
+          page periodicaly.
 * General
     - [ ] Add unit conversion.
     - [ ] Add support for responding to events (e.g., increase fan speed if air
