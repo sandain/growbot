@@ -208,6 +208,11 @@ sub timeZone {
   return $self->{config}{TimeZone};
 }
 
+sub devices {
+  my $self = shift;
+  return keys %{$self->{config}->{Devices}};
+}
+
 ## Private methods.
 
 $_deviceCalibrate = sub {
