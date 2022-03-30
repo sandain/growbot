@@ -213,6 +213,15 @@ sub devices {
   return keys %{$self->{config}->{Devices}};
 }
 
+sub enqueueCommand {
+  my $self = shift;
+  my ($device, $command) = @_;
+  open my $queueFH, '>', $self->{queue}{$device} or
+      die "Unable to write to $device queue: $!";
+  printf $queueFH "%s\n", $command;
+  $queueFH->close;
+}
+
 ## Private methods.
 
 $_deviceCalibrate = sub {
