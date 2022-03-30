@@ -104,7 +104,7 @@ my %SUPPORTED_ACTIONS = (
 
 my $default_config = {
   "AppName"    => "GrowBot",
-  "Version"    => 0.1,
+  "Version"    => 0.2,
   "TimeZone"   => "UTC",
   "DataFolder" => getcwd . "/data",
   "Devices"    => { },
