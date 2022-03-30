@@ -34,7 +34,10 @@ printf "%s %s\n", $growbot->name, $growbot->version;
 # Start the GrowBot.
 $growbot->start;
 
-# Close the Growbot.
+# Wait for the Growbot to finish.
+$growbot->wait;
+
+# Close the GrowBot.
 $growbot->close;
 
 printf "Done.\n";

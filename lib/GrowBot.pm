@@ -143,9 +143,15 @@ sub new {
 sub close {
   my $self = shift;
   foreach my $device (keys %{$self->{devices}}) {
-    $self->{threads}{$device}->wait;
     $self->{devices}{$device}->close;
     unlink $self->{queue}{$device};
+  }
+}
+
+sub wait {
+  my $self = shift;
+  foreach my $device (keys %{$self->{devices}}) {
+    $self->{threads}{$device}->wait;
   }
 }
 
