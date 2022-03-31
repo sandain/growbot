@@ -91,7 +91,7 @@ helper 'data' => sub {
   my $self = shift;
   my ($device, $measurement, $type) = @_;
   my $filepath = sprintf "%s/%s/%s.%s",
-    $self->config->{DataFolder}, $device, $measurement, $type;
+    $growbot->dataFolder, $device, $measurement, $type;
   return unless (-s $filepath);
   open my $fh, '<', $filepath or die "Can't load data: $!";
   my $data = join "", <$fh>;
@@ -101,8 +101,7 @@ helper 'data' => sub {
 
 helper 'devices' => sub {
   my $self = shift;
-  my $config = $self->config;
-  return sort keys %{$config->{Devices}};
+  return sort $growbot->devices;
 };
 
 =head3 device
@@ -114,7 +113,7 @@ helper 'devices' => sub {
 helper 'device' => sub {
   my $self = shift;
   my ($name) = @_;
-  my $folder = sprintf "%s/%s", $self->config->{DataFolder}, $name;
+  my $folder = sprintf "%s/%s", $growbot->dataFolder, $name;
   my $data = "{";
   $data .= sprintf "\"name\": \"%s\",", $name;
   $data .= sprintf "\"type\": \"%s\",", $self->config->{Devices}{$name}{Type};
