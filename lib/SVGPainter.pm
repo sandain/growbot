@@ -28,7 +28,7 @@ Closes the SVGPainter input/output.
 
 =head1 DEPENDENCIES
 
-Device requires Perl version 5.10 or later.
+Device requires Perl version 5.14 or later.
 
 =head1 FEEDBACK
 
