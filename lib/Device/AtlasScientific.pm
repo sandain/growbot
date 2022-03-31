@@ -235,7 +235,7 @@ Returns the reason for the last restart and the voltage at the Vcc pin.
 
 =head1 DEPENDENCIES
 
-Device::AtlasScientific requires Perl version 5.10 or later.
+Device::AtlasScientific requires Perl version 5.14 or later.
 
 =head1 FEEDBACK
 

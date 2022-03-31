@@ -198,7 +198,7 @@ Get or set the configuration of the device.
 
 =head1 DEPENDENCIES
 
-Device::Bosch280 requires Perl version 5.10 or later.
+Device::Bosch280 requires Perl version 5.14 or later.
 
 =head1 FEEDBACK
 
