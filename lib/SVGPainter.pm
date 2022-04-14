@@ -82,7 +82,6 @@ use Exporter qw (import);
 use DateTime;
 use DateTime::Duration;
 use DateTime::Format::ISO8601;
-use SVG;
 use POSIX qw (ceil floor fmod);
 use constant DEFAULT_WIDTH  => 1000;
 use constant DEFAULT_HEIGHT => 500;
@@ -96,8 +95,12 @@ my $_xCoordinate;
 my $_yCoordinate;
 my $_xTics;
 my $_yTics;
+my $_paintXMLTag;
+my $_paintSVGOpenTag;
+my $_paintSVGCloseTag;
+my $_paintTitleTag;
+my $_paintDescTag;
 my $_paintBackground;
-my $_paintTitle;
 my $_paintXAxis;
 my $_paintYAxis;
 my $_paintXAxisLabel;
@@ -117,7 +120,10 @@ sub new {
     type => (defined $options{type} ? $options{type} : undef),
     folder => (defined $options{folder} ? $options{folder} : undef),
     timeZone => (defined $options{timeZone} ? $options{timeZone} : "UTC"),
+    xmlTag => (defined $options{xmlTag} ? $options{xmlTag} : 1),
+    indent => (defined $options{indent} ? $options{indent} : 0),
     title => (defined $options{title} ? $options{title} : undef),
+    desc => (defined $options{desc} ? $options{desc} : undef),
     xlabel => (defined $options{xlabel} ? $options{xlabel} : undef),
     ylabel => (defined $options{ylabel} ? $options{ylabel} : undef),
     width => (defined $options{width} ? $options{width} : DEFAULT_WIDTH),
@@ -134,14 +140,6 @@ sub new {
     defined $self->{type} &&
     defined $self->{folder}
   );
-  # Initialize the SVG document.
-  $self->{svg} = SVG->new (
-    "width" => $self->{width},
-    "height" => $self->{height},
-    "font-family" => "Liberation Sans, sans-serif",
-    "font-size" => 20,
-    -indent => '  '
-  );
   # Load measurement data to be plotted.
   $self->$_loadData;
   return $self;
@@ -154,13 +152,18 @@ sub paint {
   my $plotRight = int ($self->{width} * 0.99);
   my $plotTop = int ($self->{height} * 0.01);
   my $plotBottom = int ($self->{height} * 0.8);
+  # Clear any old paint jobs.
+  $self->{svg} = "";
+  # Start with the xml tag if requested.
+  $self->$_paintXMLTag if ($self->{xmlTag});
+  # Paint the opening svg tag.
+  $self->$_paintSVGOpenTag;
+  # Paint the title tag if the title was provided.
+  $self->$_paintTitleTag if (defined $self->{title});
+  # Paint the desc tag if the desc was provided.
+  $self->$_paintDescTag if (defined $self->{desc});
   # Paint the background.
   $self->$_paintBackground;
-  # Paint the Title.
-  if (defined $self->{title}) {
-    $self->$_paintTitle;
-    $plotTop = int ($self->{height} * 0.1);
-  }
   # Paint the labels for the X and Y axes.
   if (defined $self->{xlabel}) {
     $self->$_paintXAxisLabel (
@@ -182,11 +185,9 @@ sub paint {
   $self->$_paintYAxis ($plotLeft, $plotBottom, $plotRight, $plotTop);
   # Paint the data.
   $self->$_paintData ($plotLeft, $plotBottom, $plotRight, $plotTop);
-  # Convert the plot to svg.
-  my $svg = $self->{svg}->xmlify (@_);
-  # Remove comments.
-  $svg =~ s/\s+<!--.*?-->\s+/\n/sg;
-  return $svg;
+  # Close the svg tag.
+  $self->$_paintSVGCloseTag;
+  return $self->{svg};
 }
 
 ## Private methods.
@@ -212,7 +213,8 @@ $_loadData = sub {
       );
       next if (DateTime->compare ($date, $start) == -1);
       next if (DateTime->compare ($date, $end) == 1);
-      open my $fh, '<', "$folder/$file" or die "Unable to open data file $file: $!";
+      open my $fh, '<', "$folder/$file" or
+        die "Unable to open data file $file: $!";
       while (my $line = <$fh>) {
         $line =~ s/[\r\n]+//;
         my ($time, $measure, $unit) = split /\t/, $line, 3;
@@ -426,172 +428,213 @@ $_yTics = sub {
   return @ytics;
 };
 
-$_paintBackground = sub {
+$_paintXMLTag = sub {
   my $self = shift;
-  my $group = $self->{svg}->group (
-    "id" => "background",
-    "fill" => "#ffffff"
-  );
-  $group->path (%{$self->{svg}->get_path (
-    "x" => [ 0, $self->{width}, $self->{width},                0 ],
-    "y" => [ 0,              0, $self->{height}, $self->{height} ],
-    -type => "path",
-    -closed => 1
-  )});
+  $self->{svg} .= " " x $self->{indent};
+  $self->{svg} .= "<?xml";
+  $self->{svg} .= " version=\"1.0\"";
+  $self->{svg} .= " encoding=\"UTF-8\"";
+  $self->{svg} .= " standalone=\"yes\"";
+  $self->{svg} .= "?>\n";
 };
 
-$_paintTitle = sub {
+$_paintSVGOpenTag = sub {
   my $self = shift;
-  my $title = $self->{svg}->group (
-    "id" => "Title",
-    "stroke" => "#000000",
-    "font-weight" => "bold"
-  );
-  $title->text (
-    "x" => int ($self->{width} * 0.5),
-    "y" => int ($self->{height} * 0.05),
-    "text-anchor" => "middle",
-    -cdata => $self->{title}
-  );
+  $self->{svg} .= " " x $self->{indent};
+  $self->{svg} .= "<svg";
+  $self->{svg} .= " font-family=\"Liberation Sans, sans-serif\"";
+  $self->{svg} .= " font-size=\"20\"";
+  $self->{svg} .= " xmlns=\"http://www.w3.org/2000/svg\"";
+  $self->{svg} .= " width=\"100%%\"";
+  $self->{svg} .= " height=\"100%%\"";
+  $self->{svg} .= sprintf " viewBox=\"0 0 %s %s\"",
+    $self->{width}, $self->{height};
+  $self->{svg} .= ">\n";
+};
+
+$_paintSVGCloseTag = sub {
+  my $self = shift;
+  $self->{svg} .= " " x $self->{indent};
+  $self->{svg} .= "</svg>";
+};
+
+$_paintTitleTag = sub {
+  my $self = shift;
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "<title id=\"document-title\">";
+  $self->{svg} .= $self->{title};
+  $self->{svg} .= "</title>\n";
+};
+
+$_paintDescTag = sub {
+  my $self = shift;
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "<desc id=\"document-description\">";
+  $self->{svg} .= $self->{desc};
+  $self->{svg} .= "</desc>\n";
+
+};
+
+$_paintBackground = sub {
+  my $self = shift;
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "<g id=\"background\" fill=\"#ffffff\">\n";
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= sprintf "<path d=\"M 0,0 L 0,%s %s,%s, %s,0 Z\"/>\n",
+    $self->{width}, $self->{width}, $self->{height}, $self->{height};
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "</g>\n";
 };
 
 $_paintXAxis = sub {
   my $self = shift;
   my ($left, $bottom, $right, $top) = @_;
   my @tics = $self->$_xTics ($left, $right);
-  my $xAxis = $self->{svg}->group (
-    "id" => "xAxis"
-  );
-  my $lineGroup = $xAxis->group (
-    "stroke" => "#000000",
-    "stroke-width" => "2"
-  );
-  my $labelGroup = $xAxis->group (
-    "stroke" => "#000000",
-    "text-anchor" => "end",
-    "dominant-baseline" => "central"
-  );
-  my $plotGroup = $xAxis->group (
-    "stroke" => "#b7b7b7",
-    "stroke-width" => "2"
-  );
-  $lineGroup->path (%{$self->{svg}->get_path (
-    "x" => [ $left, $right ],
-    "y" => [ $bottom + 5, $bottom + 5 ],
-    -type => "path",
-    -closed => 0
-  )});
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "<g id=\"x-axis\">\n";
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= "<g stroke=\"#000000\" stroke-width=\"2\">\n";
+  $self->{svg} .= " " x ($self->{indent} + 6);
+  $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
+    $left, $bottom + 5, $right, $bottom + 5;
   foreach my $tic (@tics) {
-    $lineGroup->path (%{$self->{svg}->get_path (
-      "x" => [ $tic->{loc}, $tic->{loc} ],
-      "y" => [ $bottom + 5, $bottom + 5 + $tic->{length} ], 
-      -type => "path",
-      -closed => 0
-    )});
-    $plotGroup->path (%{$self->{svg}->get_path (
-      "x" => [ $tic->{loc}, $tic->{loc} ],
-      "y" => [ $bottom, $top ], 
-      -type => "path",
-      -closed => 0
-    )}) if ($tic->{background});
-    next unless (defined $tic->{label});
-    $labelGroup->text (
-      "x" => $tic->{loc}, "y" => $bottom + 25,
-      "transform" => sprintf ("rotate(-90 %s,%s)", $tic->{loc}, $bottom + 25),
-      -cdata => $tic->{label}
-    );
+    $self->{svg} .= " " x ($self->{indent} + 6);
+    $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
+      $tic->{loc}, $bottom + 5, $tic->{loc}, $bottom + 5 + $tic->{length};
   }
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= "</g>\n";
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= "<g";
+  $self->{svg} .= " stroke=\"#000000\"";
+  $self->{svg} .= " text-anchor=\"end\"";
+  $self->{svg} .= " dominant-baseline=\"central\"";
+  $self->{svg} .= ">\n";
+  foreach my $tic (@tics) {
+    next unless (defined $tic->{label});
+    $self->{svg} .= " " x ($self->{indent} + 6);
+    $self->{svg} .= "<text";
+    $self->{svg} .= sprintf " x=\"%s\"", $tic->{loc};
+    $self->{svg} .= sprintf " y=\"%s\"", $bottom + 25;
+    $self->{svg} .= sprintf " transform=\"rotate(-90 %s,%s)\"",
+      $tic->{loc}, $bottom + 25;
+    $self->{svg} .= ">";
+    $self->{svg} .= $tic->{label};
+    $self->{svg} .= "</text>\n";
+  }
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= "</g>\n";
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= "<g stroke=\"#b7b7b7\" stroke-width=\"2\">\n";
+  foreach my $tic (@tics) {
+    next unless ($tic->{background});
+    $self->{svg} .= " " x ($self->{indent} + 6);
+    $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
+      $tic->{loc}, $bottom, $tic->{loc}, $top;
+  }
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= "</g>\n";
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "</g>\n";
 };
 
 $_paintYAxis = sub {
   my $self = shift;
   my ($left, $bottom, $right, $top) = @_;
   my @tics = $self->$_yTics ($top, $bottom);
-  my $yAxis = $self->{svg}->group (
-    "id" => "yAxis"
-  );
-  my $lineGroup = $yAxis->group (
-    "stroke" => "#000000",
-    "stroke-width" => "2"
-  );
-  my $labelGroup = $yAxis->group (
-    "stroke" => "#000000",
-  );
-  my $plotGroup = $yAxis->group (
-    "stroke" => "#b7b7b7",
-    "stroke-width" => "2"
-  );
-  $lineGroup->path (%{$self->{svg}->get_path (
-    "x" => [ $left - 5, $left - 5 ],
-    "y" => [ $top, $bottom ],
-    -type => "path",
-    -closed => 0
-  )});
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "<g id=\"y-axis\">\n";
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= "<g stroke=\"#000000\" stroke-width=\"2\">\n";
+  $self->{svg} .= " " x ($self->{indent} + 6);
+  $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
+    $left - 5, $top, $left - 5, $bottom;
   foreach my $tic (@tics) {
-    $lineGroup->path (%{$self->{svg}->get_path (
-      "x" => [ $left - 5 - $tic->{length}, $left - 5 ],
-      "y" => [ $tic->{loc}, $tic->{loc} ],
-      -type => "path",
-      -closed => 0
-    )});
-    $plotGroup->path (%{$self->{svg}->get_path (
-      "x" => [ $left, $right ],
-      "y" => [ $tic->{loc}, $tic->{loc} ],
-      -type => "path",
-      -closed => 0
-    )}) if ($tic->{background});
-    next unless (defined $tic->{label});
-    $labelGroup->text (
-      "x" => $left - 25, "y" => $tic->{loc},
-      "text-anchor" => "end",
-      "dominant-baseline" => "central",
-      -cdata => $tic->{label}
-    );
+    $self->{svg} .= " " x ($self->{indent} + 6);
+    $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
+      $left - 5 - $tic->{length}, $tic->{loc}, $left - 5, $tic->{loc};
   }
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= "</g>\n";
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= "<g";
+  $self->{svg} .= " stroke=\"#000000\"";
+  $self->{svg} .= " text-anchor=\"end\"";
+  $self->{svg} .= " dominant-baseline=\"central\"";
+  $self->{svg} .= ">\n";
+  foreach my $tic (@tics) {
+    next unless (defined $tic->{label});
+    $self->{svg} .= " " x ($self->{indent} + 6);
+    $self->{svg} .= sprintf "<text x=\"%s\" y=\"%s\">%s</text>\n",
+      $left - 25, $tic->{loc}, $tic->{label};
+  }
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= "</g>\n";
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= "<g stroke=\"#b7b7b7\" stroke-width=\"2\">\n";
+  foreach my $tic (@tics) {
+    next unless ($tic->{background});
+    $self->{svg} .= " " x ($self->{indent} + 6);
+    $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
+      $left, $tic->{loc}, $right, $tic->{loc};
+  }
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= "</g>\n";
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "</g>\n";
 };
 
 $_paintXAxisLabel = sub {
   my $self = shift;
   my ($x, $y, $label) = @_;
-  my $labelGroup = $self->{svg}->group (
-    "stroke" => "#000000",
-  );
-  $labelGroup->text (
-    "x" => $x, "y" => $y,
-    "text-anchor" => "middle",
-    -cdata => $label
-  );
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "<g";
+  $self->{svg} .= " id=\"x-axis-label\"";
+  $self->{svg} .= " stroke=\"#000000\"";
+  $self->{svg} .= " text-anchor=\"middle\"";
+  $self->{svg} .= ">\n";
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= sprintf "<text x=\"%s\" y=\"%s\">%s</text>\n",
+    $x, $y, $label;
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "</g>\n";
 };
 
 $_paintYAxisLabel = sub {
   my $self = shift;
   my ($x, $y, $label) = @_;
-  my $labelGroup = $self->{svg}->group (
-    "stroke" => "#000000",
-  );
-  $labelGroup->text (
-    "x" => $x, "y" => $y,
-    "text-anchor" => "middle",
-    "transform" => sprintf ("rotate(-90 %s,%s)", $x, $y),
-    -cdata => $label
-  );
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "<g";
+  $self->{svg} .= " id=\"y-axis-label\"";
+  $self->{svg} .= " stroke=\"#000000\"";
+  $self->{svg} .= " text-anchor=\"middle\"";
+  $self->{svg} .= ">\n";
+  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .=  "<text";
+  $self->{svg} .= sprintf " x=\"%s\"", $x;
+  $self->{svg} .= sprintf " y=\"%s\"", $y;
+  $self->{svg} .= sprintf " transform=\"rotate(-90 %s,%s)\"", $x, $y;
+  $self->{svg} .= ">";
+  $self->{svg} .= $label;
+  $self->{svg} .= "</text>\n";
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "</g>\n";
 };
 
 $_paintData = sub {
   my $self = shift;
   my ($left, $bottom, $right, $top) = @_;
-  my $data = $self->{svg}->group (
-    "id" => "Data",
-    "fill" => "#ff0000"
-  );
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "<g id=\"data\" fill=\"#ff0000\">\n";
   foreach my $time (keys %{$self->{data}}) {
     my $xtime = DateTime::Format::ISO8601->parse_datetime ($time);
-    $data->circle (
-      cx => $self->$_xCoordinate ($xtime, $left, $right),
-      cy => $self->$_yCoordinate ($self->{data}{$time}, $top, $bottom),
-      r => 2
-    );
+    $self->{svg} .= " " x ($self->{indent} + 4);
+    $self->{svg} .= sprintf "<circle cx=\"%s\" cy=\"%s\" r=\"2\"/>\n",
+      $self->$_xCoordinate ($xtime, $left, $right),
+      $self->$_yCoordinate ($self->{data}{$time}, $top, $bottom);
   }
+  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= "</g>\n";
 };
 
 1;
