@@ -22,7 +22,7 @@
                 <br/>
                 <%= sprintf "%s %s", $m->{measure}, $m->{unit} %>
               </p>
-              <a href="/device/<%= $name %>/<%= $measurement %>">
+              <a href="/device/<%= $name %>/<%= $measurement %>.svg">
                 <figure>
 <%== data ($name, $measurement, "svg") %>
                 </figure>
