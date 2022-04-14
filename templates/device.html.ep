@@ -8,13 +8,12 @@
 
     <h1><%= $device->{name} %></h1>
     <h2>Type: <%= $device->{type} %></h2>
-
     % foreach my $measurement (sort keys %{$device->{measurements}}) {
     %  my $m = $device->{measurements}{$measurement};
     %  my $src = sprintf "%s/%s.svg", $name, $measurement;
     %  my $alt = sprintf "%s data from device %s", ucfirst $measurement, $device->{name};
     <h3><%= sprintf "%s: %s %s", ucfirst $measurement, $m->{measure}, $m->{unit} %></h3>
-    <figure>
-      <img src="<%= $src %>" alt="<%= $alt %>" width="1000" height="500" style="width:100%; height:100%;"/>
+    <figure class="figure w-100">
+<%== data ($name, $measurement, "svg") %>
     </figure>
     % }
