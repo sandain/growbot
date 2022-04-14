@@ -134,7 +134,7 @@ helper 'device' => sub {
       $data .= sprintf "\"%s\": {", $type;
       $data .= sprintf "\"time\": \"%s\",", $measure[0];
       $data .= sprintf "\"measure\": \"%s\",", $measure[1];
-      $data .= sprintf "\"unit\": \"%s\"", $measure[2];
+      $data .= sprintf "\"unit\": \"%s\"", (defined $measure[2] ? $measure[2] : "");
       $data .= "}"
     }
   }
