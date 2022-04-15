@@ -301,7 +301,7 @@ $_deviceMeasure = sub {
     $file = sprintf "%s/%s", $folder, $type;
     # Write the svg data to a temporary file.
     open $fh, '>', $file . ".tmp" or die "Can't output sensor data: $!\n";
-    printf $fh "%s\n", $painter->paint;
+    print $fh $painter->paint;
     $fh->close;
     # Rename the temporary file.
     unlink $file . ".svg" if (-e $file . ".svg");
