@@ -165,7 +165,8 @@ sub start {
     } or printf STDERR "Error: Unable to initialize device %s.\n%s",
       $device, $@;
     # Setup the action queue for the device.
-    $self->{queue}{$device} = sprintf "%s/growbot_%s", File::Spec->tmpdir, $device;
+    $self->{queue}{$device} =
+      sprintf "%s/growbot_%s", File::Spec->tmpdir, $device;
     open my $fh, '>', $self->{queue}{$device} or
       die "Unable to write to $device queue: $!";
     printf $fh "";
