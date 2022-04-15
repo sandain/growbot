@@ -216,7 +216,7 @@ $_loadData = sub {
       open my $fh, '<', "$folder/$file" or
         die "Unable to open data file $file: $!";
       while (my $line = <$fh>) {
-        $line =~ s/[\r\n]+//;
+        $line =~ s/[\0\r\n]+//;
         my ($datetime, $measure, $unit) = split /\t/, $line, 3;
         my $measurement;
         eval {
