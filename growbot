@@ -57,6 +57,7 @@ Email sandain@hotmail.com
 use strict;
 use warnings;
 use utf8;
+use open qw (:std :utf8);
 use v5.14;
 
 use lib qw (lib);
