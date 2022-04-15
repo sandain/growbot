@@ -162,7 +162,8 @@ sub start {
     eval {
       my $type = sprintf "Device::%s", $config->{Type};
       $self->{devices}{$device} = $type->new (@{$config->{Options}});
-    } or printf "Error: Unable to initialize device %s.\n%s", $device, $@;
+    } or printf STDERR "Error: Unable to initialize device %s.\n%s",
+      $device, $@;
     # Setup the action queue for the device.
     $self->{queue}{$device} = sprintf "%s/growbot_%s", File::Spec->tmpdir, $device;
     open my $fh, '>', $self->{queue}{$device} or
@@ -172,7 +173,7 @@ sub start {
     # Create the worker thread for the device.
     eval {
       $self->{threads}{$device} = $self->$_startDevice ($device);
-    } or printf "Error: Unable to start child process for device %s.\n%s",
+    } or printf STDERR "Error: Unable to start child process for %s.\n%s",
       $device, $@;
   }
 
