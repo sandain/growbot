@@ -289,6 +289,7 @@ $_deviceMeasure = sub {
       width => 1500,
       height => 750,
       title => $name,
+      desc => "Measurement data for device $name",
       ylabel => $ylabel,
       xlabel => "Date",
       folder => $self->{config}{DataFolder},
