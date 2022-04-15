@@ -218,8 +218,17 @@ $_loadData = sub {
       while (my $line = <$fh>) {
         $line =~ s/[\r\n]+//;
         my ($datetime, $measure, $unit) = split /\t/, $line, 3;
+        my $measurement;
+        eval {
+          $measurement = {
+            datetime => DateTime::Format::ISO8601->parse_datetime ($datetime),
+            measure => $measure,
+            unit => $unit
+          };
+        } or printf STDERR "Error: Unable to parse datetime '%s' for %s.\n%s",
+          $datetime, $self->{device}, $@;
         # Add the measurement to the data.
-        $self->{data}{$datetime} = $measure;
+        push @{$self->{data}}, $measurement if (defined $measurement);
       }
       close $fh;
     }
@@ -626,12 +635,11 @@ $_paintData = sub {
   my ($left, $bottom, $right, $top) = @_;
   $self->{svg} .= " " x ($self->{indent} + 2);
   $self->{svg} .= "<g id=\"data\" fill=\"#ff0000\">\n";
-  foreach my $datetime (keys %{$self->{data}}) {
-    my $xtime = DateTime::Format::ISO8601->parse_datetime ($datetime);
+  foreach my $measure (@{$self->{data}}) {
     $self->{svg} .= " " x ($self->{indent} + 4);
     $self->{svg} .= sprintf "<circle cx=\"%s\" cy=\"%s\" r=\"2\"/>\n",
-      $self->$_xCoordinate ($xtime, $left, $right),
-      $self->$_yCoordinate ($self->{data}{$datetime}, $top, $bottom);
+      $self->$_xCoordinate ($measure->{datetime}, $left, $right),
+      $self->$_yCoordinate ($measure->{measure}, $top, $bottom);
   }
   $self->{svg} .= " " x ($self->{indent} + 2);
   $self->{svg} .= "</g>\n";
