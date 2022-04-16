@@ -454,8 +454,8 @@ $_paintSVGOpenTag = sub {
   $self->{svg} .= " font-family=\"Liberation Sans, sans-serif\"";
   $self->{svg} .= " font-size=\"20\"";
   $self->{svg} .= " xmlns=\"http://www.w3.org/2000/svg\"";
-  $self->{svg} .= " width=\"100%%\"";
-  $self->{svg} .= " height=\"100%%\"";
+  $self->{svg} .= " width=\"100%\"";
+  $self->{svg} .= " height=\"100%\"";
   $self->{svg} .= sprintf " viewBox=\"0 0 %s %s\"",
     $self->{width}, $self->{height};
   $self->{svg} .= ">\n";
