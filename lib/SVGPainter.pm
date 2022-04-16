@@ -121,7 +121,6 @@ sub new {
     folder => (defined $options{folder} ? $options{folder} : undef),
     timeZone => (defined $options{timeZone} ? $options{timeZone} : "UTC"),
     xmlTag => (defined $options{xmlTag} ? $options{xmlTag} : 1),
-    indent => (defined $options{indent} ? $options{indent} : 0),
     title => (defined $options{title} ? $options{title} : undef),
     desc => (defined $options{desc} ? $options{desc} : undef),
     xlabel => (defined $options{xlabel} ? $options{xlabel} : undef),
@@ -439,7 +438,6 @@ $_yTics = sub {
 
 $_paintXMLTag = sub {
   my $self = shift;
-  $self->{svg} .= " " x $self->{indent};
   $self->{svg} .= "<?xml";
   $self->{svg} .= " version=\"1.0\"";
   $self->{svg} .= " encoding=\"UTF-8\"";
@@ -449,7 +447,6 @@ $_paintXMLTag = sub {
 
 $_paintSVGOpenTag = sub {
   my $self = shift;
-  $self->{svg} .= " " x $self->{indent};
   $self->{svg} .= "<svg";
   $self->{svg} .= " font-family=\"Liberation Sans, sans-serif\"";
   $self->{svg} .= " font-size=\"20\"";
@@ -463,13 +460,12 @@ $_paintSVGOpenTag = sub {
 
 $_paintSVGCloseTag = sub {
   my $self = shift;
-  $self->{svg} .= " " x $self->{indent};
   $self->{svg} .= "</svg>";
 };
 
 $_paintTitleTag = sub {
   my $self = shift;
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "<title id=\"document-title\">";
   $self->{svg} .= $self->{title};
   $self->{svg} .= "</title>\n";
@@ -477,7 +473,7 @@ $_paintTitleTag = sub {
 
 $_paintDescTag = sub {
   my $self = shift;
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "<desc id=\"document-description\">";
   $self->{svg} .= $self->{desc};
   $self->{svg} .= "</desc>\n";
@@ -486,12 +482,12 @@ $_paintDescTag = sub {
 
 $_paintBackground = sub {
   my $self = shift;
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "<g id=\"background\" fill=\"#ffffff\">\n";
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= sprintf "<path d=\"M 0,0 L 0,%s %s,%s, %s,0 Z\"/>\n",
     $self->{width}, $self->{width}, $self->{height}, $self->{height};
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "</g>\n";
 };
 
@@ -499,21 +495,21 @@ $_paintXAxis = sub {
   my $self = shift;
   my ($left, $bottom, $right, $top) = @_;
   my @tics = $self->$_xTics ($left, $right);
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "<g id=\"x-axis\">\n";
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= "<g stroke=\"#000000\" stroke-width=\"2\">\n";
-  $self->{svg} .= " " x ($self->{indent} + 6);
+  $self->{svg} .= " " x 6;
   $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
     $left, $bottom + 5, $right, $bottom + 5;
   foreach my $tic (@tics) {
-    $self->{svg} .= " " x ($self->{indent} + 6);
+    $self->{svg} .= " " x 6;
     $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
       $tic->{loc}, $bottom + 5, $tic->{loc}, $bottom + 5 + $tic->{length};
   }
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= "</g>\n";
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= "<g";
   $self->{svg} .= " stroke=\"#000000\"";
   $self->{svg} .= " text-anchor=\"end\"";
@@ -521,7 +517,7 @@ $_paintXAxis = sub {
   $self->{svg} .= ">\n";
   foreach my $tic (@tics) {
     next unless (defined $tic->{label});
-    $self->{svg} .= " " x ($self->{indent} + 6);
+    $self->{svg} .= " " x 6;
     $self->{svg} .= "<text";
     $self->{svg} .= sprintf " x=\"%s\"", $tic->{loc};
     $self->{svg} .= sprintf " y=\"%s\"", $bottom + 25;
@@ -531,19 +527,19 @@ $_paintXAxis = sub {
     $self->{svg} .= $tic->{label};
     $self->{svg} .= "</text>\n";
   }
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= "</g>\n";
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= "<g stroke=\"#b7b7b7\" stroke-width=\"2\">\n";
   foreach my $tic (@tics) {
     next unless ($tic->{background});
-    $self->{svg} .= " " x ($self->{indent} + 6);
+    $self->{svg} .= " " x 6;
     $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
       $tic->{loc}, $bottom, $tic->{loc}, $top;
   }
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= "</g>\n";
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "</g>\n";
 };
 
@@ -551,21 +547,21 @@ $_paintYAxis = sub {
   my $self = shift;
   my ($left, $bottom, $right, $top) = @_;
   my @tics = $self->$_yTics ($top, $bottom);
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "<g id=\"y-axis\">\n";
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= "<g stroke=\"#000000\" stroke-width=\"2\">\n";
-  $self->{svg} .= " " x ($self->{indent} + 6);
+  $self->{svg} .= " " x 6;
   $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
     $left - 5, $top, $left - 5, $bottom;
   foreach my $tic (@tics) {
-    $self->{svg} .= " " x ($self->{indent} + 6);
+    $self->{svg} .= " " x 6;
     $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
       $left - 5 - $tic->{length}, $tic->{loc}, $left - 5, $tic->{loc};
   }
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= "</g>\n";
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= "<g";
   $self->{svg} .= " stroke=\"#000000\"";
   $self->{svg} .= " text-anchor=\"end\"";
@@ -573,52 +569,52 @@ $_paintYAxis = sub {
   $self->{svg} .= ">\n";
   foreach my $tic (@tics) {
     next unless (defined $tic->{label});
-    $self->{svg} .= " " x ($self->{indent} + 6);
+    $self->{svg} .= " " x 6;
     $self->{svg} .= sprintf "<text x=\"%s\" y=\"%s\">%s</text>\n",
       $left - 25, $tic->{loc}, $tic->{label};
   }
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= "</g>\n";
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= "<g stroke=\"#b7b7b7\" stroke-width=\"2\">\n";
   foreach my $tic (@tics) {
     next unless ($tic->{background});
-    $self->{svg} .= " " x ($self->{indent} + 6);
+    $self->{svg} .= " " x 6;
     $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
       $left, $tic->{loc}, $right, $tic->{loc};
   }
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= "</g>\n";
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "</g>\n";
 };
 
 $_paintXAxisLabel = sub {
   my $self = shift;
   my ($x, $y, $label) = @_;
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "<g";
   $self->{svg} .= " id=\"x-axis-label\"";
   $self->{svg} .= " stroke=\"#000000\"";
   $self->{svg} .= " text-anchor=\"middle\"";
   $self->{svg} .= ">\n";
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .= sprintf "<text x=\"%s\" y=\"%s\">%s</text>\n",
     $x, $y, $label;
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "</g>\n";
 };
 
 $_paintYAxisLabel = sub {
   my $self = shift;
   my ($x, $y, $label) = @_;
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "<g";
   $self->{svg} .= " id=\"y-axis-label\"";
   $self->{svg} .= " stroke=\"#000000\"";
   $self->{svg} .= " text-anchor=\"middle\"";
   $self->{svg} .= ">\n";
-  $self->{svg} .= " " x ($self->{indent} + 4);
+  $self->{svg} .= " " x 4;
   $self->{svg} .=  "<text";
   $self->{svg} .= sprintf " x=\"%s\"", $x;
   $self->{svg} .= sprintf " y=\"%s\"", $y;
@@ -626,22 +622,22 @@ $_paintYAxisLabel = sub {
   $self->{svg} .= ">";
   $self->{svg} .= $label;
   $self->{svg} .= "</text>\n";
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "</g>\n";
 };
 
 $_paintData = sub {
   my $self = shift;
   my ($left, $bottom, $right, $top) = @_;
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "<g id=\"data\" fill=\"#ff0000\">\n";
   foreach my $measure (@{$self->{data}}) {
-    $self->{svg} .= " " x ($self->{indent} + 4);
+    $self->{svg} .= " " x 4;
     $self->{svg} .= sprintf "<circle cx=\"%s\" cy=\"%s\" r=\"2\"/>\n",
       $self->$_xCoordinate ($measure->{datetime}, $left, $right),
       $self->$_yCoordinate ($measure->{measure}, $top, $bottom);
   }
-  $self->{svg} .= " " x ($self->{indent} + 2);
+  $self->{svg} .= " " x 2;
   $self->{svg} .= "</g>\n";
 };
 
