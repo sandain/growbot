@@ -1,1 +1,1 @@
-%== data ($name, $type, "txt");
+%== data ($name, $type, "txt", 0);

@@ -14,6 +14,6 @@
     %  my $alt = sprintf "%s data from device %s", ucfirst $measurement, $device->{name};
     <h3><%= sprintf "%s: %s %s", ucfirst $measurement, $m->{measure}, $m->{unit} %></h3>
     <figure class="figure w-100">
-<%== data ($name, $measurement, "svg") %>
+      <%== data ($name, $measurement, "svg", 6) %>
     </figure>
     % }

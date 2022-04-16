@@ -9,5 +9,5 @@
     <h2>Type: <%= $device->{type} %></h2>
     <h3><%= sprintf "%s: %s %s", ucfirst $type, $m->{measure}, $m->{unit} %></h3>
     <figure class="figure w-100">
-<%== data ($name, $type, "svg") %>
+      <%== data ($name, $type, "svg", 6) %>
     </figure>

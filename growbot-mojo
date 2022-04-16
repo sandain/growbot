@@ -89,12 +89,12 @@ helper 'config' => sub {
 
 helper 'data' => sub {
   my $self = shift;
-  my ($device, $measurement, $type) = @_;
+  my ($device, $measurement, $type, $indent) = @_;
   my $filepath = sprintf "%s/%s/%s.%s",
     $growbot->dataFolder, $device, $measurement, $type;
   return unless (-s $filepath);
   open my $fh, '<', $filepath or die "Can't load data: $!";
-  my $data = join "", <$fh>;
+  my $data = join " " x $indent, <$fh>;
   close $fh;
   return $data;
 };
