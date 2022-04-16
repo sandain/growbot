@@ -296,6 +296,7 @@ $_deviceMeasure = sub {
       device => $device,
       type => $type,
       timeZone => $self->{config}{TimeZone},
+      xmlTag => 0,
       xlim => [ $start, $end ],
       ylim => [ $min, $max ]
     );
