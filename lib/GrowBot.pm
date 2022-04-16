@@ -216,10 +216,10 @@ sub devices {
 
 sub enqueueCommand {
   my $self = shift;
-  my ($device, $command) = @_;
-  open my $queueFH, '>', $self->{queue}{$device} or
+  my ($device, $command, $datetime, $priority) = @_;
+  open my $queueFH, '>>', $self->{queue}{$device} or
       die "Unable to write to $device queue: $!";
-  printf $queueFH "%s\n", $command;
+  printf $queueFH "%s\t%s\t%d\n", $command, $datetime->rfc3339, $priority;
   $queueFH->close;
 }
 
@@ -383,33 +383,68 @@ $_startDevice = sub {
   my $child = Child->new (sub {
     open my $queueFH, '<', $self->{queue}{$device} or
       die "Unable to read from $device queue: $!";
+    my @queue;
     my $running = 1;
     while ($running) {
-     # Pop off an action from the queue.
-      my $action = <$queueFH>;
-      # Use the default action if there was nothing on the queue.
-      $action = $self->{config}{Devices}{$device}{DefaultAction}
-        unless (defined $action);
-      $action =~ s/[\r\n]+//;
-      # Respond to the close action.
-      if ($action eq 'Close') {
-        $running = 0;
-        last;
+      # Load the queue.
+      while (my $line = <$queueFH>) {
+        $line =~ s/[\r\n]+//;
+        my ($command, $datetime, $priority) = split "\t", $line;
+        my $action;
+        eval {
+          $action = {
+            command => $command,
+            datetime => DateTime::Format::ISO8601->parse_datetime ($datetime),
+            priority => $priority
+          };
+        } or printf STDERR "Error: Unable to parse datetime '%s' for %s.\n%s",
+          $datetime, $device, $@;
+        # Enqueue the action.
+        push @queue, $action if (defined $action);
       }
-      # Make sure the action exists in the configuration.
-      die "Unknown action $action"
-        unless (defined $self->{config}{Actions}{$action});
-      # Respond to the action based on its type.
-      my $action_type = $self->{config}{Actions}{$action}{Type};
-      if ($action_type eq 'Measure') {
-        $self->$_deviceMeasure ($device, $action);
+      # Make sure the queue has actions.
+      if (@queue > 0) {
+        # Sort the queue based on priority then time.
+        @queue = sort {
+          $b->{priority} <=> $a->{priority} ||
+          DateTime->compare ($a->{datetime}, $b->{datetime})
+        } @queue;
+        # Get the current time.
+        my $now = DateTime->now (time_zone => $self->{config}{TimeZone});
+        # Check if it is time to run the first action in the queue.
+        if (DateTime->compare ($now, $queue[0]->{datetime}) >= 0) {
+          # Pop off an action from the queue.
+          my $action = shift @queue;
+          # Respond to the close action.
+          if ($action->{command} eq 'Close') {
+            $running = 0;
+            last;
+          }
+          # Make sure the action exists in the configuration.
+          die "Unknown action $action->{command}"
+            unless (defined $self->{config}{Actions}{$action->{command}});
+          # Respond to the action based on its type.
+          my $action_type = $self->{config}{Actions}{$action->{command}}{Type};
+          if ($action_type eq 'Measure') {
+            $self->$_deviceMeasure ($device, $action->{command});
+          }
+          if ($action_type eq 'Calibrate') {
+            $self->$_deviceCalibrate ($device);
+          }
+          # Enqueue the action again if needed.
+          if (defined $self->{config}{Actions}{$action->{command}}{Interval}) {
+            my $interval = DateTime::Duration->new (
+              seconds => $self->{config}{Actions}{$action->{command}}{Interval}
+            );
+            $self->enqueueCommand (
+              $device,
+              $action->{command},
+              $now + $interval,
+              0
+            );
+          }
+        }
       }
-      if ($action_type eq 'Calibrate') {
-        $self->$_deviceCalibrate ($device);
-      }
-      # Sleep for the defined interval.
-      sleep $self->{config}{Actions}{$action}{Interval}
-        if (defined $self->{config}{Actions}{$action}{Interval});
     }
     $queueFH->close;
   });

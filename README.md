@@ -33,7 +33,7 @@ of sensor data is the only feature currently supported).
     - [ ] Add unit conversion.
     - [ ] Add support for responding to events (e.g., increase fan speed if air
       temperature gets too high).
-    - [ ] Rework device command queue to be more responsive.
+    - [X] Rework device command queue to be more responsive.
     - [X] Fix the shutdown sequence.
 * Documentation
     - [ ] Document config.json.

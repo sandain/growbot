@@ -59,6 +59,7 @@ use warnings;
 use utf8;
 use open qw (:std :utf8);
 use v5.14;
+use DateTime;
 
 use lib qw (lib);
 use GrowBot;
@@ -80,7 +81,12 @@ my $growbot = GrowBot->new ($configFile);
 # Capture SIGINT, and SIGTERM to allow for a graceful exit.
 $SIG{INT} = $SIG{TERM} = sub {
   foreach my $device ($growbot->devices) {
-    $growbot->enqueueCommand ($device, "Close");
+    $growbot->enqueueCommand (
+      $device,
+      "Close",
+      DateTime->now (time_zone => $growbot->timeZone),
+      100
+    );
   }
 };
 
@@ -88,6 +94,16 @@ printf "%s %s\n", $growbot->name, $growbot->version;
 
 # Start the GrowBot.
 $growbot->start;
+
+# Enqueue default commands for each device.
+foreach my $device ($growbot->devices) {
+  $growbot->enqueueCommand (
+    $device,
+    $growbot->{config}{Devices}{$device}{DefaultAction},
+    DateTime->now (time_zone => $growbot->timeZone),
+    0
+  );
+}
 
 # Wait for the Growbot to finish.
 $growbot->wait;
