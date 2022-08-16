@@ -163,7 +163,10 @@ helper 'device' => sub {
 
 =cut
 
-get '/' => sub {
+get '/'
+=> [ format => ['html'] ]
+=> { format => 'html' }
+=> sub {
   my $self = shift;
   $self->render (template => 'dashboard');
 };
@@ -174,7 +177,10 @@ get '/' => sub {
 
 =cut
 
-get '/device/:name' => sub {
+get '/device/:name'
+=> [ format => ['html', 'json'] ]
+=> { format => 'html' }
+=> sub {
   my $self = shift;
   my $name = $self->param ('name');
   $self->render (template => 'device');
@@ -186,7 +192,10 @@ get '/device/:name' => sub {
 
 =cut
 
-get '/device/:name/:type' => sub {
+get '/device/:name/:type'
+=> [ format => ['html', 'svg', 'txt'] ]
+=> { format => 'html' }
+=> sub {
   my $self = shift;
   my $name = $self->param ('name');
   my $type = $self->param ('type');
