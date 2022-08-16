@@ -87,6 +87,12 @@ helper 'config' => sub {
 };
 
 
+=head3 data
+
+  Return measurement data.
+
+=cut
+
 helper 'data' => sub {
   my $self = shift;
   my ($device, $measurement, $type, $indent) = @_;
@@ -98,6 +104,12 @@ helper 'data' => sub {
   close $fh;
   return $data;
 };
+
+=head3 devices
+
+  Return the devices.
+
+=cut
 
 helper 'devices' => sub {
   my $self = shift;
@@ -158,7 +170,7 @@ get '/' => sub {
 
 =head3 get /device/<device name>
 
-  Renders the dashboard.
+  Renders the device.
 
 =cut
 
@@ -167,6 +179,12 @@ get '/device/:name' => sub {
   my $name = $self->param ('name');
   $self->render (template => 'device');
 };
+
+=head3 get /device/<device name><action type>
+
+  Renders the device action type.
+
+=cut
 
 get '/device/:name/:type' => sub {
   my $self = shift;
