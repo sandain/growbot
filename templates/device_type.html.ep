@@ -1,13 +1,15 @@
 % layout 'default';
-% title sprintf "%s - %s", $name, ucfirst $type;
-% content_for description => sprintf "%s data from device %s", ucfirst $type, $name;
 % use Mojo::JSON qw (decode_json);
 % my $device = decode_json device ($name);
 % my $m = $device->{measurements}{$type};
+% title sprintf "%s - %s", $name, $m->{type};
+% content_for description => sprintf "%s data from device %s", $m->{type}, $name;
 
     <h1><%= $device->{name} %></h1>
+    <h2>Driver: <%= $device->{driver} %></h2>
     <h2>Type: <%= $device->{type} %></h2>
-    <h3><%= sprintf "%s: %s %s", ucfirst $type, $m->{measure}, $m->{unit} %></h3>
+    <h3><%= sprintf "%s: %s %s", $m->{type}, $m->{measure}, $m->{unit} %></h3>
+    <h3><%= sprintf "Last measurement: %s %s", $m->{date}, $m->{time} %></h3>
     <figure class="figure w-100">
       <%== data ($name, $type, "svg", 6) %>
     </figure>
