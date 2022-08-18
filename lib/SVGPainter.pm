@@ -217,6 +217,8 @@ $_loadData = sub {
       while (my $line = <$fh>) {
         $line =~ s/[\0\r\n]+//;
         my ($datetime, $measure, $unit) = split /\t/, $line, 3;
+        next unless (defined $datetime and $datetime ne "");
+        next unless (defined $measure and $measure ne "");
         my $measurement;
         eval {
           $measurement = {
