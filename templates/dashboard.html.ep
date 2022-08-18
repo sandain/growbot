@@ -5,27 +5,25 @@
 
     <div class="container-fluid">
       <div class="row g-2">
-      % foreach my $name (devices) {
-      %   my $device = decode_json device ($name);
-      %   foreach my $measurement (sort keys %{$device->{measurements}}) {
-      %     my $src = sprintf "device/%s/%s.svg", $name, $measurement;
-      %     my $alt = sprintf "%s data from device %s", ucfirst $measurement, $device->{name};
-      %     my $m = $device->{measurements}{$measurement};
+      % foreach my $device (devices) {
+      %   my $d = decode_json device ($device);
+      %   foreach my $measurement (sort keys %{$d->{measurements}}) {
+      %     my $m = $d->{measurements}{$measurement};
         <div class="col-lg-4 portfolio-item">
           <div class="card h-100">
             <div class="card-body">
-              <h5 class="card-title text-center" id="device-<%= $name %>">
-                <a href="/device/<%= $name %>"><%= $device->{name} %></a>
+              <h5 class="card-title text-center" id="device-<%= $device %>">
+                <a href="/device/<%= $device %>"><%= $d->{name} %></a>
               </h5>
               <h6 class="card-subtitle text-center text-muted">
-                <a href="/device/<%= $name %>/<%= $measurement %>"><%= ucfirst $measurement %></a>
+                <a href="/device/<%= $device %>/<%= $measurement %>"><%= $m->{type} %></a>
               </h6>
               <p class="text-center">
                 <%= sprintf "%s %s", $m->{measure}, $m->{unit} %>
               </p>
-              <a href="/device/<%= $name %>/<%= $measurement %>.svg">
+              <a href="/device/<%= $device %>/<%= $measurement %>.svg">
                 <figure class="figure w-90">
-                  <%== data ($name, $measurement, "svg", 18) %>
+                  <%== data ($device, $measurement, "svg", 18) %>
                 </figure>
               </a>
             </div>
