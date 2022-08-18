@@ -64,6 +64,7 @@ use lib qw (lib);
 use GrowBot;
 
 use Encode qw (encode_utf8);
+use DateTime;
 use Mojolicious::Lite;
 use Mojo::JSON qw (to_json);
 
@@ -128,29 +129,40 @@ helper 'device' => sub {
   my $folder = sprintf "%s/%s", $growbot->dataFolder, $name;
   my $data = "{";
   $data .= sprintf "\"name\": \"%s\",", $name;
+  $data .= sprintf "\"driver\": \"%s\",", $self->config->{Devices}{$name}{Driver};
   $data .= sprintf "\"type\": \"%s\",", $self->config->{Devices}{$name}{Type};
-  $data .= sprintf "\"measurements\": {";
-  my @actions = @{$self->config->{Devices}{$name}{Actions}};
-  for (my $i = 0; $i < @actions; $i ++) {
-    next unless (defined $self->config->{Actions}{$actions[$i]}{Results});
-    my @results = @{$self->config->{Actions}{$actions[$i]}{Results}};
-    for (my $j = 0; $j < @results; $j ++) {
-      next unless ($self->config->{Results}{$results[$j]}{Type});
-      my $type = $self->config->{Results}{$results[$j]}{Type};
-      open my $fh, '<', "$folder/$type.txt" or die "Can't open file: $!";
+  if (defined $self->config->{Devices}{$name}{Actions}{Measure}) {
+    $data .= sprintf "\"measurements\": {";
+    my $comma;
+    foreach my $m (keys %{$self->config->{Devices}{$name}{Actions}{Measure}}) {
+      open my $fh, '<', "$folder/$m.txt" or
+        die "Can't open file $folder/$m.txt: $!";
       my $measure = join "", <$fh>;
       close $fh;
       $measure =~ s/[\r\n]+//;
       my @measure = split /\t/, $measure;
-      $data .= "," unless ($i + $j == 0);
-      $data .= sprintf "\"%s\": {", $type;
-      $data .= sprintf "\"time\": \"%s\",", $measure[0];
+      my $date;
+      my $time;
+      eval {
+        my $dt = DateTime::Format::ISO8601->parse_datetime ($measure[0]);
+        $dt->set_time_zone ($self->config->{TimeZone});
+        $date = $dt->ymd;
+        $time = $dt->hms;
+      } or printf STDERR "Error: Unable to parse datetime '%s'.\n%s",
+        $measure[0], $@;
+      $data .= "," if (defined $comma);
+      $comma = 1;
+      $data .= sprintf "\"%s\": {", $m;
+      $data .= sprintf "\"type\": \"%s\",", $self->config->{Devices}{$name}{Actions}{Measure}{$m}{Name};
+      $data .= sprintf "\"date\": \"%s\",", $date;
+      $data .= sprintf "\"time\": \"%s\",", $time;
       $data .= sprintf "\"measure\": \"%s\",", $measure[1];
       $data .= sprintf "\"unit\": \"%s\"", (defined $measure[2] ? $measure[2] : "");
       $data .= "}"
     }
+    $data .= "}";
   }
-  $data .= "}}";
+  $data .= "}";
   return encode_utf8 $data;
 };
 
