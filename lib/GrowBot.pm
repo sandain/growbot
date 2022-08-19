@@ -92,14 +92,168 @@ use Device::lm_sensors;
 use SVGPainter;
 
 my %SUPPORTED_DEVICES = (
-  "Bosch280"        => 1,
-  "AtlasScientific" => 1,
-  "lm_sensors"      => 1
-);
-
-my %SUPPORTED_ACTIONS = (
-  "Measure"   => 1,
-  "Calibrate" => 1
+  "EZO_RTD" => {
+    "Driver" => "AtlasScientific",
+    "Actions" => {
+      "Measure" => {
+        "temperature" => {
+          "Name" => "Temperature",
+          "Unit" => "°C",
+          "Minimum" => 0,
+          "Maximum" => 50
+        }
+      }
+    },
+    "DefaultAction" => "Measure",
+    "Interval" => 30
+  },
+  "EZO_PH" => {
+    "Driver" => "AtlasScientific",
+    "Actions" => {
+      "Measure" => {
+        "ph" => {
+          "Name" => "pH",
+          "Unit" => "",
+          "Minimum" => 0.001,
+          "Maximum" => 14
+        }
+      }
+    },
+    "DefaultAction" => "Measure",
+    "Interval" => 30
+  },
+  "EZO_EC" => {
+    "Driver" => "AtlasScientific",
+    "Actions" => {
+      "Measure" => {
+        "conductivity" => {
+          "Name" => "Electrical Conductivity",
+          "Unit" => "μS/cm",
+          "Minimum" => 0.07,
+          "Maximum" => 500000
+        },
+        "total_dissolved_solids" => {
+          "Name" => "Total Dissolved Solids",
+          "Unit" => "PPM",
+          "Minimum" => 0,
+          "Maximum" => 500000
+        },
+        "salinity" => {
+          "Name" => "Salinity",
+          "Unit" => "PSU",
+          "Minimum" => 0.00,
+          "Maximum" => 42.00
+        },
+        "specific_gravity" => {
+          "Name" => "Specific Gravity",
+          "Unit" => "",
+          "Minimum" => 1.00,
+          "Maximum" => 1.30
+        },
+      }
+    },
+    "DefaultAction" => "Measure",
+    "Interval" => 30
+  },
+  "EZO_ORP" => {
+    "Driver" => "AtlasScientific",
+    "Actions" => {
+      "Measure" => {
+        "oxygen_reduction_potential" => {
+          "Name" => "Oxygen Reduction Potential",
+          "Unit" => "mV",
+          "Minimum" => -1019.9,
+          "Maximum" => 1019.9
+        }
+      }
+    },
+    "DefaultAction" => "Measure",
+    "Interval" => 30
+  },
+  "EZO_DO" => {
+    "Driver" => "AtlasScientific",
+    "Actions" => {
+      "Measure" => {
+        "dissolved_oxygen" => {
+          "Name" => "Dissolved Oxygen",
+          "Unit" => "mg/L",
+          "Minimum" => 0.01,
+          "Maximum" => 100
+        },
+        "saturation" => {
+          "Name" => "Saturation",
+          "Unit" => "%",
+          "Minimum" => 0.1,
+          "Maximum" => 400
+        }
+      }
+    },
+    "DefaultAction" => "Measure",
+    "Interval" => 30
+  },
+  "BME280" => {
+    "Driver" => "Bosch280",
+    "Actions" => {
+      "Measure" => {
+        "temperature" => {
+          "Name" => "Temperature",
+          "Unit" => "°C",
+          "Minimum" => 0,
+          "Maximum" => 50
+        },
+        "pressure" => {
+          "Name" => "Pressure",
+          "Unit" => "hPa",
+          "Minimum" => 300,
+          "Maximum" => 1100
+        },
+        "humidity" => {
+          "Name" => "Humidity",
+          "Unit" => "%",
+          "Minimum" => 0,
+          "Maximum" => 100
+        }
+      }
+    },
+    "DefaultAction" => "Measure",
+    "Interval" => 30
+  },
+  "BMP280" => {
+    "Driver" => "Bosch280",
+    "Actions" => {
+      "Measure" => {
+        "temperature" => {
+          "Name" => "Temperature",
+          "Unit" => "°C",
+          "Minimum" => 0,
+          "Maximum" => 50
+        },
+        "pressure" => {
+          "Name" => "Pressure",
+          "Unit" => "hPa",
+          "Minimum" => 300,
+          "Maximum" => 1100
+        }
+      }
+    },
+    "DefaultAction" => "Measure",
+    "Interval" => 30
+  },
+  "CPU" => {
+    "Driver" => "lm_sensors",
+    "Actions" => {
+      "Measure" => {
+        "temperature" => {
+          "Name" => "Temperature",
+          "Unit" => "°C",
+          "Minimum" => 0,
+          "Maximum" => 100
+        }
+      }
+    },
+    "DefaultAction" => "Measure",
+    "Interval" => 30
+  }
 );
 
 my $default_config = {
@@ -107,8 +261,7 @@ my $default_config = {
   "Version"    => 0.2,
   "TimeZone"   => "UTC",
   "DataFolder" => getcwd . "/data",
-  "Devices"    => { },
-  "Actions"    => { }
+  "Devices"    => { }
 };
 
 our @EXPORT_OK = qw ();
@@ -160,7 +313,7 @@ sub start {
     my $config = $self->{config}{Devices}{$device};
     # Load the device driver.
     eval {
-      my $type = sprintf "Device::%s", $config->{Type};
+      my $type = sprintf "Device::%s", $config->{Driver};
       $self->{devices}{$device} = $type->new (@{$config->{Options}});
     } or printf STDERR "Error: Unable to initialize device %s.\n%s",
       $device, $@;
@@ -234,6 +387,7 @@ $_deviceCalibrate = sub {
 $_deviceMeasure = sub {
   my $self = shift;
   my ($device, $action) = @_;
+  my $config = $self->{config}{Devices}{$device};
   my $folder = $self->{config}{DataFolder} . '/' . $device;
   my $measure = $self->{devices}{$device}->measure;
   my $now = DateTime->now (time_zone => $self->{config}{TimeZone});
@@ -268,28 +422,26 @@ $_deviceMeasure = sub {
     # Determine the default name to be used for the title.
     my $name = ucfirst ($type);
     # Override defaults with configuration options.
-    foreach my $result (@{$self->{config}{Actions}{$action}{Results}}) {
-      if ($self->{config}{Results}{$result}{Type} eq $type) {
-        $min = $self->{config}{Results}{$result}{Minimum}
-          if (defined $self->{config}{Results}{$result}{Minimum});
-        $max = $self->{config}{Results}{$result}{Maximum}
-          if (defined $self->{config}{Results}{$result}{Maximum});
-        $unit = $self->{config}{Results}{$result}{Unit}
-          if (defined $self->{config}{Results}{$result}{Unit});
-        $name = $self->{config}{Results}{$result}{Name}
-          if (defined $self->{config}{Results}{$result}{Name});
-         last;
-      }
-    }
+    $min = $config->{Actions}{Measure}{$type}{Minimum}
+      if (defined $config->{Actions}{Measure}{$type}{Minimum});
+    $max = $config->{Actions}{Measure}{$type}{Maximum}
+      if (defined $config->{Actions}{Measure}{$type}{Maximum});
+    $unit = $config->{Actions}{Measure}{$type}{Unit}
+      if (defined $config->{Actions}{Measure}{$type}{Unit});
+    $name = $config->{Actions}{Measure}{$type}{Name}
+      if (defined $config->{Actions}{Measure}{$type}{Name});
+    # Create the y axis label
     my $ylabel = sprintf "%s", $name;
     $ylabel .= sprintf " (%s)", $measure->{$type}{unit}
       if (defined $measure->{$type}{unit} && $measure->{$type}{unit} ne "");
+    # Create a description for the figure.
+    my $desc = sprintf "%s data from device %s", $name, $device;
     # Create a SVG containing all of the measurement data.
     my $painter = SVGPainter->new (
       width => 1500,
       height => 750,
       title => $name,
-      desc => "Measurement data for device $name",
+      desc => $desc,
       ylabel => $ylabel,
       xlabel => "Date",
       folder => $self->{config}{DataFolder},
@@ -330,47 +482,10 @@ $_loadConfig = sub {
       my $d = $c->{Devices}{$device};
       die sprintf "Error: Unsupported device type %s", $d->{Type}
         unless (defined $d->{Type} && defined $SUPPORTED_DEVICES{$d->{Type}});
-      $config->{Devices}{$device}{Type} = $d->{Type};
-      $config->{Devices}{$device}{DefaultAction} = $d->{DefaultAction}
-        if (defined $d->{DefaultAction});
-      $config->{Devices}{$device}{Options} = $d->{Options}
-        if (defined $d->{Options});
-      if (defined $d->{Actions}) {
-        foreach my $action (@{$d->{Actions}}) {
-          push @{$config->{Devices}{$device}{Actions}}, $action;
-        }
-      }
-    }
-  }
-  if (defined $c->{Actions}) {
-    foreach my $action (keys %{$c->{Actions}}) {
-      my $a = $c->{Actions}{$action};
-      die sprintf "Error: Unsupported action type %s", $a->{Type}
-        unless (defined $a->{Type} && defined $SUPPORTED_ACTIONS{$a->{Type}});
-      $config->{Actions}{$action}{Type} = $a->{Type};
-      $config->{Actions}{$action}{Device} = $a->{Device}
-        if (defined $a->{Device});
-      $config->{Actions}{$action}{Interval} = $a->{Interval}
-        if (defined $a->{Interval});
-      if (defined $a->{Results}) {
-        foreach my $result (@{$a->{Results}}) {
-          push @{$config->{Actions}{$action}{Results}}, $result;
-        }
-      }
-    }
-  }
-  if (defined $c->{Results}) {
-    foreach my $result (keys %{$c->{Results}}) {
-      my $r = $c->{Results}{$result};
-      $config->{Results}{$result}{Action} = $r->{Action};
-      $config->{Results}{$result}{Type} = $r->{Type};
-      $config->{Results}{$result}{Name} = $r->{Name};
-      $config->{Results}{$result}{Unit} = $r->{Unit}
-        if (defined $r->{Unit});
-      $config->{Results}{$result}{Minimum} = $r->{Minimum}
-        if (defined $r->{Minimum});
-      $config->{Results}{$result}{Maximum} = $r->{Maximum}
-        if (defined $r->{Maximum});
+        $config->{Devices}{$device} = $SUPPORTED_DEVICES{$d->{Type}};
+        $config->{Devices}{$device}{Type} = $d->{Type};
+        $config->{Devices}{$device}{Options} = $d->{Options}
+          if (defined $d->{Options});
     }
   }
   return $config;
@@ -379,6 +494,7 @@ $_loadConfig = sub {
 $_startDevice = sub {
   my $self = shift;
   my ($device) = @_;
+  my $config = $self->{config}{Devices}{$device};
   make_path ($self->{config}{DataFolder} . '/' . $device);
   my $child = Child->new (sub {
     open my $queueFH, '<', $self->{queue}{$device} or
@@ -422,19 +538,18 @@ $_startDevice = sub {
           }
           # Make sure the action exists in the configuration.
           die "Unknown action $action->{command}"
-            unless (defined $self->{config}{Actions}{$action->{command}});
+            unless (defined $config->{Actions}{$action->{command}});
           # Respond to the action based on its type.
-          my $action_type = $self->{config}{Actions}{$action->{command}}{Type};
-          if ($action_type eq 'Measure') {
+          if ($action->{command} eq 'Measure') {
             $self->$_deviceMeasure ($device, $action->{command});
           }
-          if ($action_type eq 'Calibrate') {
+          if ($action->{command} eq 'Calibrate') {
             $self->$_deviceCalibrate ($device);
           }
           # Enqueue the action again if needed.
-          if (defined $self->{config}{Actions}{$action->{command}}{Interval}) {
+          if (defined $config->{Interval}) {
             my $interval = DateTime::Duration->new (
-              seconds => $self->{config}{Actions}{$action->{command}}{Interval}
+              seconds => $config->{Interval}
             );
             $self->enqueueCommand (
               $device,
