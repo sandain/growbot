@@ -401,6 +401,9 @@ $_yTics = sub {
       last;
     }
   }
+  my $format = "%s";
+  $format = "%.2f" if ($distance < 0.5);
+  $format = "%.0e" if (abs ($self->{ylim}[1]) > 1000);
   my $start = $self->{ylim}[0];
   $start = ceil ($start / $interval) * $interval
     if (abs fmod ($start, $interval) > EPSILON);
@@ -416,7 +419,7 @@ $_yTics = sub {
       push @ytics, {
         loc => $loc,
         length => 15,
-        label => $i,
+        label => sprintf ($format, $i),
         background => 1
       };
     }
