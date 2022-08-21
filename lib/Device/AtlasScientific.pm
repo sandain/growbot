@@ -47,7 +47,7 @@ L<https://atlas-scientific.com/files/pH_EZO_Datasheet.pdf>
 =item * Electrical conductivity meter:
 L<https://atlas-scientific.com/files/EC_EZO_Datasheet.pdf>
 
-=item * Oxygen reduction potential meter:
+=item * Oxidation-reduction potential meter:
 L<https://atlas-scientific.com/files/ORP_EZO_Datasheet.pdf>
 
 =item * Dissolved oxygen meter:
@@ -459,7 +459,7 @@ sub measure {
     }
   }
   if ($self->{model} eq EZO_ORP) {
-    $measure->{oxygen_reduction_potential} = {
+    $measure->{oxidation_reduction_potential} = {
       value => $response[0],
       unit  => "mV",
       minimum => -1019.9,
