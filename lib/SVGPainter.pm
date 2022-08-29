@@ -147,7 +147,7 @@ sub new {
 sub paint {
   my $self = shift;
   # Calculate the location of the plot area.
-  my $plotLeft = int ($self->{width} * 0.08);
+  my $plotLeft = int ($self->{width} * 0.095);
   my $plotRight = int ($self->{width} * 0.99);
   my $plotTop = int ($self->{height} * 0.01);
   my $plotBottom = int ($self->{height} * 0.8);
@@ -403,7 +403,7 @@ $_yTics = sub {
   }
   my $format = "%s";
   $format = "%.2f" if ($distance < 0.5);
-  $format = "%.0e" if (abs ($self->{ylim}[1]) > 1000);
+  $format = "%.1e" if (abs ($self->{ylim}[1]) > 10000);
   my $start = $self->{ylim}[0];
   $start = ceil ($start / $interval) * $interval
     if (abs fmod ($start, $interval) > EPSILON);
