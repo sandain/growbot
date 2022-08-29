@@ -420,7 +420,7 @@ $_deviceMeasure = sub {
     # Determine the unit used for the Y axis.
     my $unit = $measure->{$type}{unit};
     # Determine the default name to be used for the title.
-    my $name = ucfirst ($type);
+    my $name = $type;
     # Override defaults with configuration options.
     $min = $config->{Actions}{Measure}{$type}{Minimum}
       if (defined $config->{Actions}{Measure}{$type}{Minimum});
@@ -431,9 +431,8 @@ $_deviceMeasure = sub {
     $name = $config->{Actions}{Measure}{$type}{Name}
       if (defined $config->{Actions}{Measure}{$type}{Name});
     # Create the y axis label
-    my $ylabel = sprintf "%s", $name;
-    $ylabel .= sprintf " (%s)", $measure->{$type}{unit}
-      if (defined $measure->{$type}{unit} && $measure->{$type}{unit} ne "");
+    my $ylabel = $name;
+    $ylabel .= sprintf " (%s)", $unit if (defined $unit && $unit ne "");
     # Create a description for the figure.
     my $desc = sprintf "%s data from device %s", $name, $device;
     # Create a SVG containing all of the measurement data.
