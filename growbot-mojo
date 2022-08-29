@@ -163,7 +163,7 @@ helper 'device' => sub {
     $data .= "}";
   }
   $data .= "}";
-  return encode_utf8 $data;
+  return $data;
 };
 
 
