@@ -423,7 +423,7 @@ sub measure {
     };
   }
   if ($self->{model} eq EZO_PH) {
-    $measure->{pH} = {
+    $measure->{ph} = {
       value => $response[0],
       unit  => "pH",
       minimum => 0.001,
@@ -594,19 +594,19 @@ sub measure {
   }
   if ($self->{model} eq EZO_RGB) {
     for (my $i = 0; $i < @options; $i ++) {
-      $measure->{RGB} = {
+      $measure->{rgb} = {
         value => $response[$i],
         unit  => "RGB",
         minimum => 0,
         maximum => 255
       } if ($options[$i] eq 'RGB');
-      $measure->{LUX} = {
+      $measure->{lux} = {
         value => $response[$i],
         unit  => "LUX",
         minimum => 0,
         maximum => 65535
       } if ($options[$i] eq 'LUX');
-      $measure->{CIE} = {
+      $measure->{cie} = {
         value => $response[$i],
         unit  => "CIE",
         minimum => 0,
