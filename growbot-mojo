@@ -63,7 +63,6 @@ use v5.14;
 use lib qw (lib);
 use GrowBot;
 
-use Encode qw (encode_utf8);
 use DateTime;
 use Mojolicious::Lite;
 use Mojo::JSON qw (to_json);
@@ -127,13 +126,12 @@ helper 'device' => sub {
   my $self = shift;
   my ($name) = @_;
   my $folder = sprintf "%s/%s", $growbot->dataFolder, $name;
-  my $data = "{";
-  $data .= sprintf "\"name\": \"%s\",", $name;
-  $data .= sprintf "\"driver\": \"%s\",", $self->config->{Devices}{$name}{Driver};
-  $data .= sprintf "\"type\": \"%s\",", $self->config->{Devices}{$name}{Type};
+  my $data = {
+    "name" => $name,
+    "driver" => $self->config->{Devices}{$name}{Driver},
+    "type" => $self->config->{Devices}{$name}{Type}
+  };
   if (defined $self->config->{Devices}{$name}{Actions}{Measure}) {
-    $data .= sprintf "\"measurements\": {";
-    my $comma;
     foreach my $m (keys %{$self->config->{Devices}{$name}{Actions}{Measure}}) {
       open my $fh, '<', "$folder/$m.txt" or
         die "Can't open file $folder/$m.txt: $!";
@@ -150,20 +148,16 @@ helper 'device' => sub {
         $time = $dt->hms;
       } or printf STDERR "Error: Unable to parse datetime '%s'.\n%s",
         $measure[0], $@;
-      $data .= "," if (defined $comma);
-      $comma = 1;
-      $data .= sprintf "\"%s\": {", $m;
-      $data .= sprintf "\"type\": \"%s\",", $self->config->{Devices}{$name}{Actions}{Measure}{$m}{Name};
-      $data .= sprintf "\"date\": \"%s\",", $date;
-      $data .= sprintf "\"time\": \"%s\",", $time;
-      $data .= sprintf "\"measure\": \"%s\",", $measure[1];
-      $data .= sprintf "\"unit\": \"%s\"", (defined $measure[2] ? $measure[2] : "");
-      $data .= "}"
+      $data->{measurements}{$m} = {
+        "type" => $self->config->{Devices}{$name}{Actions}{Measure}{$m}{Name},
+        "date" => $date,
+        "time" => $time,
+        "measure" => $measure[1],
+        "unit" => (defined $measure[2] ? $measure[2] : "")
+      };
     }
-    $data .= "}";
   }
-  $data .= "}";
-  return $data;
+  return to_json $data;
 };
 
 
