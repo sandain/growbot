@@ -1,12 +1,12 @@
 % layout 'default';
 % title 'Growbot';
 % content_for description => 'Growbot Dashboard';
-% use Mojo::JSON qw (decode_json);
+% use Mojo::JSON qw (from_json);
 
     <div class="container-fluid">
       <div class="row g-2">
       % foreach my $device (devices) {
-      %   my $d = decode_json device ($device);
+      %   my $d = from_json device ($device);
       %   foreach my $measurement (sort keys %{$d->{measurements}}) {
       %     my $m = $d->{measurements}{$measurement};
         <div class="col-lg-4 portfolio-item">
