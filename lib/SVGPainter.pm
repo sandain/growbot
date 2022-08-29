@@ -91,6 +91,7 @@ our @EXPORT_OK = qw ();
 
 # Private methods. Defined below.
 my $_loadData;
+my $_findClosest;
 my $_xCoordinate;
 my $_yCoordinate;
 my $_xTics;
@@ -235,6 +236,16 @@ $_loadData = sub {
     }
   }
   close $dh;
+};
+
+$_findClosest = sub {
+  my $self = shift;
+  my ($target, @a) = @_;
+  my $closest = 0;
+  for (my $i = 1; $i < @a; $i ++) {
+    $closest = $i if (abs ($target - $a[$closest]) > abs ($target - $a[$i]));
+  }
+  return $closest;
 };
 
 $_xCoordinate = sub {
@@ -385,21 +396,16 @@ $_yTics = sub {
     5e-5, 1e-5,
     5e-6, 1e-6
   );
-  my $i;
-  for ($i = 0; $i < @distances; $i ++) {
-    if ($distance >= $distances[$i]) {
-      if ($i % 2 == 0) {
-        $interval = $distances[$i] / 50;
-        $longSkip = $distances[$i] / 10;
-        $labelSkip = $distances[$i] / 5;
-      }
-      else {
-        $interval = $distances[$i] / 20;
-        $longSkip = $distances[$i] / 10;
-        $labelSkip = $distances[$i] / 5;
-      }
-      last;
-    }
+  my $i = $self->$_findClosest ($distance, @distances);
+  if ($i % 2 == 0) {
+    $interval = $distances[$i] / 50;
+    $longSkip = $distances[$i] / 10;
+    $labelSkip = $distances[$i] / 5;
+  }
+  else {
+    $interval = $distances[$i] / 20;
+    $longSkip = $distances[$i] / 10;
+    $labelSkip = $distances[$i] / 5;
   }
   my $format = "%s";
   $format = "%.2f" if ($distance < 0.5);
