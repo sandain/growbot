@@ -160,7 +160,6 @@ helper 'device' => sub {
   return to_json $data;
 };
 
-
 =head2 HTTP Request Methods
 
 =head3 get /
@@ -174,6 +173,7 @@ get '/'
 => { format => 'html' }
 => sub {
   my $self = shift;
+  $self->res->headers->server ($growbot->{config}{AppName});
   $self->render (template => 'dashboard');
 };
 
@@ -189,6 +189,7 @@ get '/device/:name'
 => sub {
   my $self = shift;
   my $name = $self->param ('name');
+  $self->res->headers->server ($growbot->{config}{AppName});
   $self->render (template => 'device');
 };
 
@@ -205,6 +206,7 @@ get '/device/:name/:type'
   my $self = shift;
   my $name = $self->param ('name');
   my $type = $self->param ('type');
+  $self->res->headers->server ($growbot->{config}{AppName});
   $self->render (template => 'device_type');
 };
 
