@@ -89,7 +89,7 @@ use File::Spec;
 use Device::Bosch280;
 use Device::AtlasScientific;
 use Device::lm_sensors;
-use SVGPainter;
+use ScatterPlot;
 
 my %SUPPORTED_DEVICES = (
   "EZO_RTD" => {
@@ -436,7 +436,7 @@ $_deviceMeasure = sub {
     # Create a description for the figure.
     my $desc = sprintf "%s data from device %s", $name, $device;
     # Create a SVG containing all of the measurement data.
-    my $painter = SVGPainter->new (
+    my $painter = ScatterPlot->new (
       width => 1500,
       height => 750,
       title => $name,

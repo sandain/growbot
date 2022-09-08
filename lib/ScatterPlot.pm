@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-SVGPainter
+ScatterPlot
 
 =head1 SYNOPSIS
 
@@ -18,11 +18,11 @@ SVGPainter
 
 =item C<new>
 
-Returns a new SVGPainter.
+Returns a new ScatterPlot.
 
 =item C<close>
 
-Closes the SVGPainter input/output.
+Closes the ScatterPlot input/output.
 
 =back
 
@@ -71,7 +71,7 @@ Jason M. Wood L<sandain@hotmail.com|mailto:sandain@hotmail.com>
 
 =cut
 
-package SVGPainter;
+package ScatterPlot;
 
 use v5.14;
 use strict;
