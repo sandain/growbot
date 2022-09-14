@@ -254,14 +254,14 @@ $_xCoordinate = sub {
   my $start = $self->{xlim}[0];
   my $end = $self->{xlim}[1];
   my $xFactor = ($right - $left) / abs ($end->epoch - $start->epoch);
-  return ($x->epoch - $start->epoch) * $xFactor + $left;
+  return $left + ($x->epoch - $start->epoch) * $xFactor;
 };
 
 $_yCoordinate = sub {
   my $self = shift;
   my ($y, $top, $bottom) = @_;
   my $yFactor = ($bottom - $top) / abs ($self->{ylim}[1] - $self->{ylim}[0]);
-  $bottom - ($y - $self->{ylim}[0]) * $yFactor;
+  return $bottom - ($y - $self->{ylim}[0]) * $yFactor;
 };
 
 $_xTics = sub {
@@ -488,7 +488,6 @@ $_paintDescTag = sub {
   $self->{svg} .= "<desc id=\"document-description\">";
   $self->{svg} .= $self->{desc};
   $self->{svg} .= "</desc>\n";
-
 };
 
 $_paintBackground = sub {
