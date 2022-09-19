@@ -1,6 +1,6 @@
 % layout 'default';
-% use Mojo::JSON qw (decode_json);
-% my $device = decode_json device ($name);
+% use Mojo::JSON qw (from_json);
+% my $device = from_json device ($name);
 % my $m = $device->{measurements}{$type};
 % title sprintf "%s - %s", $name, $m->{type};
 % content_for description => sprintf "%s data from device %s", $m->{type}, $name;

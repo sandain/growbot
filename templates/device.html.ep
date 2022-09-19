@@ -3,8 +3,8 @@
 % content_for description => sprintf "Data from device %s", $name;
 % use utf8;
 % use open qw (:std :utf8);
-% use Mojo::JSON qw (decode_json);
-% my $device = decode_json device ($name);
+% use Mojo::JSON qw (from_json);
+% my $device = from_json device ($name);
 
     <h1><%= $device->{name} %></h1>
     <h2>Driver: <%= $device->{driver} %></h2>
