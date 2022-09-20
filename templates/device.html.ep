@@ -9,11 +9,13 @@
     <h1><%= $device->{name} %></h1>
     <h2>Driver: <%= $device->{driver} %></h2>
     <h2>Type: <%= $device->{type} %></h2>
-    % foreach my $measurement (sort keys %{$device->{measurements}}) {
-    %  my $m = $device->{measurements}{$measurement};
+    % foreach my $type (sort keys %{$device->{measurements}}) {
+    %  my $m = $device->{measurements}{$type};
     <h3><%= sprintf "%s: %s %s", $m->{type}, $m->{measure}, $m->{unit} %></h3>
     <h3><%= sprintf "Last measurement: %s %s", $m->{date}, $m->{time} %></h3>
-    <figure class="figure w-100">
-      <%== data ($name, $measurement, "svg", 6) %>
-    </figure>
+    <a href="/device/<%= $name %>/<%= $type %>.svg">
+      <figure class="figure w-100">
+        <%== data ($name, $type, "svg", 6) %>
+      </figure>
+    </a>
     % }
