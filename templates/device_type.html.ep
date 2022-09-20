@@ -10,6 +10,7 @@
     <h2>Type: <%= $device->{type} %></h2>
     <h3><%= sprintf "%s: %s %s", $m->{type}, $m->{measure}, $m->{unit} %></h3>
     <h3><%= sprintf "Last measurement: %s %s", $m->{date}, $m->{time} %></h3>
-    <figure class="figure w-100">
-      <%== data ($name, $type, "svg", 6) %>
-    </figure>
+    <a href="/device/<%= $name %>/<%= $type %>.svg">
+      <figure class="figure w-100">
+        <%== data ($name, $type, "svg", 6) %>
+      </figure>
