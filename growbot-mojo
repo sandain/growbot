@@ -169,7 +169,7 @@ helper 'device' => sub {
 =cut
 
 get '/'
-=> [ format => ['html'] ]
+=> [ format => [ 'html' ] ]
 => { format => 'html' }
 => sub {
   my $self = shift;
@@ -184,7 +184,7 @@ get '/'
 =cut
 
 get '/device/:name'
-=> [ format => ['html', 'json'] ]
+=> [ format => [ 'html', 'json' ] ]
 => { format => 'html' }
 => sub {
   my $self = shift;
@@ -200,7 +200,7 @@ get '/device/:name'
 =cut
 
 get '/device/:name/:type'
-=> [ format => ['html', 'svg', 'txt'] ]
+=> [ format => [ 'html', 'svg', 'txt' ] ]
 => { format => 'html' }
 => sub {
   my $self = shift;
