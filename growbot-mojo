@@ -193,7 +193,7 @@ get '/device/:name'
   $self->render (template => 'device');
 };
 
-=head3 get /device/<device name><action type>
+=head3 get /device/<device name>/<action type>
 
   Renders the device action type.
 
