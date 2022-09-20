@@ -5,25 +5,25 @@
 
     <div class="container-fluid">
       <div class="row g-2">
-      % foreach my $device (devices) {
-      %   my $d = from_json device ($device);
-      %   foreach my $measurement (sort keys %{$d->{measurements}}) {
-      %     my $m = $d->{measurements}{$measurement};
+      % foreach my $name (devices) {
+      %   my $d = from_json device ($name);
+      %   foreach my $type (sort keys %{$d->{measurements}}) {
+      %     my $m = $d->{measurements}{$type};
         <div class="col-lg-4 portfolio-item">
           <div class="card h-100">
             <div class="card-body">
-              <h5 class="card-title text-center" id="device-<%= $device %>">
-                <a href="/device/<%= $device %>"><%= $d->{name} %></a>
+              <h5 class="card-title text-center" id="device-<%= $name %>">
+                <a href="/device/<%= $name %>"><%= $d->{name} %></a>
               </h5>
               <h6 class="card-subtitle text-center text-muted">
-                <a href="/device/<%= $device %>/<%= $measurement %>"><%= $m->{type} %></a>
+                <a href="/device/<%= $name %>/<%= $type %>"><%= $m->{type} %></a>
               </h6>
               <p class="text-center">
                 <%= sprintf "%s %s", $m->{measure}, $m->{unit} %>
               </p>
-              <a href="/device/<%= $device %>/<%= $measurement %>.svg">
+              <a href="/device/<%= $name %>/<%= $type %>.svg">
                 <figure class="figure w-90">
-                  <%== data ($device, $measurement, "svg", 18) %>
+                  <%== data ($name, $type, "svg", 18) %>
                 </figure>
               </a>
             </div>
