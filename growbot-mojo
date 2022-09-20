@@ -210,4 +210,7 @@ get '/device/:name/:type'
   $self->render (template => 'device_type');
 };
 
+# Don't serve the default favicon.
+delete app->static->extra->{'favicon.ico'};
+
 app->start;
