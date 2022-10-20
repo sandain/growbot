@@ -129,7 +129,8 @@ helper 'device' => sub {
   my $data = {
     "name" => $name,
     "driver" => $self->config->{Devices}{$name}{Driver},
-    "type" => $self->config->{Devices}{$name}{Type}
+    "type" => $self->config->{Devices}{$name}{Type},
+    "dashboard" => $self->config->{Devices}{$name}{Dashboard}
   };
   if (defined $self->config->{Devices}{$name}{Actions}{Measure}) {
     foreach my $m (keys %{$self->config->{Devices}{$name}{Actions}{Measure}}) {

@@ -7,7 +7,7 @@
       <div class="row g-2">
       % foreach my $name (devices) {
       %   my $d = from_json device ($name);
-      %   foreach my $type (sort keys %{$d->{measurements}}) {
+      %   foreach my $type (sort @{$d->{dashboard}}) {
       %     my $m = $d->{measurements}{$type};
         <div class="col-lg-4 portfolio-item">
           <div class="card h-100">

@@ -104,6 +104,9 @@ my %SUPPORTED_DEVICES = (
         }
       }
     },
+    "Dashboard" => [
+      "temperature"
+    ],
     "DefaultAction" => "Measure",
     "Interval" => 30
   },
@@ -119,6 +122,9 @@ my %SUPPORTED_DEVICES = (
         }
       }
     },
+    "Dashboard" => [
+      "ph"
+    ],
     "DefaultAction" => "Measure",
     "Interval" => 30
   },
@@ -152,6 +158,9 @@ my %SUPPORTED_DEVICES = (
         },
       }
     },
+    "Dashboard" => [
+      "conductivity", "total_dissolved_solids", "salinity", "specific_gravity"
+    ],
     "DefaultAction" => "Measure",
     "Interval" => 30
   },
@@ -167,6 +176,9 @@ my %SUPPORTED_DEVICES = (
         }
       }
     },
+    "Dashboard" => [
+      "oxidation_reduction_potential"
+    ],
     "DefaultAction" => "Measure",
     "Interval" => 30
   },
@@ -188,6 +200,9 @@ my %SUPPORTED_DEVICES = (
         }
       }
     },
+    "Dashboard" => [
+      "dissolved_oxygen", "saturation"
+    ],
     "DefaultAction" => "Measure",
     "Interval" => 30
   },
@@ -215,6 +230,9 @@ my %SUPPORTED_DEVICES = (
         }
       }
     },
+    "Dashboard" => [
+      "temperature", "pressure", "humidity"
+    ],
     "DefaultAction" => "Measure",
     "Interval" => 30
   },
@@ -236,6 +254,9 @@ my %SUPPORTED_DEVICES = (
         }
       }
     },
+    "Dashboard" => [
+      "temperature", "pressure"
+    ],
     "DefaultAction" => "Measure",
     "Interval" => 30
   },
@@ -251,6 +272,9 @@ my %SUPPORTED_DEVICES = (
         }
       }
     },
+    "Dashboard" => [
+      "temperature"
+    ],
     "DefaultAction" => "Measure",
     "Interval" => 30
   }
@@ -485,6 +509,8 @@ $_loadConfig = sub {
         $config->{Devices}{$device}{Type} = $d->{Type};
         $config->{Devices}{$device}{Options} = $d->{Options}
           if (defined $d->{Options});
+        $config->{Devices}{$device}{Dashboard} = $d->{Dashboard}
+          if (defined $d->{Dashboard} && ref $d->{Dashboard} eq 'ARRAY');
     }
   }
   return $config;
