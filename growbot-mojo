@@ -87,22 +87,22 @@ helper 'config' => sub {
 };
 
 
-=head3 data
+=head3 history
 
   Return measurement data.
 
 =cut
 
-helper 'data' => sub {
+helper 'history' => sub {
   my $self = shift;
   my ($device, $measurement, $type, $indent) = @_;
   my $filepath = sprintf "%s/%s/%s.%s",
     $growbot->dataFolder, $device, $measurement, $type;
   return unless (-s $filepath);
   open my $fh, '<', $filepath or die "Can't load data: $!";
-  my $data = join " " x $indent, <$fh>;
+  my $history = join " " x $indent, <$fh>;
   close $fh;
-  return $data;
+  return $history;
 };
 
 =head3 devices
@@ -194,13 +194,13 @@ get '/device/:name'
   $self->render (template => 'device');
 };
 
-=head3 get /device/<device name>/<action type>
+=head3 get /device/<device name>/history/<action type>
 
-  Renders the device action type.
+  Renders the history for the device action type.
 
 =cut
 
-get '/device/:name/:type'
+get '/device/:name/history/:type'
 => [ format => [ 'html', 'svg', 'txt' ] ]
 => { format => 'html' }
 => sub {
@@ -208,7 +208,7 @@ get '/device/:name/:type'
   my $name = $self->param ('name');
   my $type = $self->param ('type');
   $self->res->headers->server ($growbot->{config}{AppName});
-  $self->render (template => 'device_type');
+  $self->render (template => 'device_history_type');
 };
 
 # Don't serve the default favicon.

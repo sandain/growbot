@@ -16,14 +16,14 @@
                 <a href="/device/<%= $name %>"><%= $d->{name} %></a>
               </h5>
               <h6 class="card-subtitle text-center text-muted">
-                <a href="/device/<%= $name %>/<%= $type %>"><%= $m->{type} %></a>
+                <a href="/device/<%= $name %>/history/<%= $type %>"><%= $m->{type} %></a>
               </h6>
               <p class="text-center">
                 <%= sprintf "%s %s", $m->{measure}, $m->{unit} %>
               </p>
-              <a href="/device/<%= $name %>/<%= $type %>.svg">
+              <a href="/device/<%= $name %>/history/<%= $type %>.svg">
                 <figure class="figure w-90">
-                  <%== data ($name, $type, "svg", 18) %>
+                  <%== history ($name, $type, "svg", 18) %>
                 </figure>
               </a>
             </div>

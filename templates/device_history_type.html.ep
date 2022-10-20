@@ -12,5 +12,5 @@
     <h3><%= sprintf "Last measurement: %s %s", $m->{date}, $m->{time} %></h3>
     <a href="/device/<%= $name %>/<%= $type %>.svg">
       <figure class="figure w-100">
-        <%== data ($name, $type, "svg", 6) %>
+        <%== history ($name, $type, "svg", 6) %>
       </figure>
