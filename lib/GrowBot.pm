@@ -105,6 +105,8 @@ my %SUPPORTED_DEVICES = (
           }
         },
         "Interval" => 30
+      },
+      "Calibrate" => {
       }
     },
     "Dashboard" => [
@@ -125,6 +127,8 @@ my %SUPPORTED_DEVICES = (
           }
         },
         "Interval" => 30
+      },
+      "Calibrate" => {
       }
     },
     "Dashboard" => [
@@ -163,6 +167,8 @@ my %SUPPORTED_DEVICES = (
           }
         },
         "Interval" => 30
+      },
+      "Calibrate" => {
       }
     },
     "Dashboard" => [
@@ -183,6 +189,8 @@ my %SUPPORTED_DEVICES = (
           }
         },
         "Interval" => 30
+      },
+      "Calibrate" => {
       }
     },
     "Dashboard" => [
@@ -209,6 +217,8 @@ my %SUPPORTED_DEVICES = (
           }
         },
         "Interval" => 30
+      },
+      "Calibrate" => {
       }
     },
     "Dashboard" => [
