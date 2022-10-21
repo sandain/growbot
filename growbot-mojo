@@ -132,8 +132,8 @@ helper 'device' => sub {
     "type" => $self->config->{Devices}{$name}{Type},
     "dashboard" => $self->config->{Devices}{$name}{Dashboard}
   };
-  if (defined $self->config->{Devices}{$name}{Actions}{Measure}) {
-    foreach my $m (keys %{$self->config->{Devices}{$name}{Actions}{Measure}}) {
+  if (defined $self->config->{Devices}{$name}{Actions}{Measure}{Type}) {
+    foreach my $m (keys %{$self->config->{Devices}{$name}{Actions}{Measure}{Type}}) {
       open my $fh, '<', "$folder/$m.txt" or
         die "Can't open file $folder/$m.txt: $!";
       my $measure = join "", <$fh>;
@@ -150,7 +150,7 @@ helper 'device' => sub {
       } or printf STDERR "Error: Unable to parse datetime '%s'.\n%s",
         $measure[0], $@;
       $data->{measurements}{$m} = {
-        "type" => $self->config->{Devices}{$name}{Actions}{Measure}{$m}{Name},
+        "type" => $self->config->{Devices}{$name}{Actions}{Measure}{Type}{$m}{Name},
         "date" => $date,
         "time" => $time,
         "measure" => $measure[1],

@@ -96,187 +96,203 @@ my %SUPPORTED_DEVICES = (
     "Driver" => "AtlasScientific",
     "Actions" => {
       "Measure" => {
-        "temperature" => {
-          "Name" => "Temperature",
-          "Unit" => "°C",
-          "Minimum" => 0,
-          "Maximum" => 50
-        }
+        "Type" => {
+          "temperature" => {
+            "Name" => "Temperature",
+            "Unit" => "°C",
+            "Minimum" => 0,
+            "Maximum" => 50
+          }
+        },
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "temperature"
     ],
-    "DefaultActions" => [ "Measure" ],
-    "Interval" => 30
+    "DefaultActions" => [ "Measure" ]
   },
   "EZO_PH" => {
     "Driver" => "AtlasScientific",
     "Actions" => {
       "Measure" => {
-        "ph" => {
-          "Name" => "pH",
-          "Unit" => "",
-          "Minimum" => 0.001,
-          "Maximum" => 14
-        }
+        "Type" => {
+          "ph" => {
+            "Name" => "pH",
+            "Unit" => "",
+            "Minimum" => 0.001,
+            "Maximum" => 14
+          }
+        },
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "ph"
     ],
-    "DefaultActions" => [ "Measure" ],
-    "Interval" => 30
+    "DefaultActions" => [ "Measure" ]
   },
   "EZO_EC" => {
     "Driver" => "AtlasScientific",
     "Actions" => {
       "Measure" => {
-        "conductivity" => {
-          "Name" => "Electrical Conductivity",
-          "Unit" => "μS/cm",
-          "Minimum" => 0.07,
-          "Maximum" => 500000
+        "Type" => {
+          "conductivity" => {
+            "Name" => "Electrical Conductivity",
+            "Unit" => "μS/cm",
+            "Minimum" => 0.07,
+            "Maximum" => 500000
+          },
+          "total_dissolved_solids" => {
+            "Name" => "Total Dissolved Solids",
+            "Unit" => "PPM",
+            "Minimum" => 0,
+            "Maximum" => 500000
+          },
+          "salinity" => {
+            "Name" => "Salinity",
+            "Unit" => "PSU",
+            "Minimum" => 0.00,
+            "Maximum" => 42.00
+          },
+          "specific_gravity" => {
+            "Name" => "Specific Gravity",
+            "Unit" => "",
+            "Minimum" => 1.00,
+            "Maximum" => 1.30
+          }
         },
-        "total_dissolved_solids" => {
-          "Name" => "Total Dissolved Solids",
-          "Unit" => "PPM",
-          "Minimum" => 0,
-          "Maximum" => 500000
-        },
-        "salinity" => {
-          "Name" => "Salinity",
-          "Unit" => "PSU",
-          "Minimum" => 0.00,
-          "Maximum" => 42.00
-        },
-        "specific_gravity" => {
-          "Name" => "Specific Gravity",
-          "Unit" => "",
-          "Minimum" => 1.00,
-          "Maximum" => 1.30
-        },
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "conductivity", "total_dissolved_solids", "salinity", "specific_gravity"
     ],
-    "DefaultActions" => [ "Measure" ],
-    "Interval" => 30
+    "DefaultActions" => [ "Measure" ]
   },
   "EZO_ORP" => {
     "Driver" => "AtlasScientific",
     "Actions" => {
       "Measure" => {
-        "oxidation_reduction_potential" => {
-          "Name" => "Oxidation-reduction potential",
-          "Unit" => "mV",
-          "Minimum" => -1019.9,
-          "Maximum" => 1019.9
-        }
+        "Type" => {
+          "oxidation_reduction_potential" => {
+            "Name" => "Oxidation-reduction potential",
+            "Unit" => "mV",
+            "Minimum" => -1019.9,
+            "Maximum" => 1019.9
+          }
+        },
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "oxidation_reduction_potential"
     ],
-    "DefaultActions" => [ "Measure" ],
-    "Interval" => 30
+    "DefaultActions" => [ "Measure" ]
   },
   "EZO_DO" => {
     "Driver" => "AtlasScientific",
     "Actions" => {
       "Measure" => {
-        "dissolved_oxygen" => {
-          "Name" => "Dissolved Oxygen",
-          "Unit" => "mg/L",
-          "Minimum" => 0.01,
-          "Maximum" => 100
+        "Type" => {
+          "dissolved_oxygen" => {
+            "Name" => "Dissolved Oxygen",
+            "Unit" => "mg/L",
+            "Minimum" => 0.01,
+            "Maximum" => 100
+          },
+          "saturation" => {
+            "Name" => "Saturation",
+            "Unit" => "%",
+            "Minimum" => 0.1,
+            "Maximum" => 400
+          }
         },
-        "saturation" => {
-          "Name" => "Saturation",
-          "Unit" => "%",
-          "Minimum" => 0.1,
-          "Maximum" => 400
-        }
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "dissolved_oxygen", "saturation"
     ],
-    "DefaultActions" => [ "Measure" ],
-    "Interval" => 30
+    "DefaultActions" => [ "Measure" ]
   },
   "BME280" => {
     "Driver" => "Bosch280",
     "Actions" => {
       "Measure" => {
-        "temperature" => {
-          "Name" => "Temperature",
-          "Unit" => "°C",
-          "Minimum" => 0,
-          "Maximum" => 50
+        "Type" => {
+          "temperature" => {
+            "Name" => "Temperature",
+            "Unit" => "°C",
+            "Minimum" => 0,
+            "Maximum" => 50
+          },
+          "pressure" => {
+            "Name" => "Pressure",
+            "Unit" => "hPa",
+            "Minimum" => 300,
+            "Maximum" => 1100
+          },
+          "humidity" => {
+            "Name" => "Humidity",
+            "Unit" => "%",
+            "Minimum" => 0,
+            "Maximum" => 100
+          }
         },
-        "pressure" => {
-          "Name" => "Pressure",
-          "Unit" => "hPa",
-          "Minimum" => 300,
-          "Maximum" => 1100
-        },
-        "humidity" => {
-          "Name" => "Humidity",
-          "Unit" => "%",
-          "Minimum" => 0,
-          "Maximum" => 100
-        }
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "temperature", "pressure", "humidity"
     ],
-    "DefaultActions" => [ "Measure" ],
-    "Interval" => 30
+    "DefaultActions" => [ "Measure" ]
   },
   "BMP280" => {
     "Driver" => "Bosch280",
     "Actions" => {
       "Measure" => {
-        "temperature" => {
-          "Name" => "Temperature",
-          "Unit" => "°C",
-          "Minimum" => 0,
-          "Maximum" => 50
+        "Type" => {
+          "temperature" => {
+            "Name" => "Temperature",
+            "Unit" => "°C",
+            "Minimum" => 0,
+            "Maximum" => 50
+          },
+          "pressure" => {
+            "Name" => "Pressure",
+            "Unit" => "hPa",
+            "Minimum" => 300,
+            "Maximum" => 1100
+          }
         },
-        "pressure" => {
-          "Name" => "Pressure",
-          "Unit" => "hPa",
-          "Minimum" => 300,
-          "Maximum" => 1100
-        }
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "temperature", "pressure"
     ],
-    "DefaultActions" => [ "Measure" ],
-    "Interval" => 30
+    "DefaultActions" => [ "Measure" ]
   },
   "CPU" => {
     "Driver" => "lm_sensors",
     "Actions" => {
       "Measure" => {
-        "temperature" => {
-          "Name" => "Temperature",
-          "Unit" => "°C",
-          "Minimum" => 0,
-          "Maximum" => 100
-        }
+        "Type" => {
+          "temperature" => {
+            "Name" => "Temperature",
+            "Unit" => "°C",
+            "Minimum" => 0,
+            "Maximum" => 100
+          }
+        },
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "temperature"
     ],
-    "DefaultActions" => [ "Measure" ],
-    "Interval" => 30
+    "DefaultActions" => [ "Measure" ]
   }
 );
 
@@ -444,14 +460,14 @@ $_deviceMeasure = sub {
     # Determine the default name to be used for the title.
     my $name = $type;
     # Override defaults with configuration options.
-    $min = $config->{Actions}{Measure}{$type}{Minimum}
-      if (defined $config->{Actions}{Measure}{$type}{Minimum});
-    $max = $config->{Actions}{Measure}{$type}{Maximum}
-      if (defined $config->{Actions}{Measure}{$type}{Maximum});
-    $unit = $config->{Actions}{Measure}{$type}{Unit}
-      if (defined $config->{Actions}{Measure}{$type}{Unit});
-    $name = $config->{Actions}{Measure}{$type}{Name}
-      if (defined $config->{Actions}{Measure}{$type}{Name});
+    $min = $config->{Actions}{Measure}{Type}{$type}{Minimum}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{Minimum});
+    $max = $config->{Actions}{Measure}{Type}{$type}{Maximum}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{Maximum});
+    $unit = $config->{Actions}{Measure}{Type}{$type}{Unit}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{Unit});
+    $name = $config->{Actions}{Measure}{Type}{$type}{Name}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{Name});
     # Create the y axis label
     my $ylabel = $name;
     $ylabel .= sprintf " (%s)", $unit if (defined $unit && $unit ne "");
@@ -570,9 +586,9 @@ $_startDevice = sub {
             $self->$_deviceCalibrate ($device);
           }
           # Enqueue the action again if needed.
-          if (defined $config->{Interval}) {
+          if (defined $config->{Actions}{$action->{command}}{Interval}) {
             my $interval = DateTime::Duration->new (
-              seconds => $config->{Interval}
+              seconds => $config->{Actions}{$action->{command}}{Interval}
             );
             $self->enqueueCommand (
               $device,
