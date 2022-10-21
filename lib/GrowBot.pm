@@ -416,20 +416,18 @@ $_deviceMeasure = sub {
   my $measure = $self->{devices}{$device}->measure;
   my $now = DateTime->now (time_zone => $self->{config}{TimeZone});
   foreach my $type (sort keys %{$measure}) {
-    my $fh;
-    my $file;
     # Append the measurement to the current day's file.
-    $file = sprintf "%s/%s-%s.txt", $folder, $type, $now->date;
-    open $fh, '>>', $file or die "Can't output sensor data: $!\n";
-    printf $fh "%s\t%s\t%s\n", 
+    my $dayfile = sprintf "%s/%s-%s.txt", $folder, $type, $now->date;
+    open my $dayfh, '>>', $dayfile or die "Can't output sensor data: $!\n";
+    printf $dayfh "%s\t%s\t%s\n",
       $now->rfc3339, $measure->{$type}{value}, $measure->{$type}{unit};
-    $fh->close;
+    $dayfh->close;
     # Write the measurement to the most recent measure file.
-    $file = sprintf "%s/%s.txt", $folder, $type;
-    open $fh, '>', $file or die "Can't output sensor data: $!\n";
-    printf $fh "%s\t%s\t%s\n", 
+    my $recentfile = sprintf "%s/%s.txt", $folder, $type;
+    open $recentfh, '>', $recentfile or die "Can't output sensor data: $!\n";
+    printf $recentfh "%s\t%s\t%s\n",
       $now->rfc3339, $measure->{$type}{value}, $measure->{$type}{unit};
-    $fh->close;
+    $recentfh->close;
 
     # Determine the default limits for the X axis.
     my $start = $now - DateTime::Duration->new (months => 1);
@@ -475,9 +473,9 @@ $_deviceMeasure = sub {
       xlim => [ $start, $end ],
       ylim => [ $min, $max ]
     );
-    $file = sprintf "%s/%s", $folder, $type;
+    my $file = sprintf "%s/%s", $folder, $type;
     # Write the svg data to a temporary file.
-    open $fh, '>', $file . ".tmp" or die "Can't output sensor data: $!\n";
+    open my $fh, '>', $file . ".tmp" or die "Can't output sensor data: $!\n";
     print $fh $painter->paint;
     $fh->close;
     # Rename the temporary file.
