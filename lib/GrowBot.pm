@@ -107,7 +107,7 @@ my %SUPPORTED_DEVICES = (
     "Dashboard" => [
       "temperature"
     ],
-    "DefaultAction" => "Measure",
+    "DefaultActions" => [ "Measure" ],
     "Interval" => 30
   },
   "EZO_PH" => {
@@ -125,7 +125,7 @@ my %SUPPORTED_DEVICES = (
     "Dashboard" => [
       "ph"
     ],
-    "DefaultAction" => "Measure",
+    "DefaultActions" => [ "Measure" ],
     "Interval" => 30
   },
   "EZO_EC" => {
@@ -161,7 +161,7 @@ my %SUPPORTED_DEVICES = (
     "Dashboard" => [
       "conductivity", "total_dissolved_solids", "salinity", "specific_gravity"
     ],
-    "DefaultAction" => "Measure",
+    "DefaultActions" => [ "Measure" ],
     "Interval" => 30
   },
   "EZO_ORP" => {
@@ -179,7 +179,7 @@ my %SUPPORTED_DEVICES = (
     "Dashboard" => [
       "oxidation_reduction_potential"
     ],
-    "DefaultAction" => "Measure",
+    "DefaultActions" => [ "Measure" ],
     "Interval" => 30
   },
   "EZO_DO" => {
@@ -203,7 +203,7 @@ my %SUPPORTED_DEVICES = (
     "Dashboard" => [
       "dissolved_oxygen", "saturation"
     ],
-    "DefaultAction" => "Measure",
+    "DefaultActions" => [ "Measure" ],
     "Interval" => 30
   },
   "BME280" => {
@@ -233,7 +233,7 @@ my %SUPPORTED_DEVICES = (
     "Dashboard" => [
       "temperature", "pressure", "humidity"
     ],
-    "DefaultAction" => "Measure",
+    "DefaultActions" => [ "Measure" ],
     "Interval" => 30
   },
   "BMP280" => {
@@ -257,7 +257,7 @@ my %SUPPORTED_DEVICES = (
     "Dashboard" => [
       "temperature", "pressure"
     ],
-    "DefaultAction" => "Measure",
+    "DefaultActions" => [ "Measure" ],
     "Interval" => 30
   },
   "CPU" => {
@@ -275,7 +275,7 @@ my %SUPPORTED_DEVICES = (
     "Dashboard" => [
       "temperature"
     ],
-    "DefaultAction" => "Measure",
+    "DefaultActions" => [ "Measure" ],
     "Interval" => 30
   }
 );

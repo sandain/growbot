@@ -95,14 +95,16 @@ printf "%s %s\n", $growbot->name, $growbot->version;
 # Start the GrowBot.
 $growbot->start;
 
-# Enqueue default commands for each device.
+# Enqueue default actions for each device.
 foreach my $device ($growbot->devices) {
-  $growbot->enqueueCommand (
-    $device,
-    $growbot->{config}{Devices}{$device}{DefaultAction},
-    DateTime->now (time_zone => $growbot->timeZone),
-    0
-  );
+  foreach my $action (@{$growbot->{config}{Devices}{$device}{DefaultActions}}) {
+    $growbot->enqueueCommand (
+      $device,
+      $action,
+      DateTime->now (time_zone => $growbot->timeZone),
+      0
+    );
+  }
 }
 
 # Wait for the Growbot to finish.
