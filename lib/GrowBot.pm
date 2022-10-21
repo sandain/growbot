@@ -489,7 +489,7 @@ $_deviceMeasure = sub {
       xlim => [ $start, $end ],
       ylim => [ $min, $max ]
     );
-    my $file = sprintf "%s/%s", $folder, $type;
+    my $file = sprintf "%s/%s-history", $folder, $type;
     # Write the svg data to a temporary file.
     open my $fh, '>', $file . ".tmp" or die "Can't output sensor data: $!\n";
     print $fh $painter->paint;

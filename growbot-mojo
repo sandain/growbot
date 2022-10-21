@@ -96,7 +96,7 @@ helper 'config' => sub {
 helper 'history' => sub {
   my $self = shift;
   my ($device, $measurement, $type, $indent) = @_;
-  my $filepath = sprintf "%s/%s/%s.%s",
+  my $filepath = sprintf "%s/%s/%s-history.%s",
     $growbot->dataFolder, $device, $measurement, $type;
   return unless (-s $filepath);
   open my $fh, '<', $filepath or die "Can't load data: $!";
