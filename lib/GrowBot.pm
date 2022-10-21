@@ -424,7 +424,7 @@ $_deviceMeasure = sub {
     $dayfh->close;
     # Write the measurement to the most recent measure file.
     my $recentfile = sprintf "%s/%s.txt", $folder, $type;
-    open $recentfh, '>', $recentfile or die "Can't output sensor data: $!\n";
+    open my $recentfh, '>', $recentfile or die "Can't output sensor data: $!\n";
     printf $recentfh "%s\t%s\t%s\n",
       $now->rfc3339, $measure->{$type}{value}, $measure->{$type}{unit};
     $recentfh->close;
