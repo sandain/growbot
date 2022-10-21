@@ -107,12 +107,15 @@ my %SUPPORTED_DEVICES = (
         "Interval" => 30
       },
       "Calibrate" => {
+      },
+      "HistoryPlot" => {
+        "Interval" => 60
       }
     },
     "Dashboard" => [
       "temperature"
     ],
-    "DefaultActions" => [ "Measure" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot" ]
   },
   "EZO_PH" => {
     "Driver" => "AtlasScientific",
@@ -129,12 +132,15 @@ my %SUPPORTED_DEVICES = (
         "Interval" => 30
       },
       "Calibrate" => {
+      },
+      "HistoryPlot" => {
+        "Interval" => 60
       }
     },
     "Dashboard" => [
       "ph"
     ],
-    "DefaultActions" => [ "Measure" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot" ]
   },
   "EZO_EC" => {
     "Driver" => "AtlasScientific",
@@ -169,12 +175,15 @@ my %SUPPORTED_DEVICES = (
         "Interval" => 30
       },
       "Calibrate" => {
+      },
+      "HistoryPlot" => {
+        "Interval" => 60
       }
     },
     "Dashboard" => [
       "conductivity", "total_dissolved_solids", "salinity", "specific_gravity"
     ],
-    "DefaultActions" => [ "Measure" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot" ]
   },
   "EZO_ORP" => {
     "Driver" => "AtlasScientific",
@@ -191,12 +200,15 @@ my %SUPPORTED_DEVICES = (
         "Interval" => 30
       },
       "Calibrate" => {
+      },
+      "HistoryPlot" => {
+        "Interval" => 60
       }
     },
     "Dashboard" => [
       "oxidation_reduction_potential"
     ],
-    "DefaultActions" => [ "Measure" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot" ]
   },
   "EZO_DO" => {
     "Driver" => "AtlasScientific",
@@ -219,12 +231,15 @@ my %SUPPORTED_DEVICES = (
         "Interval" => 30
       },
       "Calibrate" => {
+      },
+      "HistoryPlot" => {
+        "Interval" => 60
       }
     },
     "Dashboard" => [
       "dissolved_oxygen", "saturation"
     ],
-    "DefaultActions" => [ "Measure" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot" ]
   },
   "BME280" => {
     "Driver" => "Bosch280",
@@ -251,12 +266,15 @@ my %SUPPORTED_DEVICES = (
           }
         },
         "Interval" => 30
+      },
+      "HistoryPlot" => {
+        "Interval" => 60
       }
     },
     "Dashboard" => [
       "temperature", "pressure", "humidity"
     ],
-    "DefaultActions" => [ "Measure" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot" ]
   },
   "BMP280" => {
     "Driver" => "Bosch280",
@@ -277,12 +295,15 @@ my %SUPPORTED_DEVICES = (
           }
         },
         "Interval" => 30
+      },
+      "HistoryPlot" => {
+        "Interval" => 60
       }
     },
     "Dashboard" => [
       "temperature", "pressure"
     ],
-    "DefaultActions" => [ "Measure" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot" ]
   },
   "CPU" => {
     "Driver" => "lm_sensors",
@@ -297,12 +318,15 @@ my %SUPPORTED_DEVICES = (
           }
         },
         "Interval" => 30
+      },
+      "HistoryPlot" => {
+        "Interval" => 60
       }
     },
     "Dashboard" => [
       "temperature"
     ],
-    "DefaultActions" => [ "Measure" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot" ]
   }
 );
 
@@ -319,6 +343,7 @@ our @EXPORT_OK = qw ();
 # Private methods. Defined below.
 my $_deviceCalibrate;
 my $_deviceMeasure;
+my $_deviceHistoryPlot;
 my $_loadConfig;
 my $_startDevice;
 
@@ -437,7 +462,6 @@ $_deviceCalibrate = sub {
 $_deviceMeasure = sub {
   my $self = shift;
   my ($device) = @_;
-  my $config = $self->{config}{Devices}{$device};
   my $folder = $self->{config}{DataFolder} . '/' . $device;
   my $measure = $self->{devices}{$device}->measure;
   my $now = DateTime->now (time_zone => $self->{config}{TimeZone});
@@ -454,7 +478,17 @@ $_deviceMeasure = sub {
     printf $recentfh "%s\t%s\t%s\n",
       $now->rfc3339, $measure->{$type}{value}, $measure->{$type}{unit};
     $recentfh->close;
+  }
+};
 
+$_deviceHistoryPlot = sub {
+  my $self = shift;
+  my ($device) = @_;
+  my $config = $self->{config}{Devices}{$device};
+  my $folder = $self->{config}{DataFolder} . '/' . $device;
+  my $measure = $self->{devices}{$device}->measure;
+  my $now = DateTime->now (time_zone => $self->{config}{TimeZone});
+  foreach my $type (sort keys %{$measure}) {
     # Determine the default limits for the X axis.
     my $start = $now - DateTime::Duration->new (months => 1);
 #    my $start = $now - DateTime::Duration->new (weeks => 1);
@@ -594,6 +628,9 @@ $_startDevice = sub {
           }
           if ($action->{command} eq 'Calibrate') {
             $self->$_deviceCalibrate ($device);
+          }
+          if ($action->{command} eq 'HistoryPlot') {
+            $self->$_deviceHistoryPlot ($device);
           }
           # Enqueue the action again if needed.
           if (defined $config->{Actions}{$action->{command}}{Interval}) {
