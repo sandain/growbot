@@ -410,7 +410,7 @@ $_deviceCalibrate = sub {
 
 $_deviceMeasure = sub {
   my $self = shift;
-  my ($device, $action) = @_;
+  my ($device) = @_;
   my $config = $self->{config}{Devices}{$device};
   my $folder = $self->{config}{DataFolder} . '/' . $device;
   my $measure = $self->{devices}{$device}->measure;
@@ -566,7 +566,7 @@ $_startDevice = sub {
             unless (defined $config->{Actions}{$action->{command}});
           # Respond to the action based on its type.
           if ($action->{command} eq 'Measure') {
-            $self->$_deviceMeasure ($device, $action->{command});
+            $self->$_deviceMeasure ($device);
           }
           if ($action->{command} eq 'Calibrate') {
             $self->$_deviceCalibrate ($device);
