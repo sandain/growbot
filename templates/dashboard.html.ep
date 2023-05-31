@@ -22,9 +22,11 @@
                 <%= sprintf "%s %s", $m->{measure}, $m->{unit} %>
               </p>
               <a href="/device/<%= $name %>/history/<%= $type %>.svg">
-                <figure class="figure w-90">
-                  <%== gauge ($name, $type, "svg", 18) %>
-                </figure>
+                <div class="text-center">
+                  <figure class="figure w-90">
+                    <%== gauge ($name, $type, "svg", 20) %>
+                  </figure>
+                </div>
               </a>
             </div>
           </div>
