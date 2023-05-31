@@ -23,7 +23,7 @@
               </p>
               <a href="/device/<%= $name %>/history/<%= $type %>.svg">
                 <figure class="figure w-90">
-                  <%== history ($name, $type, "svg", 18) %>
+                  <%== gauge ($name, $type, "svg", 18) %>
                 </figure>
               </a>
             </div>
