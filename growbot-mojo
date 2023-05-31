@@ -86,6 +86,24 @@ helper 'config' => sub {
   return $growbot->{config};
 };
 
+=head3 gauge
+
+  Return current measurement.
+
+=cut
+
+helper 'gauge' => sub {
+  my $self = shift;
+  my ($device, $measurement, $type, $indent) = @_;
+  my $filepath = sprintf "%s/%s/%s-gauge.%s",
+    $growbot->dataFolder, $device, $measurement, $type;
+  return unless (-s $filepath);
+  open my $fh, '<', $filepath or die "Can't load data: $!";
+  my $gauge = join " " x $indent, <$fh>;
+  close $fh;
+  return $gauge;
+};
+
 
 =head3 history
 
@@ -194,6 +212,55 @@ get '/device/:name'
   $self->render (template => 'device');
 };
 
+=head3 get /device/<device name>/current
+
+  Renders the current status of the device.
+
+=cut
+
+get '/device/:name/current'
+=> [ format => [ 'html', 'json' ] ]
+=> { format => 'html' }
+=> sub {
+  my $self = shift;
+  my $name = $self->param ('name');
+  $self->res->headers->server ($growbot->{config}{AppName});
+  $self->render (template => 'device_current');
+};
+
+=head3 get /device/<device name>/current/<action type>
+
+  Renders the current status of the device action type.
+
+=cut
+
+get '/device/:name/current/:type'
+=> [ format => [ 'html', 'json', 'svg', 'txt' ] ]
+=> { format => 'html' }
+=> sub {
+  my $self = shift;
+  my $name = $self->param ('name');
+  my $type = $self->param ('type');
+  $self->res->headers->server ($growbot->{config}{AppName});
+  $self->render (template => 'device_current_type');
+};
+
+=head3 get /device/<device name>/history
+
+  Renders the history for the device.
+
+=cut
+
+get '/device/:name/history'
+=> [ format => [ 'html', 'json' ] ]
+=> { format => 'html' }
+=> sub {
+  my $self = shift;
+  my $name = $self->param ('name');
+  $self->res->headers->server ($growbot->{config}{AppName});
+  $self->render (template => 'device_history');
+};
+
 =head3 get /device/<device name>/history/<action type>
 
   Renders the history for the device action type.
@@ -201,7 +268,7 @@ get '/device/:name'
 =cut
 
 get '/device/:name/history/:type'
-=> [ format => [ 'html', 'svg', 'txt' ] ]
+=> [ format => [ 'html', 'json', 'svg', 'txt' ] ]
 => { format => 'html' }
 => sub {
   my $self = shift;
