@@ -89,6 +89,7 @@ use File::Spec;
 use Device::Bosch280;
 use Device::AtlasScientific;
 use Device::lm_sensors;
+use GaugePlot;
 use ScatterPlot;
 
 my %SUPPORTED_DEVICES = (
@@ -110,12 +111,15 @@ my %SUPPORTED_DEVICES = (
       },
       "HistoryPlot" => {
         "Interval" => 60
+      },
+      "GaugePlot" => {
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "temperature"
     ],
-    "DefaultActions" => [ "Measure", "HistoryPlot" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot", "GaugePlot" ]
   },
   "EZO_PH" => {
     "Driver" => "AtlasScientific",
@@ -135,12 +139,15 @@ my %SUPPORTED_DEVICES = (
       },
       "HistoryPlot" => {
         "Interval" => 60
+      },
+      "GaugePlot" => {
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "ph"
     ],
-    "DefaultActions" => [ "Measure", "HistoryPlot" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot", "GaugePlot" ]
   },
   "EZO_EC" => {
     "Driver" => "AtlasScientific",
@@ -178,12 +185,15 @@ my %SUPPORTED_DEVICES = (
       },
       "HistoryPlot" => {
         "Interval" => 60
+      },
+      "GaugePlot" => {
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "conductivity", "total_dissolved_solids", "salinity", "specific_gravity"
     ],
-    "DefaultActions" => [ "Measure", "HistoryPlot" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot", "GaugePlot" ]
   },
   "EZO_ORP" => {
     "Driver" => "AtlasScientific",
@@ -203,12 +213,15 @@ my %SUPPORTED_DEVICES = (
       },
       "HistoryPlot" => {
         "Interval" => 60
+      },
+      "GaugePlot" => {
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "oxidation_reduction_potential"
     ],
-    "DefaultActions" => [ "Measure", "HistoryPlot" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot", "GaugePlot" ]
   },
   "EZO_DO" => {
     "Driver" => "AtlasScientific",
@@ -234,12 +247,15 @@ my %SUPPORTED_DEVICES = (
       },
       "HistoryPlot" => {
         "Interval" => 60
+      },
+      "GaugePlot" => {
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "dissolved_oxygen", "saturation"
     ],
-    "DefaultActions" => [ "Measure", "HistoryPlot" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot", "GaugePlot" ]
   },
   "BME280" => {
     "Driver" => "Bosch280",
@@ -269,12 +285,15 @@ my %SUPPORTED_DEVICES = (
       },
       "HistoryPlot" => {
         "Interval" => 60
+      },
+      "GaugePlot" => {
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "temperature", "pressure", "humidity"
     ],
-    "DefaultActions" => [ "Measure", "HistoryPlot" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot", "GaugePlot" ]
   },
   "BMP280" => {
     "Driver" => "Bosch280",
@@ -298,12 +317,15 @@ my %SUPPORTED_DEVICES = (
       },
       "HistoryPlot" => {
         "Interval" => 60
+      },
+      "GaugePlot" => {
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "temperature", "pressure"
     ],
-    "DefaultActions" => [ "Measure", "HistoryPlot" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot", "GaugePlot" ]
   },
   "CPU" => {
     "Driver" => "lm_sensors",
@@ -321,12 +343,15 @@ my %SUPPORTED_DEVICES = (
       },
       "HistoryPlot" => {
         "Interval" => 60
+      },
+      "GaugePlot" => {
+        "Interval" => 30
       }
     },
     "Dashboard" => [
       "temperature"
     ],
-    "DefaultActions" => [ "Measure", "HistoryPlot" ]
+    "DefaultActions" => [ "Measure", "HistoryPlot", "GaugePlot" ]
   }
 );
 
@@ -344,6 +369,7 @@ our @EXPORT_OK = qw ();
 my $_deviceCalibrate;
 my $_deviceMeasure;
 my $_deviceHistoryPlot;
+my $_deviceGaugePlot;
 my $_loadConfig;
 my $_startDevice;
 
@@ -544,6 +570,53 @@ $_deviceHistoryPlot = sub {
   }
 };
 
+$_deviceGaugePlot = sub {
+  my $self = shift;
+  my ($device) = @_;
+  my $config = $self->{config}{Devices}{$device};
+  my $folder = $self->{config}{DataFolder} . '/' . $device;
+  my $measure = $self->{devices}{$device}->measure;
+  foreach my $type (sort keys %{$measure}) {
+    # Determine the default name to be used for the title.
+    my $name = $type;
+    # Create a description for the figure.
+    my $desc = sprintf "%s data from device %s", $name, $device;
+    # Determine the default limits for the Y axis.
+    my $min = $measure->{$type}{minimum};
+    my $max = $measure->{$type}{maximum};
+    my $unit = $measure->{$type}{unit};
+    # Override defaults with configuration options.
+    $name = $config->{Actions}{Measure}{Type}{$type}{Name}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{Name});
+    $min = $config->{Actions}{Measure}{Type}{$type}{Minimum}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{Minimum});
+    $max = $config->{Actions}{Measure}{Type}{$type}{Maximum}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{Maximum});
+    $unit = $config->{Actions}{Measure}{Type}{$type}{Unit}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{Unit});
+
+    my $painter = GaugePlot->new (
+      title => $name,
+      desc => $desc,
+      value => $measure->{$type}{value},
+      unit => $unit,
+      lim => [$min,$max],
+      warnLim => [$min,$max],
+      errorLim => [$min,$max]
+    );
+
+    my $file = sprintf "%s/%s-gauge", $folder, $type;
+    # Write the svg data to a temporary file.
+    open my $fh, '>', $file . ".tmp" or die "Can't output sensor data: $!\n";
+    print $fh $painter->paint;
+    $fh->close;
+    # Rename the temporary file.
+    unlink $file . ".svg" if (-e $file . ".svg");
+    rename $file . ".tmp", $file . ".svg";
+  }
+
+};
+
 $_loadConfig = sub {
   my $self = shift;
   # Load the default configuration from the DATA section.
@@ -631,6 +704,9 @@ $_startDevice = sub {
           }
           if ($action->{command} eq 'HistoryPlot') {
             $self->$_deviceHistoryPlot ($device);
+          }
+          if ($action->{command} eq 'GaugePlot') {
+            $self->$_deviceGaugePlot ($device);
           }
           # Enqueue the action again if needed.
           if (defined $config->{Actions}{$action->{command}}{Interval}) {
