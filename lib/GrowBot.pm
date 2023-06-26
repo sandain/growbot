@@ -616,7 +616,6 @@ $_deviceGaugePlot = sub {
     unlink $file . ".svg" if (-e $file . ".svg");
     rename $file . ".tmp", $file . ".svg";
   }
-
 };
 
 $_loadConfig = sub {
