@@ -586,7 +586,6 @@ $_deviceGaugePlot = sub {
     # Determine the default limits for the Y axis.
     my $min = $measure->{$type}{minimum};
     my $max = $measure->{$type}{maximum};
-    my $unit = $measure->{$type}{unit};
     # Override defaults with configuration options.
     $name = $config->{Actions}{Measure}{Type}{$type}{Name}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Name});
@@ -594,6 +593,8 @@ $_deviceGaugePlot = sub {
       if (defined $config->{Actions}{Measure}{Type}{$type}{Minimum});
     $max = $config->{Actions}{Measure}{Type}{$type}{Maximum}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Maximum});
+    # Determine the unit.
+    my $unit = $measure->{$type}{unit};
     $unit = $config->{Actions}{Measure}{Type}{$type}{Unit}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Unit});
 
