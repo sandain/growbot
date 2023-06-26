@@ -587,8 +587,6 @@ $_deviceGaugePlot = sub {
     my $min = $measure->{$type}{minimum};
     my $max = $measure->{$type}{maximum};
     # Override defaults with configuration options.
-    $name = $config->{Actions}{Measure}{Type}{$type}{Name}
-      if (defined $config->{Actions}{Measure}{Type}{$type}{Name});
     $min = $config->{Actions}{Measure}{Type}{$type}{Minimum}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Minimum});
     $max = $config->{Actions}{Measure}{Type}{$type}{Maximum}
