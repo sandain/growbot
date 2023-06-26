@@ -636,12 +636,12 @@ $_loadConfig = sub {
       my $d = $c->{Devices}{$device};
       die sprintf "Error: Unsupported device type %s", $d->{Type}
         unless (defined $d->{Type} && defined $SUPPORTED_DEVICES{$d->{Type}});
-        $config->{Devices}{$device} = $SUPPORTED_DEVICES{$d->{Type}};
-        $config->{Devices}{$device}{Type} = $d->{Type};
-        $config->{Devices}{$device}{Options} = $d->{Options}
-          if (defined $d->{Options});
-        $config->{Devices}{$device}{Dashboard} = $d->{Dashboard}
-          if (defined $d->{Dashboard} && ref $d->{Dashboard} eq 'ARRAY');
+      $config->{Devices}{$device} = $SUPPORTED_DEVICES{$d->{Type}};
+      $config->{Devices}{$device}{Type} = $d->{Type};
+      $config->{Devices}{$device}{Options} = $d->{Options}
+        if (defined $d->{Options});
+      $config->{Devices}{$device}{Dashboard} = $d->{Dashboard}
+        if (defined $d->{Dashboard} && ref $d->{Dashboard} eq 'ARRAY');
     }
   }
   return $config;
