@@ -577,8 +577,10 @@ $_deviceGaugePlot = sub {
   my $folder = $self->{config}{DataFolder} . '/' . $device;
   my $measure = $self->{devices}{$device}->measure;
   foreach my $type (sort keys %{$measure}) {
-    # Determine the default name to be used for the title.
+    # Determine the name to be used for the title.
     my $name = $type;
+    $name = $config->{Actions}{Measure}{Type}{$type}{Name}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{Name});
     # Create a description for the figure.
     my $desc = sprintf "%s data from device %s", $name, $device;
     # Determine the default limits for the Y axis.
