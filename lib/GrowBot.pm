@@ -583,14 +583,27 @@ $_deviceGaugePlot = sub {
       if (defined $config->{Actions}{Measure}{Type}{$type}{Name});
     # Create a description for the figure.
     my $desc = sprintf "%s data from device %s", $name, $device;
-    # Determine the default limits for the Y axis.
+    # Determine the limits.
     my $min = $measure->{$type}{minimum};
     my $max = $measure->{$type}{maximum};
-    # Override defaults with configuration options.
     $min = $config->{Actions}{Measure}{Type}{$type}{Minimum}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Minimum});
     $max = $config->{Actions}{Measure}{Type}{$type}{Maximum}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Maximum});
+    # Determine the warning limits.
+    my $warnMin = $min;
+    my $warnMax = $max;
+    $warnMin = $config->{Actions}{Measure}{Type}{$type}{WarningMinimum}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{WarningMinimum});
+    $warnMax = $config->{Actions}{Measure}{Type}{$type}{WarningMaximum}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{WarningMaximum});
+    # Determine the error limits.
+    my $errorMin = $min;
+    my $errorMax = $max;
+    $errorMin = $config->{Actions}{Measure}{Type}{$type}{ErrorMinimum}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{ErrorMinimum});
+    $errorMax = $config->{Actions}{Measure}{Type}{$type}{ErrorMaximum}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{ErrorMaximum});
     # Determine the unit.
     my $unit = $measure->{$type}{unit};
     $unit = $config->{Actions}{Measure}{Type}{$type}{Unit}
@@ -602,8 +615,8 @@ $_deviceGaugePlot = sub {
       value => $measure->{$type}{value},
       unit => $unit,
       lim => [$min,$max],
-      warnLim => [$min,$max],
-      errorLim => [$min,$max]
+      warnLim => [$warnMin,$warnMax],
+      errorLim => [$errorMin,$errorMax]
     );
 
     my $file = sprintf "%s/%s-gauge", $folder, $type;
@@ -642,6 +655,14 @@ $_loadConfig = sub {
         if (defined $d->{Options});
       $config->{Devices}{$device}{Dashboard} = $d->{Dashboard}
         if (defined $d->{Dashboard} && ref $d->{Dashboard} eq 'ARRAY');
+      if (defined $d->{Limits}) {
+        foreach my $type (keys %{$d->{Limits}}) {
+          foreach my $value (keys %{$d->{Limits}{$type}}) {
+            $config->{Devices}{$device}{Actions}{Measure}{Type}{$type}{$value} =
+              $d->{Limits}{$type}{$value};
+          }
+        }
+      }
     }
   }
   return $config;
