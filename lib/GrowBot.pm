@@ -431,16 +431,6 @@ sub start {
     } or printf STDERR "Error: Unable to start child process for %s.\n%s",
       $device, $@;
   }
-
-
-
-  # Each device gets its own thread
-  # Each device has an action queue
-  # If the action queue is empty, the default action is run
-  # The default action could be nothing.
-
-
-
 }
 
 sub name {
