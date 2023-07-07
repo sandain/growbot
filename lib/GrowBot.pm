@@ -468,7 +468,7 @@ sub devices {
   return keys %{$self->{config}->{Devices}};
 }
 
-sub enqueueCommand {
+sub enqueueAction{
   my $self = shift;
   my ($device, $command, $datetime, $priority) = @_;
   open my $queueFH, '>>', $self->{queue}{$device} or
@@ -734,7 +734,7 @@ $_startDevice = sub {
             my $interval = DateTime::Duration->new (
               seconds => $config->{Actions}{$action->{command}}{Interval}
             );
-            $self->enqueueCommand (
+            $self->enqueueAction (
               $device,
               $action->{command},
               $now + $interval,

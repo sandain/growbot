@@ -81,7 +81,7 @@ my $growbot = GrowBot->new ($configFile);
 # Capture SIGINT, and SIGTERM to allow for a graceful exit.
 $SIG{INT} = $SIG{TERM} = sub {
   foreach my $device ($growbot->devices) {
-    $growbot->enqueueCommand (
+    $growbot->enqueueAction (
       $device,
       "Close",
       DateTime->now (time_zone => $growbot->timeZone),
@@ -98,7 +98,7 @@ $growbot->start;
 # Enqueue default actions for each device.
 foreach my $device ($growbot->devices) {
   foreach my $action (@{$growbot->{config}{Devices}{$device}{DefaultActions}}) {
-    $growbot->enqueueCommand (
+    $growbot->enqueueAction (
       $device,
       $action,
       DateTime->now (time_zone => $growbot->timeZone),
