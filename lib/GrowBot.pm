@@ -78,6 +78,7 @@ use strict;
 use warnings;
 use utf8;
 use open qw (:std :utf8);
+use Fcntl qw (:flock);
 use Exporter qw (import);
 use Mojo::JSON qw (from_json);
 use Child;
@@ -423,6 +424,7 @@ sub start {
       sprintf "%s/growbot_%s", File::Spec->tmpdir, $device;
     open my $fh, '>', $self->{queue}{$device} or
       die "Unable to write to $device queue: $!";
+    flock $fh, LOCK_EX;
     printf $fh "";
     $fh->close;
     # Create the worker thread for the device.
@@ -463,6 +465,7 @@ sub enqueueAction {
   my ($device, $command, $datetime, $priority) = @_;
   open my $fh, '>>', $self->{queue}{$device} or
     die "Unable to write to $device queue: $!";
+  flock $fh, LOCK_EX;
   printf $fh "%s\t%s\t%d\n", $command, $datetime->rfc3339, $priority;
   $fh->close;
 }
@@ -662,12 +665,13 @@ $_startDevice = sub {
   my $config = $self->{config}{Devices}{$device};
   make_path ($self->{config}{DataFolder} . '/' . $device);
   my $child = Child->new (sub {
-    open my $fh, '<', $self->{queue}{$device} or
-      die "Unable to read from $device queue: $!";
-    my @queue;
     my $running = 1;
     while ($running) {
-      # Load the queue.
+      my @queue;
+      # Open the queue file for read and write.
+      open my $fh, '+<', $self->{queue}{$device} or
+        die "Unable to read from $device queue: $!";
+      flock $fh, LOCK_EX;
       while (my $line = <$fh>) {
         $line =~ s/[\r\n]+//;
         my ($command, $datetime, $priority) = split "\t", $line;
@@ -683,56 +687,62 @@ $_startDevice = sub {
         # Enqueue the action.
         push @queue, $action if (defined $action);
       }
-      # Make sure the queue has actions.
-      if (@queue > 0) {
-        # Sort the queue based on priority then time.
-        @queue = sort {
-          $b->{priority} <=> $a->{priority} ||
-          DateTime->compare ($a->{datetime}, $b->{datetime})
-        } @queue;
-        # Get the current time.
-        my $now = DateTime->now (time_zone => $self->{config}{TimeZone});
-        # Check if it is time to run the first action in the queue.
-        if (DateTime->compare ($now, $queue[0]->{datetime}) >= 0) {
-          # Pop off an action from the queue.
-          my $action = shift @queue;
-          # Respond to the close action.
-          if ($action->{command} eq 'Close') {
-            $running = 0;
-            last;
-          }
-          # Make sure the action exists in the configuration.
-          die "Unknown action $action->{command}"
-            unless (defined $config->{Actions}{$action->{command}});
-          # Respond to the action based on its type.
-          if ($action->{command} eq 'Measure') {
-            $self->$_deviceMeasure ($device);
-          }
-          if ($action->{command} eq 'Calibrate') {
-            $self->$_deviceCalibrate ($device);
-          }
-          if ($action->{command} eq 'HistoryPlot') {
-            $self->$_deviceHistoryPlot ($device);
-          }
-          if ($action->{command} eq 'GaugePlot') {
-            $self->$_deviceGaugePlot ($device);
-          }
-          # Enqueue the action again if needed.
-          if (defined $config->{Actions}{$action->{command}}{Interval}) {
-            my $interval = DateTime::Duration->new (
-              seconds => $config->{Actions}{$action->{command}}{Interval}
-            );
-            $self->enqueueAction (
-              $device,
-              $action->{command},
-              $now + $interval,
-              0
-            );
-          }
+      truncate $fh, 0;
+      $fh->close;
+      # Make sure there is something in the queue.
+      next unless (@queue > 0);
+      # Sort the queue based on priority then time.
+      @queue = sort {
+        $b->{priority} <=> $a->{priority} ||
+        DateTime->compare ($a->{datetime}, $b->{datetime})
+      } @queue;
+      # Get the current time.
+      my $now = DateTime->now (time_zone => $self->{config}{TimeZone});
+      # Check if it is time to run the first action in the queue.
+      if (DateTime->compare ($now, $queue[0]->{datetime}) >= 0) {
+        # Grab the next action in the queue.
+        my $action = shift @queue;
+        # Respond to the close action.
+        if ($action->{command} eq 'Close') {
+          $running = 0;
+          last;
+        }
+        # Make sure the action exists in the configuration.
+        die "Unknown action $action->{command}"
+          unless (defined $config->{Actions}{$action->{command}});
+        # Respond to the action based on its type.
+        if ($action->{command} eq 'Calibrate') {
+          $self->$_deviceCalibrate ($device);
+        }
+        if ($action->{command} eq 'Measure') {
+          $self->$_deviceMeasure ($device);
+        }
+        if ($action->{command} eq 'HistoryPlot') {
+          $self->$_deviceHistoryPlot ($device);
+        }
+        if ($action->{command} eq 'GaugePlot') {
+          $self->$_deviceGaugePlot ($device);
+        }
+        # Enqueue the action again if needed.
+        if (defined $config->{Actions}{$action->{command}}{Interval}) {
+          my $interval = DateTime::Duration->new (
+            seconds => $config->{Actions}{$action->{command}}{Interval}
+          );
+          $action->{datetime} = $now + $interval;
+          push @queue, $action;
         }
       }
+      # Write any actions in the queue back to the queue file.
+      while (@queue > 0) {
+        my $action = shift @queue;
+        $self->enqueueAction (
+          $device,
+          $action->{command},
+          $action->{datetime},
+          $action->{priority}
+        );
+      }
     }
-    $fh->close;
   });
   return $child->start;
 };
