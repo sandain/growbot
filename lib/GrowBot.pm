@@ -598,7 +598,6 @@ $_deviceGaugePlot = sub {
     my $unit = $measure->{$type}{unit};
     $unit = $config->{Actions}{Measure}{Type}{$type}{Unit}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Unit});
-
     my $painter = GaugePlot->new (
       title => $name,
       desc => $desc,
@@ -608,7 +607,6 @@ $_deviceGaugePlot = sub {
       warnLim => [$warnMin,$warnMax],
       errorLim => [$errorMin,$errorMax]
     );
-
     my $file = sprintf "%s/%s-gauge", $folder, $type;
     # Write the svg data to a temporary file.
     open my $fh, '>', $file . ".tmp" or die "Can't output sensor data: $!\n";
