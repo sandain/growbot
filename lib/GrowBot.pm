@@ -458,11 +458,11 @@ sub devices {
   return keys %{$self->{config}->{Devices}};
 }
 
-sub enqueueAction{
+sub enqueueAction {
   my $self = shift;
   my ($device, $command, $datetime, $priority) = @_;
   open my $fh, '>>', $self->{queue}{$device} or
-      die "Unable to write to $device queue: $!";
+    die "Unable to write to $device queue: $!";
   printf $fh "%s\t%s\t%d\n", $command, $datetime->rfc3339, $priority;
   $fh->close;
 }
