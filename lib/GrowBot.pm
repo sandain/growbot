@@ -461,10 +461,10 @@ sub devices {
 sub enqueueAction{
   my $self = shift;
   my ($device, $command, $datetime, $priority) = @_;
-  open my $queueFH, '>>', $self->{queue}{$device} or
+  open my $fh, '>>', $self->{queue}{$device} or
       die "Unable to write to $device queue: $!";
-  printf $queueFH "%s\t%s\t%d\n", $command, $datetime->rfc3339, $priority;
-  $queueFH->close;
+  printf $fh "%s\t%s\t%d\n", $command, $datetime->rfc3339, $priority;
+  $fh->close;
 }
 
 ## Private methods.
@@ -623,10 +623,10 @@ $_loadConfig = sub {
   # Load the default configuration from the DATA section.
   my $config = $default_config;
   # Load the configuration in the provided file.
-  open my $configIO, '<', $self->{configFile} or
+  open my $fh, '<', $self->{configFile} or
     die "Error: Unable to open configuration file: $!";
-  my $c = from_json (join "", <$configIO>);
-  $configIO->close;
+  my $c = from_json (join "", <$fh>);
+  $fh->close;
   # Copy values from the provided configuration.
   $config->{AppName} = $c->{AppName} if (defined $c->{AppName});
   $config->{Version} = $c->{Version} if (defined $c->{Version});
@@ -662,13 +662,13 @@ $_startDevice = sub {
   my $config = $self->{config}{Devices}{$device};
   make_path ($self->{config}{DataFolder} . '/' . $device);
   my $child = Child->new (sub {
-    open my $queueFH, '<', $self->{queue}{$device} or
+    open my $fh, '<', $self->{queue}{$device} or
       die "Unable to read from $device queue: $!";
     my @queue;
     my $running = 1;
     while ($running) {
       # Load the queue.
-      while (my $line = <$queueFH>) {
+      while (my $line = <$fh>) {
         $line =~ s/[\r\n]+//;
         my ($command, $datetime, $priority) = split "\t", $line;
         my $action;
@@ -732,7 +732,7 @@ $_startDevice = sub {
         }
       }
     }
-    $queueFH->close;
+    $fh->close;
   });
   return $child->start;
 };
