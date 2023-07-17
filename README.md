@@ -24,7 +24,7 @@ of sensor data is the only feature currently supported).
         * [Here](https://www.instructables.com/Soil-Moisture-Sensor-Raspberry-Pi/)
           is another option.
         * [Here](https://www.adafruit.com/product/4026) is one more option.
-    - [ ] Add a driver for using a webcam to produce still and stop-motion style
+    - [ ] Add a driver for using a webcam to produce still and time-lapse style
           video of the garden.
 * User Interface
     - [ ] Add configuration user interface with authentication.
