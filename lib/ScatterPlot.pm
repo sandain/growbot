@@ -86,6 +86,7 @@ use POSIX qw (ceil floor fmod);
 
 use constant DEFAULT_WIDTH  => 1000;
 use constant DEFAULT_HEIGHT => 500;
+use constant DEFAULT_TEXT_COLOR => "#000000";
 use constant DEFAULT_GRID_COLOR => "#b7b7b7";
 use constant DEFAULT_DECORATION_COLOR => "#000000";
 use constant DEFAULT_BACKGROUND_COLOR => "#ffffff";
@@ -134,6 +135,7 @@ sub new {
     height => (defined $options{height} ? $options{height} : DEFAULT_HEIGHT),
     xlim => (defined $options{xlim} ? $options{xlim} : undef),
     ylim => (defined $options{ylim} ? $options{ylim} : undef),
+    textColor => (defined $options{textColor} ? $options{textColor} : DEFAULT_TEXT_COLOR),
     gridColor => (defined $options{gridColor} ? $options{gridColor} : DEFAULT_GRID_COLOR),
     decorationColor => (defined $options{decorationColor} ? $options{decorationColor} : DEFAULT_DECORATION_COLOR),
     backgroundColor => (defined $options{backgroundColor} ? $options{backgroundColor} : DEFAULT_BACKGROUND_COLOR)
@@ -531,7 +533,7 @@ $_paintXAxis = sub {
   $self->{svg} .= "</g>\n";
   $self->{svg} .= " " x 4;
   $self->{svg} .= "<g";
-  $self->{svg} .= " stroke=\"#000000\"";
+  $self->{svg} .= sprintf " stroke=\"%s\"", $self->{textColor};
   $self->{svg} .= " text-anchor=\"end\"";
   $self->{svg} .= " dominant-baseline=\"central\"";
   $self->{svg} .= ">\n";
@@ -585,7 +587,7 @@ $_paintYAxis = sub {
   $self->{svg} .= "</g>\n";
   $self->{svg} .= " " x 4;
   $self->{svg} .= "<g";
-  $self->{svg} .= " stroke=\"#000000\"";
+  $self->{svg} .= sprintf " stroke=\"%s\"", $self->{textColor};
   $self->{svg} .= " text-anchor=\"end\"";
   $self->{svg} .= " dominant-baseline=\"central\"";
   $self->{svg} .= ">\n";
@@ -618,7 +620,7 @@ $_paintXAxisLabel = sub {
   $self->{svg} .= " " x 2;
   $self->{svg} .= "<g";
   $self->{svg} .= " id=\"x-axis-label\"";
-  $self->{svg} .= " stroke=\"#000000\"";
+  $self->{svg} .= sprintf " stroke=\"%s\"", $self->{textColor};
   $self->{svg} .= " text-anchor=\"middle\"";
   $self->{svg} .= ">\n";
   $self->{svg} .= " " x 4;
@@ -634,7 +636,7 @@ $_paintYAxisLabel = sub {
   $self->{svg} .= " " x 2;
   $self->{svg} .= "<g";
   $self->{svg} .= " id=\"y-axis-label\"";
-  $self->{svg} .= " stroke=\"#000000\"";
+  $self->{svg} .= sprintf " stroke=\"%s\"", $self->{textColor};
   $self->{svg} .= " text-anchor=\"middle\"";
   $self->{svg} .= ">\n";
   $self->{svg} .= " " x 4;
