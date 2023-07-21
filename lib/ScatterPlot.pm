@@ -83,8 +83,10 @@ use DateTime;
 use DateTime::Duration;
 use DateTime::Format::ISO8601;
 use POSIX qw (ceil floor fmod);
+
 use constant DEFAULT_WIDTH  => 1000;
 use constant DEFAULT_HEIGHT => 500;
+use constant DEFAULT_BACKGROUND_COLOR => "#ffffff";
 use constant EPSILON => 1e-14;
 
 our @EXPORT_OK = qw ();
@@ -129,7 +131,8 @@ sub new {
     width => (defined $options{width} ? $options{width} : DEFAULT_WIDTH),
     height => (defined $options{height} ? $options{height} : DEFAULT_HEIGHT),
     xlim => (defined $options{xlim} ? $options{xlim} : undef),
-    ylim => (defined $options{ylim} ? $options{ylim} : undef)
+    ylim => (defined $options{ylim} ? $options{ylim} : undef),
+    backgroundColor => (defined $options{backgroundColor} ? $options{backgroundColor} : DEFAULT_BACKGROUND_COLOR)
   }, $class;
   # Quit if device, type, or folder not defined.
   my $usage = sprintf
@@ -493,10 +496,12 @@ $_paintDescTag = sub {
 $_paintBackground = sub {
   my $self = shift;
   $self->{svg} .= " " x 2;
-  $self->{svg} .= "<g id=\"background\" fill=\"#ffffff\">\n";
+  $self->{svg} .= sprintf "<g fill=\"%s\">\n", $self->{backgroundColor};
   $self->{svg} .= " " x 4;
-  $self->{svg} .= sprintf "<path d=\"M 0,0 L 0,%s %s,%s, %s,0 Z\"/>\n",
-    $self->{width}, $self->{width}, $self->{height}, $self->{height};
+  $self->{svg} .= "<path id=\"background\"";
+  $self->{svg} .= sprintf " d=\"M 0,0 L 0,%s %s,%s %s,0 Z\"",
+    $self->{height}, $self->{width}, $self->{height}, $self->{width};
+  $self->{svg} .= "/>\n";
   $self->{svg} .= " " x 2;
   $self->{svg} .= "</g>\n";
 };
