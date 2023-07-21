@@ -619,13 +619,16 @@ $_paintXAxisLabel = sub {
   my ($x, $y, $label) = @_;
   $self->{svg} .= " " x 2;
   $self->{svg} .= "<g";
-  $self->{svg} .= " id=\"x-axis-label\"";
   $self->{svg} .= sprintf " stroke=\"%s\"", $self->{textColor};
   $self->{svg} .= " text-anchor=\"middle\"";
   $self->{svg} .= ">\n";
   $self->{svg} .= " " x 4;
-  $self->{svg} .= sprintf "<text x=\"%s\" y=\"%s\">%s</text>\n",
-    $x, $y, $label;
+  $self->{svg} .= "<text id=\"x-axis-label\"";
+  $self->{svg} .= sprintf " x=\"%s\"", $x;
+  $self->{svg} .= sprintf " y=\"%s\"", $y;
+  $self->{svg} .= ">";
+  $self->{svg} .= $label;
+  $self->{svg} .= "</text>\n";
   $self->{svg} .= " " x 2;
   $self->{svg} .= "</g>\n";
 };
@@ -635,12 +638,11 @@ $_paintYAxisLabel = sub {
   my ($x, $y, $label) = @_;
   $self->{svg} .= " " x 2;
   $self->{svg} .= "<g";
-  $self->{svg} .= " id=\"y-axis-label\"";
   $self->{svg} .= sprintf " stroke=\"%s\"", $self->{textColor};
   $self->{svg} .= " text-anchor=\"middle\"";
   $self->{svg} .= ">\n";
   $self->{svg} .= " " x 4;
-  $self->{svg} .=  "<text";
+  $self->{svg} .=  "<text id=\"y-axis-label\"";
   $self->{svg} .= sprintf " x=\"%s\"", $x;
   $self->{svg} .= sprintf " y=\"%s\"", $y;
   $self->{svg} .= sprintf " transform=\"rotate(-90 %s,%s)\"", $x, $y;
