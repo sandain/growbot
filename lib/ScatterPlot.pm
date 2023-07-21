@@ -86,6 +86,7 @@ use POSIX qw (ceil floor fmod);
 
 use constant DEFAULT_WIDTH  => 1000;
 use constant DEFAULT_HEIGHT => 500;
+use constant DEFAULT_GRID_COLOR => "#b7b7b7";
 use constant DEFAULT_DECORATION_COLOR => "#000000";
 use constant DEFAULT_BACKGROUND_COLOR => "#ffffff";
 use constant EPSILON => 1e-14;
@@ -133,6 +134,7 @@ sub new {
     height => (defined $options{height} ? $options{height} : DEFAULT_HEIGHT),
     xlim => (defined $options{xlim} ? $options{xlim} : undef),
     ylim => (defined $options{ylim} ? $options{ylim} : undef),
+    gridColor => (defined $options{gridColor} ? $options{gridColor} : DEFAULT_GRID_COLOR),
     decorationColor => (defined $options{decorationColor} ? $options{decorationColor} : DEFAULT_DECORATION_COLOR),
     backgroundColor => (defined $options{backgroundColor} ? $options{backgroundColor} : DEFAULT_BACKGROUND_COLOR)
   }, $class;
@@ -548,7 +550,8 @@ $_paintXAxis = sub {
   $self->{svg} .= " " x 4;
   $self->{svg} .= "</g>\n";
   $self->{svg} .= " " x 4;
-  $self->{svg} .= "<g stroke=\"#b7b7b7\" stroke-width=\"2\">\n";
+  $self->{svg} .= sprintf "<g stroke=\"%s\" stroke-width=\"2\">\n",
+    $self->{gridColor};
   foreach my $tic (@tics) {
     next unless ($tic->{background});
     $self->{svg} .= " " x 6;
@@ -595,7 +598,8 @@ $_paintYAxis = sub {
   $self->{svg} .= " " x 4;
   $self->{svg} .= "</g>\n";
   $self->{svg} .= " " x 4;
-  $self->{svg} .= "<g stroke=\"#b7b7b7\" stroke-width=\"2\">\n";
+  $self->{svg} .= sprintf "<g stroke=\"%s\" stroke-width=\"2\">\n",
+    $self->{gridColor};
   foreach my $tic (@tics) {
     next unless ($tic->{background});
     $self->{svg} .= " " x 6;
