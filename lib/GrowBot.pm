@@ -528,6 +528,20 @@ $_deviceHistoryPlot = sub {
       if (defined $config->{Actions}{Measure}{Type}{$type}{Minimum});
     $max = $config->{Actions}{Measure}{Type}{$type}{Maximum}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Maximum});
+    # Determine the warning limits.
+    my $warnMin = $min;
+    my $warnMax = $max;
+    $warnMin = $config->{Actions}{Measure}{Type}{$type}{WarningMinimum}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{WarningMinimum});
+    $warnMax = $config->{Actions}{Measure}{Type}{$type}{WarningMaximum}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{WarningMaximum});
+    # Determine the error limits.
+    my $errorMin = $min;
+    my $errorMax = $max;
+    $errorMin = $config->{Actions}{Measure}{Type}{$type}{ErrorMinimum}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{ErrorMinimum});
+    $errorMax = $config->{Actions}{Measure}{Type}{$type}{ErrorMaximum}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{ErrorMaximum});
     # Determine the unit used for the Y axis.
     my $unit = $measure->{$type}{unit};
     $unit = $config->{Actions}{Measure}{Type}{$type}{Unit}
@@ -551,7 +565,9 @@ $_deviceHistoryPlot = sub {
       timeZone => $self->{config}{TimeZone},
       xmlTag => 0,
       xlim => [ $start, $end ],
-      ylim => [ $min, $max ]
+      ylim => [ $min, $max ],
+      warnLim => [ $warnMin, $warnMax ],
+      errorLim => [ $errorMin, $errorMax ]
     );
     my $file = sprintf "%s/%s-history", $folder, $type;
     # Write the svg data to a temporary file.
