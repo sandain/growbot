@@ -86,6 +86,7 @@ use POSIX qw (ceil floor fmod);
 
 use constant DEFAULT_WIDTH  => 1000;
 use constant DEFAULT_HEIGHT => 500;
+use constant DEFAULT_DECORATION_COLOR => "#000000";
 use constant DEFAULT_BACKGROUND_COLOR => "#ffffff";
 use constant EPSILON => 1e-14;
 
@@ -132,6 +133,7 @@ sub new {
     height => (defined $options{height} ? $options{height} : DEFAULT_HEIGHT),
     xlim => (defined $options{xlim} ? $options{xlim} : undef),
     ylim => (defined $options{ylim} ? $options{ylim} : undef),
+    decorationColor => (defined $options{decorationColor} ? $options{decorationColor} : DEFAULT_DECORATION_COLOR),
     backgroundColor => (defined $options{backgroundColor} ? $options{backgroundColor} : DEFAULT_BACKGROUND_COLOR)
   }, $class;
   # Quit if device, type, or folder not defined.
@@ -513,7 +515,8 @@ $_paintXAxis = sub {
   $self->{svg} .= " " x 2;
   $self->{svg} .= "<g id=\"x-axis\">\n";
   $self->{svg} .= " " x 4;
-  $self->{svg} .= "<g stroke=\"#000000\" stroke-width=\"2\">\n";
+  $self->{svg} .= sprintf "<g stroke=\"%s\" stroke-width=\"2\">\n",
+    $self->{decorationColor};
   $self->{svg} .= " " x 6;
   $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
     $left, $bottom + 5, $right, $bottom + 5;
@@ -565,7 +568,8 @@ $_paintYAxis = sub {
   $self->{svg} .= " " x 2;
   $self->{svg} .= "<g id=\"y-axis\">\n";
   $self->{svg} .= " " x 4;
-  $self->{svg} .= "<g stroke=\"#000000\" stroke-width=\"2\">\n";
+  $self->{svg} .= sprintf "<g stroke=\"%s\" stroke-width=\"2\">\n",
+    $self->{decorationColor};
   $self->{svg} .= " " x 6;
   $self->{svg} .= sprintf "<path d=\"M %s,%s L %s,%s\"/>\n",
     $left - 5, $top, $left - 5, $bottom;
