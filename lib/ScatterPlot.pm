@@ -86,6 +86,9 @@ use POSIX qw (ceil floor fmod);
 
 use constant DEFAULT_WIDTH  => 1000;
 use constant DEFAULT_HEIGHT => 500;
+use constant DEFAULT_ERROR_COLOR => "#d3212c";
+use constant DEFAULT_WARN_COLOR => "#ff980e";
+use constant DEFAULT_GOOD_COLOR => "#069c56";
 use constant DEFAULT_TEXT_COLOR => "#000000";
 use constant DEFAULT_GRID_COLOR => "#b7b7b7";
 use constant DEFAULT_DECORATION_COLOR => "#000000";
@@ -135,6 +138,11 @@ sub new {
     height => (defined $options{height} ? $options{height} : DEFAULT_HEIGHT),
     xlim => (defined $options{xlim} ? $options{xlim} : undef),
     ylim => (defined $options{ylim} ? $options{ylim} : undef),
+    errorLim => (defined $options{errorLim} ? $options{errorLim} : []),
+    warnLim => (defined $options{warnLim} ? $options{warnLim} : []),
+    errorColor => (defined $options{errorColor} ? $options{errorColor} : DEFAULT_ERROR_COLOR),
+    warnColor => (defined $options{warnColor} ? $options{warnColor} : DEFAULT_WARN_COLOR),
+    goodColor => (defined $options{goodColor} ? $options{goodColor} : DEFAULT_GOOD_COLOR),
     textColor => (defined $options{textColor} ? $options{textColor} : DEFAULT_TEXT_COLOR),
     gridColor => (defined $options{gridColor} ? $options{gridColor} : DEFAULT_GRID_COLOR),
     decorationColor => (defined $options{decorationColor} ? $options{decorationColor} : DEFAULT_DECORATION_COLOR),
@@ -657,12 +665,23 @@ $_paintData = sub {
   my $self = shift;
   my ($left, $bottom, $right, $top) = @_;
   $self->{svg} .= " " x 2;
-  $self->{svg} .= "<g id=\"data\" fill=\"#ff0000\">\n";
+  $self->{svg} .= "<g id=\"data\">\n";
   foreach my $measure (@{$self->{data}}) {
+    my $c = $self->{goodColor};
+    if (defined $self->{warnLim}[0] && defined $self->{warnLim}[1]) {
+      $c = $self->{warnColor} if ($measure->{measure} < $self->{warnLim}[0]);
+      $c = $self->{warnColor} if ($measure->{measure} > $self->{warnLim}[1]);
+    }
+    if (defined $self->{errorLim}[0] && defined $self->{errorLim}[1]) {
+      $c = $self->{errorColor} if ($measure->{measure} < $self->{errorLim}[0]);
+      $c = $self->{errorColor} if ($measure->{measure} > $self->{errorLim}[1]);
+    }
     $self->{svg} .= " " x 4;
-    $self->{svg} .= sprintf "<circle cx=\"%s\" cy=\"%s\" r=\"2\"/>\n",
+    $self->{svg} .= sprintf
+      "<circle cx=\"%s\" cy=\"%s\" r=\"2\" fill=\"%s\"/>\n",
       $self->$_xCoordinate ($measure->{datetime}, $left, $right),
-      $self->$_yCoordinate ($measure->{measure}, $top, $bottom);
+      $self->$_yCoordinate ($measure->{measure}, $top, $bottom),
+      $c;
   }
   $self->{svg} .= " " x 2;
   $self->{svg} .= "</g>\n";
