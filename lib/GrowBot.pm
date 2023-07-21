@@ -508,29 +508,30 @@ $_deviceHistoryPlot = sub {
   my $measure = $self->{devices}{$device}->measure;
   my $now = DateTime->now (time_zone => $self->{config}{TimeZone});
   foreach my $type (sort keys %{$measure}) {
-    # Determine the default limits for the X axis.
+    # Determine the default name to be used for the title.
+    my $name = $type;
+    $name = $config->{Actions}{Measure}{Type}{$type}{Name}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{Name});
+    # Create a description for the figure.
+    my $desc = sprintf "%s data from device %s", $name, $device;
+    # Determine the limits for the X axis.
     my $start = $now - DateTime::Duration->new (months => 1);
 #    my $start = $now - DateTime::Duration->new (weeks => 1);
 #    my $start = $now - DateTime::Duration->new (days => 1);
     my $end = $now + DateTime::Duration->new (days => 1);
     $start->set (hour => 0, minute => 0, second => 0, nanosecond => 0);
     $end->set (hour => 0, minute => 0, second => 0, nanosecond => 0);
-    # Determine the default limits for the Y axis.
+    # Determine the limits for the Y axis.
     my $min = $measure->{$type}{minimum};
     my $max = $measure->{$type}{maximum};
-    # Determine the unit used for the Y axis.
-    my $unit = $measure->{$type}{unit};
-    # Determine the default name to be used for the title.
-    my $name = $type;
-    # Override defaults with configuration options.
     $min = $config->{Actions}{Measure}{Type}{$type}{Minimum}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Minimum});
     $max = $config->{Actions}{Measure}{Type}{$type}{Maximum}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Maximum});
+    # Determine the unit used for the Y axis.
+    my $unit = $measure->{$type}{unit};
     $unit = $config->{Actions}{Measure}{Type}{$type}{Unit}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Unit});
-    $name = $config->{Actions}{Measure}{Type}{$type}{Name}
-      if (defined $config->{Actions}{Measure}{Type}{$type}{Name});
     # Create the y axis label
     my $ylabel = $name;
     $ylabel .= sprintf " (%s)", $unit if (defined $unit && $unit ne "");
