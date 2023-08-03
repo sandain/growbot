@@ -90,6 +90,7 @@ use File::Spec;
 use Device::Bosch280;
 use Device::AtlasScientific;
 use Device::lm_sensors;
+use Device::V4L2;
 use GaugePlot;
 use ScatterPlot;
 
@@ -353,6 +354,16 @@ my %SUPPORTED_DEVICES = (
       "temperature"
     ],
     "DefaultActions" => [ "Measure", "HistoryPlot", "GaugePlot" ]
+  },
+  "V4L2" => {
+    "Driver" => "V4L2",
+    "Actions" => {
+      "Capture" => {
+        "Interval" => 60
+      }
+    },
+    "Dashboard" => [ ],
+    "DefaultActions" => [ "Capture" ]
   }
 );
 
@@ -368,6 +379,7 @@ our @EXPORT_OK = qw ();
 
 # Private methods. Defined below.
 my $_deviceCalibrate;
+my $_deviceCapture;
 my $_deviceMeasure;
 my $_deviceHistoryPlot;
 my $_deviceGaugePlot;
@@ -476,6 +488,15 @@ $_deviceCalibrate = sub {
   my $self = shift;
   my ($device) = @_;
 
+};
+
+$_deviceCapture = sub {
+  my $self = shift;
+  my ($device) = @_;
+  my $folder = $self->{config}{DataFolder} . '/' . $device;
+  my $now = DateTime->now (time_zone => $self->{config}{TimeZone});
+  my $file = sprintf "%s/%s.jpg", $folder, $now->rfc3339;
+  $self->{devices}->{$device}->capture ($file);
 };
 
 $_deviceMeasure = sub {
@@ -728,6 +749,9 @@ $_startDevice = sub {
         # Respond to the action based on its type.
         if ($action->{command} eq 'Calibrate') {
           $self->$_deviceCalibrate ($device);
+        }
+        if ($action->{command} eq 'Capture') {
+          $self->$_deviceCapture ($device);
         }
         if ($action->{command} eq 'Measure') {
           $self->$_deviceMeasure ($device);
