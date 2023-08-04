@@ -653,8 +653,10 @@ $_loadConfig = sub {
   if (defined $c->{Devices}) {
     foreach my $device (keys %{$c->{Devices}}) {
       my $d = $c->{Devices}{$device};
-      die sprintf "Error: Unsupported device type %s", $d->{Type}
-        unless (defined $d->{Type} && defined $SUPPORTED_DEVICES{$d->{Type}});
+      unless (defined $d->{Type} && defined $SUPPORTED_DEVICES{$d->{Type}}) {
+        printf STDERR "Error: Unsupported device type %s\n", $d->{Type};
+        next;
+      }
       $config->{Devices}{$device} = $SUPPORTED_DEVICES{$d->{Type}};
       $config->{Devices}{$device}{Type} = $d->{Type};
       $config->{Devices}{$device}{Options} = $d->{Options}
