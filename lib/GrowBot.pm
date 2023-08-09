@@ -102,6 +102,7 @@ my %SUPPORTED_DEVICES = (
           "temperature" => {
             "Name" => "Temperature",
             "Unit" => "°C",
+            "Format" => "%d",
             "Minimum" => 0,
             "Maximum" => 50
           }
@@ -130,6 +131,7 @@ my %SUPPORTED_DEVICES = (
           "ph" => {
             "Name" => "pH",
             "Unit" => "",
+            "Format" => "%.2f",
             "Minimum" => 0.001,
             "Maximum" => 14
           }
@@ -158,24 +160,28 @@ my %SUPPORTED_DEVICES = (
           "conductivity" => {
             "Name" => "EC",
             "Unit" => "μS/cm",
+            "Format" => "%d",
             "Minimum" => 0.07,
             "Maximum" => 500000
           },
           "total_dissolved_solids" => {
             "Name" => "Total Dissolved Solids",
             "Unit" => "PPM",
+            "Format" => "%d",
             "Minimum" => 0,
             "Maximum" => 500000
           },
           "salinity" => {
             "Name" => "Salinity",
             "Unit" => "PSU",
+            "Format" => "%.1f",
             "Minimum" => 0.00,
             "Maximum" => 42.00
           },
           "specific_gravity" => {
             "Name" => "Specific Gravity",
             "Unit" => "",
+            "Format" => "%.1f",
             "Minimum" => 1.00,
             "Maximum" => 1.30
           }
@@ -204,6 +210,7 @@ my %SUPPORTED_DEVICES = (
           "oxidation_reduction_potential" => {
             "Name" => "ORP",
             "Unit" => "mV",
+            "Format" => "%.1f",
             "Minimum" => -1019.9,
             "Maximum" => 1019.9
           }
@@ -232,12 +239,14 @@ my %SUPPORTED_DEVICES = (
           "dissolved_oxygen" => {
             "Name" => "DO",
             "Unit" => "mg/L",
+            "Format" => "%.1f",
             "Minimum" => 0.01,
             "Maximum" => 100
           },
           "saturation" => {
             "Name" => "Saturation",
             "Unit" => "%",
+            "Format" => "%.1f",
             "Minimum" => 0.1,
             "Maximum" => 400
           }
@@ -266,18 +275,21 @@ my %SUPPORTED_DEVICES = (
           "temperature" => {
             "Name" => "Temperature",
             "Unit" => "°C",
+            "Format" => "%d",
             "Minimum" => 0,
             "Maximum" => 50
           },
           "pressure" => {
             "Name" => "Pressure",
             "Unit" => "hPa",
+            "Format" => "%d",
             "Minimum" => 300,
             "Maximum" => 1100
           },
           "humidity" => {
             "Name" => "Humidity",
             "Unit" => "%",
+            "Format" => "%d",
             "Minimum" => 0,
             "Maximum" => 100
           }
@@ -304,12 +316,14 @@ my %SUPPORTED_DEVICES = (
           "temperature" => {
             "Name" => "Temperature",
             "Unit" => "°C",
+            "Format" => "%d",
             "Minimum" => 0,
             "Maximum" => 50
           },
           "pressure" => {
             "Name" => "Pressure",
             "Unit" => "hPa",
+            "Format" => "%d",
             "Minimum" => 300,
             "Maximum" => 1100
           }
@@ -336,6 +350,7 @@ my %SUPPORTED_DEVICES = (
           "temperature" => {
             "Name" => "Temperature",
             "Unit" => "°C",
+            "Format" => "%d",
             "Minimum" => 0,
             "Maximum" => 100
           }
@@ -616,10 +631,14 @@ $_deviceGaugePlot = sub {
     my $unit = $measure->{$type}{unit};
     $unit = $config->{Actions}{Measure}{Type}{$type}{Unit}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Unit});
+    # Determine the format of the measured value.
+    my $format = "%s";
+    $format = $config->{Actions}{Measure}{Type}{$type}{Format}
+      if (defined $config->{Actions}{Measure}{Type}{$type}{Format});
     my $painter = GaugePlot->new (
       title => $name,
       desc => $desc,
-      value => $measure->{$type}{value},
+      value => sprintf ($format, $measure->{$type}{value}),
       unit => $unit,
       lim => [$min,$max],
       warnLim => [$warnMin,$warnMax],
