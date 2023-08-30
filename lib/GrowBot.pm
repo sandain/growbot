@@ -678,6 +678,8 @@ $_loadConfig = sub {
       }
       $config->{Devices}{$device} = $SUPPORTED_DEVICES{$d->{Type}};
       $config->{Devices}{$device}{Type} = $d->{Type};
+      $config->{Devices}{$device}{Name} = $device;
+      $config->{Devices}{$device}{Name} = $d->{Name} if (defined $d->{Name});
       $config->{Devices}{$device}{Options} = $d->{Options}
         if (defined $d->{Options});
       $config->{Devices}{$device}{Dashboard} = $d->{Dashboard}
