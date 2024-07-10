@@ -83,6 +83,8 @@ use POSIX qw (ceil floor);
 
 use constant DEFAULT_WIDTH  => 1000;
 use constant DEFAULT_HEIGHT => 600;
+use constant DEFAULT_FONT_FAMILY => "Liberation Sans, Arial, sans-serif";
+use constant DEFAULT_FONT_SIZE => 90;
 use constant DEFAULT_ERROR_COLOR => "#d3212c";
 use constant DEFAULT_WARN_COLOR => "#ff980e";
 use constant DEFAULT_GOOD_COLOR => "#069c56";
@@ -118,6 +120,8 @@ sub new {
     desc => (defined $options{desc} ? $options{desc} : undef),
     width => (defined $options{width} ? $options{width} : DEFAULT_WIDTH),
     height => (defined $options{height} ? $options{height} : DEFAULT_HEIGHT),
+    fontFamily => (defined $options{fontFamily} ? $options{fontFamily} : DEFAULT_FONT_FAMILY),
+    fontSize => (defined $options{fontSize} ? $options{fontSize} : DEFAULT_FONT_SIZE),
     value => (defined $options{value} ? $options{value} : undef),
     unit => (defined $options{unit} ? $options{unit} : undef),
     lim => (defined $options{lim} ? $options{lim} : []),
@@ -241,7 +245,8 @@ $_paintXMLTag = sub {
 $_paintSVGOpenTag = sub {
   my $self = shift;
   $self->{svg} .= "<svg";
-  $self->{svg} .= " font-family=\"Liberation Sans, sans-serif\"";
+  $self->{svg} .= sprintf " font-family=\"%s\"", $self->{fontFamily};
+  $self->{svg} .= sprintf " font-size=\"%s\"", $self->{fontSize};
   $self->{svg} .= " xmlns=\"http://www.w3.org/2000/svg\"";
   $self->{svg} .= " width=\"100%\"";
   $self->{svg} .= " height=\"100%\"";
@@ -369,7 +374,6 @@ $_paintGauge = sub {
   $self->{svg} .= "<g";
   $self->{svg} .= " text-anchor=\"middle\"";
   $self->{svg} .= sprintf " fill=\"%s\"", $self->{textColor};
-  $self->{svg} .= " font-size=\"100\"";
   $self->{svg} .= ">\n";
   $self->{svg} .= " " x 6;
   $self->{svg} .= "<text id=\"gauge-value\"";
