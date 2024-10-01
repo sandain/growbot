@@ -173,6 +173,91 @@ Export the calibration string from the device.
 
 Import a calibration string into the device.
 
+=item C<dispense>
+
+Dispense a specific volume (mL) from the device. If the volume is provided, that
+volume will be dispensed. Negative values for volume will dispense in reverse.
+If minutes are provided, this volume will be dispensed over this time period. If
+no arguments are provided, the last volume requested and the status (1 if
+actively dispensing, 0 if not) will be returned.
+
+Arguments:
+
+=over 12
+
+=item C<volume>
+
+The volume (mL) to dispense.
+
+=item C<minutes>
+
+The number of minutes to dispense the volume requested.
+
+=back
+
+=item C<dispenseConstant>
+
+Dispense at a constant flow rate over a specified length of time. If no
+arguments are supplied, the maximum possible flow rate will be returned.
+
+Arguments:
+
+=over 12
+
+=item C<rate>
+
+The rate (mL / minute) to dispense.
+
+=item <minutes>
+
+The number of minutes to dispense. Use '*' to dispense indefinitely (will reset
+after 20 days).
+
+=back
+
+=item C<dispenseStartup>
+
+Dispense a specific volume (mL) at device startup. If no arguments are provided,
+the volume dispensed at startup is reported (
+
+Arguments:
+
+=over 12
+
+=item C<volume>
+
+The specific volume (mL) to dispense at device startup.
+
+=item C<off>
+
+Disable dispense at device startup.
+
+=back
+
+=item C<dispensePause>
+
+Pause dispensing on the device.
+
+=item C<dispensePauseStatus>
+
+Return the status of the dispense pause (1 paused, 0 unpaused) from the device.
+
+=item C<dispenseStop>
+
+Stop dispensing from the device.
+
+=item C<dispensedTotalVolume>
+
+Return the total volume (mL) dispensed from the device.
+
+=item C<dispensedAbsoluteTotalVolume>
+
+Return the absolute total volume (mL) dispensed from the device.
+
+=item C<dispensedVolumeClear>
+
+Clear the total volume dispensed from the device.
+
 =item C<factoryReset>
 
 Clear custom configuration and reboot the device.
@@ -222,6 +307,10 @@ A value of 1 enables the protocol lock. A value of 0 disables the protocol lock.
 Modify the pressure unit returned for EZO-PRS devices. Valid options include
 1/0 to add/remove unit from output, psi, atm, bar, kPa, inh2o, and cmh2o. The
 current unit will be returned given no input.
+
+=item C<pumpVoltage>
+
+Returns the voltage of the pump.
 
 =item C<sleep>
 
@@ -862,6 +951,182 @@ sub calibrationImport {
   usleep 1000000;
 }
 
+sub dispense {
+  my $self = shift;
+  my ($amount, $time) = @_;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL
+  );
+  # Send the dispense command.
+  if (defined $amount && defined $time) {
+    die "Invalid amount to dispense" unless ($self->$_is_number ($amount));
+    die "Invalid time to dispense" unless ($self->$_is_number ($time));
+    $self->$_sendCommand ("D," . $amount . "," . $time);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  elsif (defined $amount) {
+    die "Invalid amount to dispense" unless (
+      $amount eq '*'  || $amount eq '-*' || $self->$_is_number ($amount)
+    );
+    $self->$_sendCommand ("D," . $amount);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  else {
+    $self->$_sendCommand ("D,?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    (my $d, $amount, my $status) = split /,/, $self->$_getResponse;
+    die "Invalid response from device" unless (uc $d eq "?D");
+    return ($amount, $status);
+  }
+}
+
+sub dispenseConstant {
+  my $self = shift;
+  my ($rate, $time) = @_;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL
+  );
+  # Send the dispense constant command.
+  if (defined $rate && defined $time) {
+    die "Invalid rate to dispense" unless ($self->$_is_number ($rate));
+    die "Invalid time to dispense" unless (
+      $time eq '*' || $self->$_is_number ($time)
+    );
+    $self->$_sendCommand ("DC," . $rate . "," . $time);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  else {
+    $self->$_sendCommand ("DC,?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    (my $dc, $rate) = split /,/, $self->$_getResponse;
+    die "Invalid response from device" unless (uc $dc eq "?maxrate");
+    return $rate;
+  }
+}
+
+sub dispenseStartup {
+  my $self = shift;
+  my ($arg) = @_;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL
+  );
+  # Send the dispense startup command.
+  if (defined $arg) {
+    die "Invalid argument to dispense startup" unless (
+      $arg eq 'off' || $self->$_is_number ($arg)
+    );
+    $self->$_sendCommand ("Dstart," . $arg);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  else {
+    $self->$_sendCommand ("Dstart,?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    my ($dstart, $rate) = split /,/, $self->$_getResponse;
+    die "Invalid response from device" unless (uc $dstart eq "?Dstart");
+    return $rate;
+  }
+}
+
+sub dispensePause {
+  my $self = shift;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL
+  );
+  # Send the dispense pause command.
+  $self->$_sendCommand ("P");
+  # Give the device a moment to respond.
+  usleep 300000;
+}
+
+sub dispensePauseStatus {
+  my $self = shift;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL
+  );
+  # Send the dispense pause status command.
+  $self->$_sendCommand ("P,?");
+  # Give the device a moment to respond.
+  usleep 300000;
+  my ($p, $status) = split /,/, $self->$_getResponse;
+  die "Invalid response from device" unless (uc $p eq "?P");
+  return $status;
+}
+
+sub dispenseStop {
+  my $self = shift;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL
+  );
+  # Send the dispense stop command.
+  $self->$_sendCommand ("X");
+  # Give the device a moment to respond.
+  usleep 300000;
+}
+
+sub dispensedTotalVolume {
+  my $self = shift;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL
+  );
+  # Send the total volume dispensed command.
+  $self->$_sendCommand ("TV,?");
+  # Give the device a moment to respond.
+  usleep 300000;
+  my ($tv, $volume) = split /,/, $self->$_getResponse;
+  die "Invalid response from device" unless (uc $tv eq "?TV");
+  return $volume;
+}
+
+sub dispensedAbsoluteTotalVolume {
+  my $self = shift;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL
+  );
+  # Send the absolute total volume dispensed command.
+  $self->$_sendCommand ("ATV,?");
+  # Give the device a moment to respond.
+  usleep 300000;
+  my ($tv, $volume) = split /,/, $self->$_getResponse;
+  die "Invalid response from device" unless (uc $tv eq "?ATV");
+  return $volume;
+}
+
+sub dispensedVolumeClear {
+  my $self = shift;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL
+  );
+  # Send the total volume dispensed clear command.
+  $self->$_sendCommand ("clear");
+  # Give the device a moment to respond.
+  usleep 300000;
+}
+
 sub factoryReset {
   my $self = shift;
   my $command = "Factory";
@@ -1099,6 +1364,22 @@ sub plock {
     die "Invalid response from device" unless (uc $p eq "?PLOCK");
   }
   return $plock;
+}
+
+sub pumpVoltage {
+  my $self = shift;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL
+  );
+  # Send the pump voltage command.
+  $self->$_sendCommand ("PV,?");
+  # Give the device a moment to respond.
+  usleep 300000;
+  my ($pv, $voltage) = split /,/, $self->$_getResponse;
+  die "Invalid response from device" unless (uc $pv eq "?PV");
+  return $voltage;
 }
 
 sub sleep {
