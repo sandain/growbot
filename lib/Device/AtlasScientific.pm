@@ -1152,7 +1152,7 @@ $_getResponse = sub {
   die "Syntax error" if ($code == EZO_RESPONSE_ERROR);
   # Check for valid response.
   if ($code == EZO_RESPONSE_SUCCESS) {
-    my $response;
+    my $response = '';
     foreach my $byte (@response) {
       last if ($byte == 0x00);
       $response .= pack 'C*', $byte;
