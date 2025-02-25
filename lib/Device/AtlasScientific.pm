@@ -473,239 +473,6 @@ sub new {
   return $self;
 }
 
-sub close {
-  my $self = shift;
-  $self->{io}->close;
-}
-
-sub measure {
-  my $self = shift;
-  $self->$_sendCommand ("R");
-  # Each model has a different delay.
-  my $delay;
-  $delay = 600000 if ($self->{model} eq EZO_RTD);
-  $delay = 900000 if ($self->{model} eq EZO_PH);
-  $delay = 600000 if ($self->{model} eq EZO_EC);
-  $delay = 900000 if ($self->{model} eq EZO_ORP);
-  $delay = 600000 if ($self->{model} eq EZO_DO);
-  $delay = 300000 if ($self->{model} eq EZO_PMP);
-  $delay = 300000 if ($self->{model} eq EZO_PMPL);
-  $delay = 900000 if ($self->{model} eq EZO_CO2);
-  $delay = 900000 if ($self->{model} eq EZO_O2);
-  $delay = 300000 if ($self->{model} eq EZO_HUM);
-  $delay = 900000 if ($self->{model} eq EZO_PRS);
-  $delay = 300000 if ($self->{model} eq EZO_FLOW);
-  $delay = 300000 if ($self->{model} eq EZO_RGB);
-  # Give the device a moment to respond.
-  usleep $delay;
-  my @response = split ",", $self->$_getResponse;
-  # Read the device options.
-  my @options = $self->options;
-  # Extract the measurement(s) from the response based on the model.
-  my $measure;
-  if ($self->{model} eq EZO_RTD) {
-    $measure->{temperature} = {
-      value => $response[0],
-      unit  => "°C",
-      minimum => -126.000,
-      maximum => 1254
-    };
-  }
-  if ($self->{model} eq EZO_PH) {
-    $measure->{ph} = {
-      value => $response[0],
-      unit  => "pH",
-      minimum => 0.001,
-      maximum => 14.000
-    };
-  }
-  if ($self->{model} eq EZO_EC) {
-    for (my $i = 0; $i < @options; $i ++) {
-      $measure->{conductivity} = {
-        value => $response[$i],
-        unit  => "μS/cm",
-        minimum => 0.07,
-        maximum => 500000
-      } if ($options[$i] eq 'EC');
-      $measure->{total_dissolved_solids} = {
-        value => $response[$i],
-        unit  => "PPM",
-        minimum => 0,
-        maximum => 500000
-      } if ($options[$i] eq 'TDS');
-      $measure->{salinity} = {
-        value => $response[$i],
-        unit  => "PSU",
-        minimum => 0.00,
-        maximum => 42.00
-      } if ($options[$i] eq 'S');
-      $measure->{specific_gravity} = {
-        value => $response[$i],
-        unit  => "",
-        minimum => 1.00,
-        maximum =>1.300
-      } if ($options[$i] eq 'SG');
-    }
-  }
-  if ($self->{model} eq EZO_ORP) {
-    $measure->{oxidation_reduction_potential} = {
-      value => $response[0],
-      unit  => "mV",
-      minimum => -1019.9,
-      maximum => 1019.9
-    };
-  }
-  if ($self->{model} eq EZO_DO) {
-    for (my $i = 0; $i < @options; $i ++) {
-      $measure->{dissolved_oxygen} = {
-        value => $response[$i],
-        unit  => "mg/L",
-        minimum => 0.01,
-        maximum => 100
-      } if ($options[$i] eq 'MG');
-      $measure->{saturation} = {
-        value => $response[$i],
-        unit  => "%",
-        minimum => 0.1,
-        maximum => 400
-      } if ($options[$i] eq '%');
-    }
-  }
-  if ($self->{model} eq EZO_PMP or $self->{model} eq EZO_PMPL) {
-    for (my $i = 0; $i < @options; $i ++) {
-      $measure->{volume} = {
-        value => $response[$i],
-        unit  => "mL",
-        minimum => 0,
-        maximum => 45000
-      } if ($options[$i] eq 'V');
-      $measure->{total_volume} = {
-        value => $response[$i],
-        unit  => "mL",
-        minimum => 0,
-        maximum => 45000
-      } if ($options[$i] eq 'TV');
-      $measure->{absolute_total_volume} = {
-        value => $response[$i],
-        unit  => "mL",
-        minimum => 0,
-        maximum => 45000
-      } if ($options[$i] eq 'ATV');
-    }
-  }
-  if ($self->{model} eq EZO_CO2) {
-    for (my $i = 0; $i < @options; $i ++) {
-      $measure->{carbon_dioxide} = {
-        value => $response[$i],
-        unit  => "PPM",
-        minimum => 0,
-        maximum => 10000
-      } if ($options[$i] eq 'PPM');
-      $measure->{temperature} = {
-        value => $response[$i],
-        unit  => "°C",
-        minimum => -20,
-        maximum => 50
-      } if ($options[$i] eq 'T');
-    }
-  }
-  if ($self->{model} eq EZO_O2) {
-    for (my $i = 0; $i < @options; $i ++) {
-      $measure->{oxygen} = {
-        value => $response[$i],
-        unit  => "PPT",
-        minimum => 0,
-        maximum => 10000
-      } if ($options[$i] eq 'PPT');
-      $measure->{percent} = {
-        value => $response[$i],
-        unit  => "%",
-        minimum => 0,
-        maximum => 42
-      } if ($options[$i] eq '%');
-    }
-  }
-  if ($self->{model} eq EZO_HUM) {
-    for (my $i = 0; $i < @options; $i ++) {
-      $measure->{humidity} = {
-        value => $response[$i],
-        unit  => "%",
-        minimum => 0,
-        maximum => 100
-      } if ($options[$i] eq 'HUM');
-      $measure->{temperature} = {
-        value => $response[$i],
-        unit  => "°C",
-        minimum => -20,
-        maximum => 50
-      } if ($options[$i] eq 'T');
-      $measure->{dew_point} = {
-        value => $response[$i],
-        unit  => "°C",
-        minimum => -20,
-        maximum => 50
-      } if ($options[$i] eq 'DEW');
-    }
-  }
-  if ($self->{model} eq EZO_PRS) {
-    my $unit = $self->pressureUnit;
-    $unit = $response[1] if ($unit == 1);
-    # Max depends on the unit.
-    my $max;
-    $max = 50.000 if ($unit eq "psi");
-    $max = 3.402 if ($unit eq "atm");
-    $max = 3.447 if ($unit eq "bar");
-    $max = 344.738 if ($unit eq "kPa");
-    $max = 1385.38 if ($unit eq "in h2o");
-    $max = 3515.34 if ($unit eq "cm h2o");
-    $measure->{pressure} = {
-      value => $response[0],
-      unit  => $unit,
-      minimum => 0,
-      maximum => $max
-    };
-  }
-  if ($self->{model} eq EZO_FLOW) {
-    for (my $i = 0; $i < @options; $i ++) {
-      $measure->{total_volume} = {
-        value => $response[$i],
-        unit  => "L",
-        minimum => 0,
-        maximum => 100000
-      } if ($options[$i] eq 'TV');
-      $measure->{flow_rate} = {
-        value => $response[$i],
-        unit  => sprintf "L/%s", $self->flowRateUnit,
-        minimum => 0,
-        maximum => 1000
-      } if ($options[$i] eq 'FR');
-    }
-  }
-  if ($self->{model} eq EZO_RGB) {
-    for (my $i = 0; $i < @options; $i ++) {
-      $measure->{rgb} = {
-        value => $response[$i],
-        unit  => "RGB",
-        minimum => 0,
-        maximum => 255
-      } if ($options[$i] eq 'RGB');
-      $measure->{lux} = {
-        value => $response[$i],
-        unit  => "LUX",
-        minimum => 0,
-        maximum => 65535
-      } if ($options[$i] eq 'LUX');
-      $measure->{cie} = {
-        value => $response[$i],
-        unit  => "CIE",
-        minimum => 0,
-        maximum => 100
-      } if ($options[$i] eq 'CIE');
-    }
-  }
-  return $measure;
-}
-
 sub baud {
   my $self = shift;
   my ($rate) = @_;
@@ -723,6 +490,137 @@ sub baud {
   $self->$_sendCommand ($command . "," . $rate);
   # Give the device a moment to reboot.
   usleep 1000000;
+}
+
+sub close {
+  my $self = shift;
+  $self->{io}->close;
+}
+
+sub factoryReset {
+  my $self = shift;
+  my $command = "Factory";
+  # Some firmware versions call this command X.
+  $command = "X" if (
+    $self->{model} eq EZO_PH &&
+    version->parse ($self->{firmware}) < version->parse ("1.07")
+  );
+  $command = "X" if (
+    $self->{model} eq EZO_EC &&
+    version->parse ($self->{firmware}) < version->parse ("1.08")
+  );
+  $command = "X" if (
+    $self->{model} eq EZO_ORP &&
+    version->parse ($self->{firmware}) < version->parse ("1.07")
+  );
+  $command = "X" if (
+    $self->{model} eq EZO_DO &&
+    version->parse ($self->{firmware}) < version->parse ("1.07")
+  );
+  # Send the factory reset command.
+  $self->$_sendCommand ($command);
+  # Give the device a moment to reboot.
+  usleep 1000000;
+}
+
+sub find {
+  my $self = shift;
+  # Make sure the firmware supports this feature on this device.
+  $self->$_require_firmware (EZO_RTD, "2.10");
+  $self->$_require_firmware (EZO_PH, "2.10");
+  $self->$_require_firmware (EZO_EC, "2.10");
+  $self->$_require_firmware (EZO_ORP, "2.10");
+  $self->$_require_firmware (EZO_DO, "2.10");
+  # Send the find command.
+  $self->$_sendCommand ("Find");
+}
+
+sub i2c {
+  my $self = shift;
+  my ($address) = @_;
+  # Make sure the address is numeric instead of a string.
+  $address = hex $address if ($address & ~$address);
+  # Make sure the address is within range.
+  die "Invalid I2C address $address" unless ($address >= 1 && $address <= 127);
+  # Set the address for the device.
+  $self->{address} = $address;
+  $self->$_sendCommand ("I2C," . $address);
+  # Give the device a moment to reboot.
+  usleep 1000000;
+}
+
+sub information {
+  my $self = shift;
+  return ($self->{model}, $self->{firmware});
+}
+
+sub name {
+  my $self = shift;
+  my ($name) = @_;
+  if (defined $name) {
+    die "Name cannot be longer than 16 characters" if (length $name > 16);
+    die "Name can only include printable characters, excluding spaces" unless (
+      $name =~ /^[[:graph:]]*$/
+    );
+    $self->$_sendCommand ("Name," . $name);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  else {
+    $self->$_sendCommand ("Name,?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    (my $n, $name) = split /,/, $self->$_getResponse;
+    die "Invalid response from device" unless (uc $n eq "?NAME");
+  }
+  return $name;
+}
+
+sub plock {
+  my $self = shift;
+  my ($plock) = @_;
+  # Make sure the firmware supports this feature on this device.
+  $self->$_require_firmware (EZO_RTD, "1.02");
+  $self->$_require_firmware (EZO_PH, "1.95");
+  $self->$_require_firmware (EZO_EC, "1.95");
+  $self->$_require_firmware (EZO_ORP, "1.95");
+  $self->$_require_firmware (EZO_DO, "1.95");
+  if (defined $plock) {
+    die "Invalid plock option $plock" unless ($plock == 0 || $plock == 1);
+    $self->$_sendCommand ("Plock," . $plock);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  else {
+    $self->$_sendCommand ("Plock,?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    (my $p, $plock) = split /,/, $self->$_getResponse;
+    die "Invalid response from device" unless (uc $p eq "?PLOCK");
+  }
+  return $plock;
+}
+
+sub status {
+  my $self = shift;
+  $self->$_sendCommand ("Status");
+  # Give the device a moment to respond.
+  usleep 300000;
+  my ($s, $p, $voltage) = split /,/, $self->$_getResponse;
+  die "Invalid response from device" unless (uc $s eq "?STATUS");
+  my $reason;
+  $reason = EZO_RESTART_REASON_POWEROFF if ($p eq EZO_RESTART_REASON_POWEROFF);
+  $reason = EZO_RESTART_REASON_RESET if ($p eq EZO_RESTART_REASON_RESET);
+  $reason = EZO_RESTART_REASON_BROWNOUT if ($p eq EZO_RESTART_REASON_BROWNOUT);
+  $reason = EZO_RESTART_REASON_WATCHDOG if ($p eq EZO_RESTART_REASON_WATCHDOG);
+  $reason = EZO_RESTART_REASON_UNKNOWN if ($p eq EZO_RESTART_REASON_UNKNOWN);
+  die "Error detecting reason $p" unless (defined $reason);
+  return ($reason, $voltage);
+}
+
+sub sleep {
+  my $self = shift;
+  $self->$_sendCommand ("Sleep");
 }
 
 sub calibration {
@@ -1013,33 +911,6 @@ sub dispenseConstant {
   }
 }
 
-sub dispenseStartup {
-  my $self = shift;
-  my ($arg) = @_;
-  # Make sure this feature is supported on this device.
-  die "Feature not available on " . $self->{model} unless (
-    $self->{model} eq EZO_PMP or
-    $self->{model} eq EZO_PMPL
-  );
-  # Send the dispense startup command.
-  if (defined $arg) {
-    die "Invalid argument to dispense startup" unless (
-      $arg eq 'off' || $self->$_is_number ($arg)
-    );
-    $self->$_sendCommand ("Dstart," . $arg);
-    # Give the device a moment to respond.
-    usleep 300000;
-  }
-  else {
-    $self->$_sendCommand ("Dstart,?");
-    # Give the device a moment to respond.
-    usleep 300000;
-    my ($dstart, $rate) = split /,/, $self->$_getResponse;
-    die "Invalid response from device" unless (uc $dstart eq "?Dstart");
-    return $rate;
-  }
-}
-
 sub dispensePause {
   my $self = shift;
   # Make sure this feature is supported on this device.
@@ -1069,6 +940,33 @@ sub dispensePauseStatus {
   return $status;
 }
 
+sub dispenseStartup {
+  my $self = shift;
+  my ($arg) = @_;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL
+  );
+  # Send the dispense startup command.
+  if (defined $arg) {
+    die "Invalid argument to dispense startup" unless (
+      $arg eq 'off' || $self->$_is_number ($arg)
+    );
+    $self->$_sendCommand ("Dstart," . $arg);
+    # Give the device a moment to respond.
+    usleep 300000;
+  }
+  else {
+    $self->$_sendCommand ("Dstart,?");
+    # Give the device a moment to respond.
+    usleep 300000;
+    my ($dstart, $rate) = split /,/, $self->$_getResponse;
+    die "Invalid response from device" unless (uc $dstart eq "?Dstart");
+    return $rate;
+  }
+}
+
 sub dispenseStop {
   my $self = shift;
   # Make sure this feature is supported on this device.
@@ -1080,22 +978,6 @@ sub dispenseStop {
   $self->$_sendCommand ("X");
   # Give the device a moment to respond.
   usleep 300000;
-}
-
-sub dispensedTotalVolume {
-  my $self = shift;
-  # Make sure this feature is supported on this device.
-  die "Feature not available on " . $self->{model} unless (
-    $self->{model} eq EZO_PMP or
-    $self->{model} eq EZO_PMPL
-  );
-  # Send the total volume dispensed command.
-  $self->$_sendCommand ("TV,?");
-  # Give the device a moment to respond.
-  usleep 300000;
-  my ($tv, $volume) = split /,/, $self->$_getResponse;
-  die "Invalid response from device" unless (uc $tv eq "?TV");
-  return $volume;
 }
 
 sub dispensedAbsoluteTotalVolume {
@@ -1114,6 +996,22 @@ sub dispensedAbsoluteTotalVolume {
   return $volume;
 }
 
+sub dispensedTotalVolume {
+  my $self = shift;
+  # Make sure this feature is supported on this device.
+  die "Feature not available on " . $self->{model} unless (
+    $self->{model} eq EZO_PMP or
+    $self->{model} eq EZO_PMPL
+  );
+  # Send the total volume dispensed command.
+  $self->$_sendCommand ("TV,?");
+  # Give the device a moment to respond.
+  usleep 300000;
+  my ($tv, $volume) = split /,/, $self->$_getResponse;
+  die "Invalid response from device" unless (uc $tv eq "?TV");
+  return $volume;
+}
+
 sub dispensedVolumeClear {
   my $self = shift;
   # Make sure this feature is supported on this device.
@@ -1125,44 +1023,6 @@ sub dispensedVolumeClear {
   $self->$_sendCommand ("clear");
   # Give the device a moment to respond.
   usleep 300000;
-}
-
-sub factoryReset {
-  my $self = shift;
-  my $command = "Factory";
-  # Some firmware versions call this command X.
-  $command = "X" if (
-    $self->{model} eq EZO_PH &&
-    version->parse ($self->{firmware}) < version->parse ("1.07")
-  );
-  $command = "X" if (
-    $self->{model} eq EZO_EC &&
-    version->parse ($self->{firmware}) < version->parse ("1.08")
-  );
-  $command = "X" if (
-    $self->{model} eq EZO_ORP &&
-    version->parse ($self->{firmware}) < version->parse ("1.07")
-  );
-  $command = "X" if (
-    $self->{model} eq EZO_DO &&
-    version->parse ($self->{firmware}) < version->parse ("1.07")
-  );
-  # Send the factory reset command.
-  $self->$_sendCommand ($command);
-  # Give the device a moment to reboot.
-  usleep 1000000;
-}
-
-sub find {
-  my $self = shift;
-  # Make sure the firmware supports this feature on this device.
-  $self->$_require_firmware (EZO_RTD, "2.10");
-  $self->$_require_firmware (EZO_PH, "2.10");
-  $self->$_require_firmware (EZO_EC, "2.10");
-  $self->$_require_firmware (EZO_ORP, "2.10");
-  $self->$_require_firmware (EZO_DO, "2.10");
-  # Send the find command.
-  $self->$_sendCommand ("Find");
 }
 
 sub flowRateUnit {
@@ -1192,25 +1052,6 @@ sub flowRateUnit {
   return $unit;
 }
 
-sub i2c {
-  my $self = shift;
-  my ($address) = @_;
-  # Make sure the address is numeric instead of a string.
-  $address = hex $address if ($address & ~$address);
-  # Make sure the address is within range.
-  die "Invalid I2C address $address" unless ($address >= 1 && $address <= 127);
-  # Set the address for the device.
-  $self->{address} = $address;
-  $self->$_sendCommand ("I2C," . $address);
-  # Give the device a moment to reboot.
-  usleep 1000000;
-}
-
-sub information {
-  my $self = shift;
-  return ($self->{model}, $self->{firmware});
-}
-
 sub ledIndicator {
   my $self = shift;
   my ($led) = @_;
@@ -1232,26 +1073,232 @@ sub ledIndicator {
   return $led;
 }
 
-sub name {
+sub measure {
   my $self = shift;
-  my ($name) = @_;
-  if (defined $name) {
-    die "Name cannot be longer than 16 characters" if (length $name > 16);
-    die "Name can only include printable characters, excluding spaces" unless (
-      $name =~ /^[[:graph:]]*$/
-    );
-    $self->$_sendCommand ("Name," . $name);
-    # Give the device a moment to respond.
-    usleep 300000;
+  $self->$_sendCommand ("R");
+  # Each model has a different delay.
+  my $delay;
+  $delay = 600000 if ($self->{model} eq EZO_RTD);
+  $delay = 900000 if ($self->{model} eq EZO_PH);
+  $delay = 600000 if ($self->{model} eq EZO_EC);
+  $delay = 900000 if ($self->{model} eq EZO_ORP);
+  $delay = 600000 if ($self->{model} eq EZO_DO);
+  $delay = 300000 if ($self->{model} eq EZO_PMP);
+  $delay = 300000 if ($self->{model} eq EZO_PMPL);
+  $delay = 900000 if ($self->{model} eq EZO_CO2);
+  $delay = 900000 if ($self->{model} eq EZO_O2);
+  $delay = 300000 if ($self->{model} eq EZO_HUM);
+  $delay = 900000 if ($self->{model} eq EZO_PRS);
+  $delay = 300000 if ($self->{model} eq EZO_FLOW);
+  $delay = 300000 if ($self->{model} eq EZO_RGB);
+  # Give the device a moment to respond.
+  usleep $delay;
+  my @response = split ",", $self->$_getResponse;
+  # Read the device options.
+  my @options = $self->options;
+  # Extract the measurement(s) from the response based on the model.
+  my $measure;
+  if ($self->{model} eq EZO_RTD) {
+    $measure->{temperature} = {
+      value => $response[0],
+      unit  => "°C",
+      minimum => -126.000,
+      maximum => 1254
+    };
   }
-  else {
-    $self->$_sendCommand ("Name,?");
-    # Give the device a moment to respond.
-    usleep 300000;
-    (my $n, $name) = split /,/, $self->$_getResponse;
-    die "Invalid response from device" unless (uc $n eq "?NAME");
+  if ($self->{model} eq EZO_PH) {
+    $measure->{ph} = {
+      value => $response[0],
+      unit  => "pH",
+      minimum => 0.001,
+      maximum => 14.000
+    };
   }
-  return $name;
+  if ($self->{model} eq EZO_EC) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{conductivity} = {
+        value => $response[$i],
+        unit  => "μS/cm",
+        minimum => 0.07,
+        maximum => 500000
+      } if ($options[$i] eq 'EC');
+      $measure->{total_dissolved_solids} = {
+        value => $response[$i],
+        unit  => "PPM",
+        minimum => 0,
+        maximum => 500000
+      } if ($options[$i] eq 'TDS');
+      $measure->{salinity} = {
+        value => $response[$i],
+        unit  => "PSU",
+        minimum => 0.00,
+        maximum => 42.00
+      } if ($options[$i] eq 'S');
+      $measure->{specific_gravity} = {
+        value => $response[$i],
+        unit  => "",
+        minimum => 1.00,
+        maximum =>1.300
+      } if ($options[$i] eq 'SG');
+    }
+  }
+  if ($self->{model} eq EZO_ORP) {
+    $measure->{oxidation_reduction_potential} = {
+      value => $response[0],
+      unit  => "mV",
+      minimum => -1019.9,
+      maximum => 1019.9
+    };
+  }
+  if ($self->{model} eq EZO_DO) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{dissolved_oxygen} = {
+        value => $response[$i],
+        unit  => "mg/L",
+        minimum => 0.01,
+        maximum => 100
+      } if ($options[$i] eq 'MG');
+      $measure->{saturation} = {
+        value => $response[$i],
+        unit  => "%",
+        minimum => 0.1,
+        maximum => 400
+      } if ($options[$i] eq '%');
+    }
+  }
+  if ($self->{model} eq EZO_PMP or $self->{model} eq EZO_PMPL) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{volume} = {
+        value => $response[$i],
+        unit  => "mL",
+        minimum => 0,
+        maximum => 45000
+      } if ($options[$i] eq 'V');
+      $measure->{total_volume} = {
+        value => $response[$i],
+        unit  => "mL",
+        minimum => 0,
+        maximum => 45000
+      } if ($options[$i] eq 'TV');
+      $measure->{absolute_total_volume} = {
+        value => $response[$i],
+        unit  => "mL",
+        minimum => 0,
+        maximum => 45000
+      } if ($options[$i] eq 'ATV');
+    }
+  }
+  if ($self->{model} eq EZO_CO2) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{carbon_dioxide} = {
+        value => $response[$i],
+        unit  => "PPM",
+        minimum => 0,
+        maximum => 10000
+      } if ($options[$i] eq 'PPM');
+      $measure->{temperature} = {
+        value => $response[$i],
+        unit  => "°C",
+        minimum => -20,
+        maximum => 50
+      } if ($options[$i] eq 'T');
+    }
+  }
+  if ($self->{model} eq EZO_O2) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{oxygen} = {
+        value => $response[$i],
+        unit  => "PPT",
+        minimum => 0,
+        maximum => 10000
+      } if ($options[$i] eq 'PPT');
+      $measure->{percent} = {
+        value => $response[$i],
+        unit  => "%",
+        minimum => 0,
+        maximum => 42
+      } if ($options[$i] eq '%');
+    }
+  }
+  if ($self->{model} eq EZO_HUM) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{humidity} = {
+        value => $response[$i],
+        unit  => "%",
+        minimum => 0,
+        maximum => 100
+      } if ($options[$i] eq 'HUM');
+      $measure->{temperature} = {
+        value => $response[$i],
+        unit  => "°C",
+        minimum => -20,
+        maximum => 50
+      } if ($options[$i] eq 'T');
+      $measure->{dew_point} = {
+        value => $response[$i],
+        unit  => "°C",
+        minimum => -20,
+        maximum => 50
+      } if ($options[$i] eq 'DEW');
+    }
+  }
+  if ($self->{model} eq EZO_PRS) {
+    my $unit = $self->pressureUnit;
+    $unit = $response[1] if ($unit == 1);
+    # Max depends on the unit.
+    my $max;
+    $max = 50.000 if ($unit eq "psi");
+    $max = 3.402 if ($unit eq "atm");
+    $max = 3.447 if ($unit eq "bar");
+    $max = 344.738 if ($unit eq "kPa");
+    $max = 1385.38 if ($unit eq "in h2o");
+    $max = 3515.34 if ($unit eq "cm h2o");
+    $measure->{pressure} = {
+      value => $response[0],
+      unit  => $unit,
+      minimum => 0,
+      maximum => $max
+    };
+  }
+  if ($self->{model} eq EZO_FLOW) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{total_volume} = {
+        value => $response[$i],
+        unit  => "L",
+        minimum => 0,
+        maximum => 100000
+      } if ($options[$i] eq 'TV');
+      $measure->{flow_rate} = {
+        value => $response[$i],
+        unit  => sprintf "L/%s", $self->flowRateUnit,
+        minimum => 0,
+        maximum => 1000
+      } if ($options[$i] eq 'FR');
+    }
+  }
+  if ($self->{model} eq EZO_RGB) {
+    for (my $i = 0; $i < @options; $i ++) {
+      $measure->{rgb} = {
+        value => $response[$i],
+        unit  => "RGB",
+        minimum => 0,
+        maximum => 255
+      } if ($options[$i] eq 'RGB');
+      $measure->{lux} = {
+        value => $response[$i],
+        unit  => "LUX",
+        minimum => 0,
+        maximum => 65535
+      } if ($options[$i] eq 'LUX');
+      $measure->{cie} = {
+        value => $response[$i],
+        unit  => "CIE",
+        minimum => 0,
+        maximum => 100
+      } if ($options[$i] eq 'CIE');
+    }
+  }
+  return $measure;
 }
 
 sub options {
@@ -1341,31 +1388,6 @@ sub pressureUnit {
   return $unit;
 }
 
-sub plock {
-  my $self = shift;
-  my ($plock) = @_;
-  # Make sure the firmware supports this feature on this device.
-  $self->$_require_firmware (EZO_RTD, "1.02");
-  $self->$_require_firmware (EZO_PH, "1.95");
-  $self->$_require_firmware (EZO_EC, "1.95");
-  $self->$_require_firmware (EZO_ORP, "1.95");
-  $self->$_require_firmware (EZO_DO, "1.95");
-  if (defined $plock) {
-    die "Invalid plock option $plock" unless ($plock == 0 || $plock == 1);
-    $self->$_sendCommand ("Plock," . $plock);
-    # Give the device a moment to respond.
-    usleep 300000;
-  }
-  else {
-    $self->$_sendCommand ("Plock,?");
-    # Give the device a moment to respond.
-    usleep 300000;
-    (my $p, $plock) = split /,/, $self->$_getResponse;
-    die "Invalid response from device" unless (uc $p eq "?PLOCK");
-  }
-  return $plock;
-}
-
 sub pumpVoltage {
   my $self = shift;
   # Make sure this feature is supported on this device.
@@ -1380,28 +1402,6 @@ sub pumpVoltage {
   my ($pv, $voltage) = split /,/, $self->$_getResponse;
   die "Invalid response from device" unless (uc $pv eq "?PV");
   return $voltage;
-}
-
-sub sleep {
-  my $self = shift;
-  $self->$_sendCommand ("Sleep");
-}
-
-sub status {
-  my $self = shift;
-  $self->$_sendCommand ("Status");
-  # Give the device a moment to respond.
-  usleep 300000;
-  my ($s, $p, $voltage) = split /,/, $self->$_getResponse;
-  die "Invalid response from device" unless (uc $s eq "?STATUS");
-  my $reason;
-  $reason = EZO_RESTART_REASON_POWEROFF if ($p eq EZO_RESTART_REASON_POWEROFF);
-  $reason = EZO_RESTART_REASON_RESET if ($p eq EZO_RESTART_REASON_RESET);
-  $reason = EZO_RESTART_REASON_BROWNOUT if ($p eq EZO_RESTART_REASON_BROWNOUT);
-  $reason = EZO_RESTART_REASON_WATCHDOG if ($p eq EZO_RESTART_REASON_WATCHDOG);
-  $reason = EZO_RESTART_REASON_UNKNOWN if ($p eq EZO_RESTART_REASON_UNKNOWN);
-  die "Error detecting reason $p" unless (defined $reason);
-  return ($reason, $voltage);
 }
 
 ## Private methods.
