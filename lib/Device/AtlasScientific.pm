@@ -1406,13 +1406,29 @@ sub pumpVoltage {
 
 ## Private methods.
 
-$_sendCommand = sub {
+$_getInformation = sub {
   my $self = shift;
-  my ($command) = @_;
-  # Send the command to the device.
-  my @bytes = unpack 'C*', $command;
-  my $comm = shift @bytes;
-  $self->{io}->writeBlockData ($comm, \@bytes);
+  $self->$_sendCommand ("I");
+  # Give the device a moment to respond.
+  usleep 300000;
+  my ($i, $m, $firmware) = split /,/, $self->$_getResponse;
+  die "Invalid response from device" unless (uc $i eq "?I");
+  my $model;
+  $model = EZO_RTD if (uc $m eq EZO_RTD);
+  $model = EZO_PH if (uc $m eq EZO_PH);
+  $model = EZO_EC if (uc $m eq EZO_EC);
+  $model = EZO_ORP if (uc $m eq EZO_ORP);
+  $model = EZO_DO if (uc $m eq EZO_DO);
+  $model = EZO_PMP if (uc $m eq EZO_PMP);
+  $model = EZO_PMPL if (uc $m eq EZO_PMPL);
+  $model = EZO_CO2 if (uc $m eq EZO_CO2);
+  $model = EZO_O2 if (uc $m eq EZO_O2);
+  $model = EZO_HUM if (uc $m eq EZO_HUM);
+  $model = EZO_PRS if (uc $m eq EZO_PRS);
+  $model = EZO_FLOW if (uc $m eq EZO_FLOW);
+  $model = EZO_RGB if (uc $m eq EZO_RGB);
+  die "Unsupported device $m" unless (defined $model);
+  return ($model, $firmware);
 };
 
 $_getResponse = sub {
@@ -1442,34 +1458,18 @@ $_getResponse = sub {
   }
 };
 
-$_getInformation = sub {
-  my $self = shift;
-  $self->$_sendCommand ("I");
-  # Give the device a moment to respond.
-  usleep 300000;
-  my ($i, $m, $firmware) = split /,/, $self->$_getResponse;
-  die "Invalid response from device" unless (uc $i eq "?I");
-  my $model;
-  $model = EZO_RTD if (uc $m eq EZO_RTD);
-  $model = EZO_PH if (uc $m eq EZO_PH);
-  $model = EZO_EC if (uc $m eq EZO_EC);
-  $model = EZO_ORP if (uc $m eq EZO_ORP);
-  $model = EZO_DO if (uc $m eq EZO_DO);
-  $model = EZO_PMP if (uc $m eq EZO_PMP);
-  $model = EZO_PMPL if (uc $m eq EZO_PMPL);
-  $model = EZO_CO2 if (uc $m eq EZO_CO2);
-  $model = EZO_O2 if (uc $m eq EZO_O2);
-  $model = EZO_HUM if (uc $m eq EZO_HUM);
-  $model = EZO_PRS if (uc $m eq EZO_PRS);
-  $model = EZO_FLOW if (uc $m eq EZO_FLOW);
-  $model = EZO_RGB if (uc $m eq EZO_RGB);
-  die "Unsupported device $m" unless (defined $model);
-  return ($model, $firmware);
-};
-
 $_is_number = sub {
   my $self = shift;
   return shift =~ /^[-]?\d*\.?\d*$/;
+};
+
+$_sendCommand = sub {
+  my $self = shift;
+  my ($command) = @_;
+  # Send the command to the device.
+  my @bytes = unpack 'C*', $command;
+  my $comm = shift @bytes;
+  $self->{io}->writeBlockData ($comm, \@bytes);
 };
 
 $_require_firmware = sub {
