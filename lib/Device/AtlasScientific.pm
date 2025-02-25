@@ -436,15 +436,6 @@ our @EXPORT_OK = qw (
   EZO_RESTART_REASON_UNKNOWN
 );
 
-# Private methods. Defined below.
-my $_sendCommand;
-my $_getResponse;
-my $_getInformation;
-my $_is_number;
-my $_require_firmware;
-
-## Public methods.
-
 sub new {
   my $class = shift;
   die "Usage: $class->new (i2c, address)" unless (@_ == 2);
@@ -469,7 +460,7 @@ sub new {
     firmware    => undef
   }, $class;
   # Retrieve the device model and firmware version.
-  ($self->{model}, $self->{firmware}) = $self->$_getInformation;
+  ($self->{model}, $self->{firmware}) = $self->_getInformation;
   return $self;
 }
 
@@ -487,7 +478,7 @@ sub baud {
     $rate == 19200 || $rate == 38400 || $rate == 57600 || $rate == 115200
   );
   # Send the command to the device.
-  $self->$_sendCommand ($command . "," . $rate);
+  $self->_sendCommand ($command . "," . $rate);
   # Give the device a moment to reboot.
   usleep 1000000;
 }
@@ -518,7 +509,7 @@ sub factoryReset {
     version->parse ($self->{firmware}) < version->parse ("1.07")
   );
   # Send the factory reset command.
-  $self->$_sendCommand ($command);
+  $self->_sendCommand ($command);
   # Give the device a moment to reboot.
   usleep 1000000;
 }
@@ -526,13 +517,13 @@ sub factoryReset {
 sub find {
   my $self = shift;
   # Make sure the firmware supports this feature on this device.
-  $self->$_require_firmware (EZO_RTD, "2.10");
-  $self->$_require_firmware (EZO_PH, "2.10");
-  $self->$_require_firmware (EZO_EC, "2.10");
-  $self->$_require_firmware (EZO_ORP, "2.10");
-  $self->$_require_firmware (EZO_DO, "2.10");
+  $self->_require_firmware (EZO_RTD, "2.10");
+  $self->_require_firmware (EZO_PH, "2.10");
+  $self->_require_firmware (EZO_EC, "2.10");
+  $self->_require_firmware (EZO_ORP, "2.10");
+  $self->_require_firmware (EZO_DO, "2.10");
   # Send the find command.
-  $self->$_sendCommand ("Find");
+  $self->_sendCommand ("Find");
 }
 
 sub i2c {
@@ -544,7 +535,7 @@ sub i2c {
   die "Invalid I2C address $address" unless ($address >= 1 && $address <= 127);
   # Set the address for the device.
   $self->{address} = $address;
-  $self->$_sendCommand ("I2C," . $address);
+  $self->_sendCommand ("I2C," . $address);
   # Give the device a moment to reboot.
   usleep 1000000;
 }
@@ -562,15 +553,15 @@ sub name {
     die "Name can only include printable characters, excluding spaces" unless (
       $name =~ /^[[:graph:]]*$/
     );
-    $self->$_sendCommand ("Name," . $name);
+    $self->_sendCommand ("Name," . $name);
     # Give the device a moment to respond.
     usleep 300000;
   }
   else {
-    $self->$_sendCommand ("Name,?");
+    $self->_sendCommand ("Name,?");
     # Give the device a moment to respond.
     usleep 300000;
-    (my $n, $name) = split /,/, $self->$_getResponse;
+    (my $n, $name) = split /,/, $self->_getResponse;
     die "Invalid response from device" unless (uc $n eq "?NAME");
   }
   return $name;
@@ -580,22 +571,22 @@ sub plock {
   my $self = shift;
   my ($plock) = @_;
   # Make sure the firmware supports this feature on this device.
-  $self->$_require_firmware (EZO_RTD, "1.02");
-  $self->$_require_firmware (EZO_PH, "1.95");
-  $self->$_require_firmware (EZO_EC, "1.95");
-  $self->$_require_firmware (EZO_ORP, "1.95");
-  $self->$_require_firmware (EZO_DO, "1.95");
+  $self->_require_firmware (EZO_RTD, "1.02");
+  $self->_require_firmware (EZO_PH, "1.95");
+  $self->_require_firmware (EZO_EC, "1.95");
+  $self->_require_firmware (EZO_ORP, "1.95");
+  $self->_require_firmware (EZO_DO, "1.95");
   if (defined $plock) {
     die "Invalid plock option $plock" unless ($plock == 0 || $plock == 1);
-    $self->$_sendCommand ("Plock," . $plock);
+    $self->_sendCommand ("Plock," . $plock);
     # Give the device a moment to respond.
     usleep 300000;
   }
   else {
-    $self->$_sendCommand ("Plock,?");
+    $self->_sendCommand ("Plock,?");
     # Give the device a moment to respond.
     usleep 300000;
-    (my $p, $plock) = split /,/, $self->$_getResponse;
+    (my $p, $plock) = split /,/, $self->_getResponse;
     die "Invalid response from device" unless (uc $p eq "?PLOCK");
   }
   return $plock;
@@ -603,10 +594,10 @@ sub plock {
 
 sub status {
   my $self = shift;
-  $self->$_sendCommand ("Status");
+  $self->_sendCommand ("Status");
   # Give the device a moment to respond.
   usleep 300000;
-  my ($s, $p, $voltage) = split /,/, $self->$_getResponse;
+  my ($s, $p, $voltage) = split /,/, $self->_getResponse;
   die "Invalid response from device" unless (uc $s eq "?STATUS");
   my $reason;
   $reason = EZO_RESTART_REASON_POWEROFF if ($p eq EZO_RESTART_REASON_POWEROFF);
@@ -620,7 +611,7 @@ sub status {
 
 sub sleep {
   my $self = shift;
-  $self->$_sendCommand ("Sleep");
+  $self->_sendCommand ("Sleep");
 }
 
 sub calibration {
@@ -642,7 +633,7 @@ sub calibration {
   # Handle EZO_RGB device calibration. There are no arguments to handle.
   if ($self->{model} eq EZO_RGB) {
     # Send the calibration command.
-    $self->$_sendCommand ("Cal");
+    $self->_sendCommand ("Cal");
     # Give the device a moment to respond.
     usleep 300000;
     # Return indicating that the device is calibrated.
@@ -651,10 +642,10 @@ sub calibration {
   # If no argument was provided, check if the device is calibrated.
   if (not defined $arg) {
     # Check if the device is calibrated.
-    $self->$_sendCommand ("Cal,?");
+    $self->_sendCommand ("Cal,?");
     # Give the device a moment to respond.
     usleep 300000;
-    my ($c, $num) = split /,/, $self->$_getResponse;
+    my ($c, $num) = split /,/, $self->_getResponse;
     die "Invalid response from device" unless (uc $c eq "?CAL");
     # Return with the current state of calibration.
     return $num;
@@ -662,7 +653,7 @@ sub calibration {
   # Handle the clear calibration option.
   if (uc $arg eq "CLEAR") {
     # Send the clear command.
-    $self->$_sendCommand ("Cal,clear");
+    $self->_sendCommand ("Cal,clear");
     # Give the device a moment to respond.
     usleep 300000;
     # Return indicating that the device is not calibrated.
@@ -672,9 +663,9 @@ sub calibration {
   if ($self->{model} eq EZO_RTD) {
     # Make sure arg is a valid number.
     die "Invalid calibration point: $arg"
-      unless (defined $arg and $self->$_is_number ($arg));
+      unless (defined $arg and $self->_is_number ($arg));
     # Send the calibration command with the provided temperature.
-    $self->$_sendCommand ("Cal," . $arg);
+    $self->_sendCommand ("Cal," . $arg);
     # Give the device a moment to respond.
     usleep 600000;
     # Return indicating that the device is calibrated.
@@ -687,9 +678,9 @@ sub calibration {
       uc $arg eq 'LOW' or uc $arg eq 'MID' or $arg eq 'HIGH'
     );
     # Make sure value is a valid number.
-    die "Invalid calibration pH: $arg" unless ($self->$_is_number ($value));
+    die "Invalid calibration pH: $arg" unless ($self->_is_number ($value));
     # Send the calibration command with the provided pH.
-    $self->$_sendCommand ("Cal," . $arg . "," . $value);
+    $self->_sendCommand ("Cal," . $arg . "," . $value);
     # Give the device a moment to respond.
     usleep 900000;
     # Return indicating that the device is calibrated.
@@ -700,17 +691,17 @@ sub calibration {
     die "Invalid calibration point: $arg" unless (
       defined $arg and
       uc $arg eq 'LOW' or uc $arg eq 'HIGH' or $arg eq 'DRY' or
-      $self->$_is_number ($arg)
+      $self->_is_number ($arg)
     );
     die "Invalid calibration point: $value" if (
       (uc $arg eq 'LOW' or uc $arg eq 'HIGH') and
-      defined $value and $self->$_is_number ($value)
+      defined $value and $self->_is_number ($value)
     );
     # Send the desired calibration command.
-    $self->$_sendCommand ("Cal,dry") if (uc $arg eq 'DRY');
-    $self->$_sendCommand ("Cal,low," . $value) if (uc $arg eq 'LOW');
-    $self->$_sendCommand ("Cal,high," . $value) if (uc $arg eq 'HIGH');
-    $self->$_sendCommand ("Cal," . $arg) if ($self->$_is_number ($arg));
+    $self->_sendCommand ("Cal,dry") if (uc $arg eq 'DRY');
+    $self->_sendCommand ("Cal,low," . $value) if (uc $arg eq 'LOW');
+    $self->_sendCommand ("Cal,high," . $value) if (uc $arg eq 'HIGH');
+    $self->_sendCommand ("Cal," . $arg) if ($self->_is_number ($arg));
     # Give the device a moment to respond.
     usleep 600000;
     # Return indicating that the device is calibrated.
@@ -720,9 +711,9 @@ sub calibration {
   if ($self->{model} eq EZO_ORP) {
     # Make sure arg is a valid number.
     die "Invalid calibration point: $arg"
-      unless (defined $arg and $self->$_is_number ($arg));
+      unless (defined $arg and $self->_is_number ($arg));
     # Send the calibration command with the provided ORP value.
-    $self->$_sendCommand ("Cal," . $arg);
+    $self->_sendCommand ("Cal," . $arg);
     # Give the device a moment to respond.
     usleep 900000;
     # Return indicating that the device is calibrated.
@@ -731,11 +722,11 @@ sub calibration {
   # Handle EZO_DO device calibration.
   if ($self->{model} eq EZO_DO) {
     die "Invalid calibration point: $arg" unless (
-      defined $arg and uc $arg eq 'ATM' or $self->$_is_number ($arg)
+      defined $arg and uc $arg eq 'ATM' or $self->_is_number ($arg)
     );
     # Send the desired calibration command.
-    $self->$_sendCommand ("Cal") if (uc $arg eq 'ATM');
-    $self->$_sendCommand ("Cal," . $arg) if ($self->$_is_number ($arg));
+    $self->_sendCommand ("Cal") if (uc $arg eq 'ATM');
+    $self->_sendCommand ("Cal," . $arg) if ($self->_is_number ($arg));
     # Give the device a moment to respond.
     usleep 1300000;
     # Return indicating that the device is calibrated.
@@ -744,10 +735,10 @@ sub calibration {
   # Handle EZO_PMP and EZO_PMPL device calibration.
   if ($self->{model} eq EZO_PMP || $self->{model} eq EZO_PMPL) {
     die "Invalid calibration point: $arg" unless (
-      defined $arg and $self->$_is_number ($arg)
+      defined $arg and $self->_is_number ($arg)
     );
     # Send the desired calibration command.
-    $self->$_sendCommand ("Cal," . $arg) if ($self->$_is_number ($arg));
+    $self->_sendCommand ("Cal," . $arg) if ($self->_is_number ($arg));
     # Give the device a moment to respond.
     usleep 300000;
     # Return indicating that the device is calibrated.
@@ -756,10 +747,10 @@ sub calibration {
   # Handle EZO_CO2 device calibration.
   if ($self->{model} eq EZO_CO2) {
     die "Invalid calibration point: $arg" unless (
-      defined $arg and $self->$_is_number ($arg)
+      defined $arg and $self->_is_number ($arg)
     );
     # Send the desired calibration command.
-    $self->$_sendCommand ("Cal," . $arg) if ($self->$_is_number ($arg));
+    $self->_sendCommand ("Cal," . $arg) if ($self->_is_number ($arg));
     # Give the device a moment to respond.
     usleep 900000;
     # Return indicating that the device is calibrated.
@@ -768,10 +759,10 @@ sub calibration {
   # Handle EZO_O2 device calibration.
   if ($self->{model} eq EZO_O2) {
     die "Invalid calibration point: $arg" unless (
-      defined $arg and $self->$_is_number ($arg)
+      defined $arg and $self->_is_number ($arg)
     );
     # Send the desired calibration command.
-    $self->$_sendCommand ("Cal," . $arg) if ($self->$_is_number ($arg));
+    $self->_sendCommand ("Cal," . $arg) if ($self->_is_number ($arg));
     # Give the device a moment to respond.
     usleep 1300000;
     # Return indicating that the device is calibrated.
@@ -790,16 +781,16 @@ sub calibrationExport {
     $self->{model} eq EZO_DO
   );
   # Make sure the firmware supports this feature on this device.
-  $self->$_require_firmware (EZO_RTD, "2.10");
-  $self->$_require_firmware (EZO_PH, "2.10");
-  $self->$_require_firmware (EZO_EC, "2.10");
-  $self->$_require_firmware (EZO_ORP, "2.10");
-  $self->$_require_firmware (EZO_DO, "2.10");
+  $self->_require_firmware (EZO_RTD, "2.10");
+  $self->_require_firmware (EZO_PH, "2.10");
+  $self->_require_firmware (EZO_EC, "2.10");
+  $self->_require_firmware (EZO_ORP, "2.10");
+  $self->_require_firmware (EZO_DO, "2.10");
   # First ask for the calibration string info.
-  $self->$_sendCommand ("Export,?");
+  $self->_sendCommand ("Export,?");
   # Give the device a moment to respond.
   usleep 300000;
-  my ($e, $num, $bytes) = split /,/, $self->$_getResponse;
+  my ($e, $num, $bytes) = split /,/, $self->_getResponse;
   # The number of calibration strings is off by one when the number of bytes is
   # divisible by 12.
   $num -- if ($bytes % 12 == 0);
@@ -807,16 +798,16 @@ sub calibrationExport {
   # Ask for each calibration string.
   my @calibration;
   for (my $i = 0; $i < $num; $i ++) {
-    $self->$_sendCommand ("Export");
+    $self->_sendCommand ("Export");
     # Give the device a moment to respond.
     usleep 300000;
-    my $response = $self->$_getResponse;
+    my $response = $self->_getResponse;
     push @calibration, $response;
   }
-  $self->$_sendCommand ("Export");
+  $self->_sendCommand ("Export");
   # Give the device a moment to respond.
   usleep 300000;
-  die "Error exporting calibration" unless (uc $self->$_getResponse eq "*DONE");
+  die "Error exporting calibration" unless (uc $self->_getResponse eq "*DONE");
   my $b = eval join '+', map { length $_ } @calibration;
   die "Invalid calibration" unless ($bytes == $b);
   return @calibration;
@@ -834,14 +825,14 @@ sub calibrationImport {
     $self->{model} eq EZO_DO
   );
   # Make sure the firmware supports this feature on this device.
-  $self->$_require_firmware (EZO_RTD, "2.10");
-  $self->$_require_firmware (EZO_PH, "2.10");
-  $self->$_require_firmware (EZO_EC, "2.10");
-  $self->$_require_firmware (EZO_ORP, "2.10");
-  $self->$_require_firmware (EZO_DO, "2.10");
+  $self->_require_firmware (EZO_RTD, "2.10");
+  $self->_require_firmware (EZO_PH, "2.10");
+  $self->_require_firmware (EZO_EC, "2.10");
+  $self->_require_firmware (EZO_ORP, "2.10");
+  $self->_require_firmware (EZO_DO, "2.10");
   # Import the calibration.
   foreach my $cal (@calibration) {
-    $self->$_sendCommand ("Import," . $cal);
+    $self->_sendCommand ("Import," . $cal);
     # Give the device a moment to respond.
     usleep 300000;
   }
@@ -859,25 +850,25 @@ sub dispense {
   );
   # Send the dispense command.
   if (defined $amount && defined $time) {
-    die "Invalid amount to dispense" unless ($self->$_is_number ($amount));
-    die "Invalid time to dispense" unless ($self->$_is_number ($time));
-    $self->$_sendCommand ("D," . $amount . "," . $time);
+    die "Invalid amount to dispense" unless ($self->_is_number ($amount));
+    die "Invalid time to dispense" unless ($self->_is_number ($time));
+    $self->_sendCommand ("D," . $amount . "," . $time);
     # Give the device a moment to respond.
     usleep 300000;
   }
   elsif (defined $amount) {
     die "Invalid amount to dispense" unless (
-      $amount eq '*'  || $amount eq '-*' || $self->$_is_number ($amount)
+      $amount eq '*'  || $amount eq '-*' || $self->_is_number ($amount)
     );
-    $self->$_sendCommand ("D," . $amount);
+    $self->_sendCommand ("D," . $amount);
     # Give the device a moment to respond.
     usleep 300000;
   }
   else {
-    $self->$_sendCommand ("D,?");
+    $self->_sendCommand ("D,?");
     # Give the device a moment to respond.
     usleep 300000;
-    (my $d, $amount, my $status) = split /,/, $self->$_getResponse;
+    (my $d, $amount, my $status) = split /,/, $self->_getResponse;
     die "Invalid response from device" unless (uc $d eq "?D");
     return ($amount, $status);
   }
@@ -893,19 +884,19 @@ sub dispenseConstant {
   );
   # Send the dispense constant command.
   if (defined $rate && defined $time) {
-    die "Invalid rate to dispense" unless ($self->$_is_number ($rate));
+    die "Invalid rate to dispense" unless ($self->_is_number ($rate));
     die "Invalid time to dispense" unless (
-      $time eq '*' || $self->$_is_number ($time)
+      $time eq '*' || $self->_is_number ($time)
     );
-    $self->$_sendCommand ("DC," . $rate . "," . $time);
+    $self->_sendCommand ("DC," . $rate . "," . $time);
     # Give the device a moment to respond.
     usleep 300000;
   }
   else {
-    $self->$_sendCommand ("DC,?");
+    $self->_sendCommand ("DC,?");
     # Give the device a moment to respond.
     usleep 300000;
-    (my $dc, $rate) = split /,/, $self->$_getResponse;
+    (my $dc, $rate) = split /,/, $self->_getResponse;
     die "Invalid response from device" unless (uc $dc eq "?maxrate");
     return $rate;
   }
@@ -919,7 +910,7 @@ sub dispensePause {
     $self->{model} eq EZO_PMPL
   );
   # Send the dispense pause command.
-  $self->$_sendCommand ("P");
+  $self->_sendCommand ("P");
   # Give the device a moment to respond.
   usleep 300000;
 }
@@ -932,10 +923,10 @@ sub dispensePauseStatus {
     $self->{model} eq EZO_PMPL
   );
   # Send the dispense pause status command.
-  $self->$_sendCommand ("P,?");
+  $self->_sendCommand ("P,?");
   # Give the device a moment to respond.
   usleep 300000;
-  my ($p, $status) = split /,/, $self->$_getResponse;
+  my ($p, $status) = split /,/, $self->_getResponse;
   die "Invalid response from device" unless (uc $p eq "?P");
   return $status;
 }
@@ -951,17 +942,17 @@ sub dispenseStartup {
   # Send the dispense startup command.
   if (defined $arg) {
     die "Invalid argument to dispense startup" unless (
-      $arg eq 'off' || $self->$_is_number ($arg)
+      $arg eq 'off' || $self->_is_number ($arg)
     );
-    $self->$_sendCommand ("Dstart," . $arg);
+    $self->_sendCommand ("Dstart," . $arg);
     # Give the device a moment to respond.
     usleep 300000;
   }
   else {
-    $self->$_sendCommand ("Dstart,?");
+    $self->_sendCommand ("Dstart,?");
     # Give the device a moment to respond.
     usleep 300000;
-    my ($dstart, $rate) = split /,/, $self->$_getResponse;
+    my ($dstart, $rate) = split /,/, $self->_getResponse;
     die "Invalid response from device" unless (uc $dstart eq "?Dstart");
     return $rate;
   }
@@ -975,7 +966,7 @@ sub dispenseStop {
     $self->{model} eq EZO_PMPL
   );
   # Send the dispense stop command.
-  $self->$_sendCommand ("X");
+  $self->_sendCommand ("X");
   # Give the device a moment to respond.
   usleep 300000;
 }
@@ -988,10 +979,10 @@ sub dispensedAbsoluteTotalVolume {
     $self->{model} eq EZO_PMPL
   );
   # Send the absolute total volume dispensed command.
-  $self->$_sendCommand ("ATV,?");
+  $self->_sendCommand ("ATV,?");
   # Give the device a moment to respond.
   usleep 300000;
-  my ($tv, $volume) = split /,/, $self->$_getResponse;
+  my ($tv, $volume) = split /,/, $self->_getResponse;
   die "Invalid response from device" unless (uc $tv eq "?ATV");
   return $volume;
 }
@@ -1004,10 +995,10 @@ sub dispensedTotalVolume {
     $self->{model} eq EZO_PMPL
   );
   # Send the total volume dispensed command.
-  $self->$_sendCommand ("TV,?");
+  $self->_sendCommand ("TV,?");
   # Give the device a moment to respond.
   usleep 300000;
-  my ($tv, $volume) = split /,/, $self->$_getResponse;
+  my ($tv, $volume) = split /,/, $self->_getResponse;
   die "Invalid response from device" unless (uc $tv eq "?TV");
   return $volume;
 }
@@ -1020,7 +1011,7 @@ sub dispensedVolumeClear {
     $self->{model} eq EZO_PMPL
   );
   # Send the total volume dispensed clear command.
-  $self->$_sendCommand ("clear");
+  $self->_sendCommand ("clear");
   # Give the device a moment to respond.
   usleep 300000;
 }
@@ -1038,15 +1029,15 @@ sub flowRateUnit {
       $unit eq 'm' or
       $unit eq 'h'
     );
-    $self->$_sendCommand ("Frp," . $unit);
+    $self->_sendCommand ("Frp," . $unit);
     # Give the device a moment to respond.
     usleep 300000;
   }
   else {
-    $self->$_sendCommand ("Frp,?");
+    $self->_sendCommand ("Frp,?");
     # Give the device a moment to respond.
     usleep 300000;
-    (my $frp, $unit) = split /,/, $self->$_getResponse;
+    (my $frp, $unit) = split /,/, $self->_getResponse;
     die "Invalid response from device" unless (uc $frp eq "?Frp");
   }
   return $unit;
@@ -1059,15 +1050,15 @@ sub ledIndicator {
   $command = "iL" if ($self->{model} eq EZO_RGB);
   if (defined $led) {
     die "Invalid LED option $led" unless ($led == 0 || $led == 1);
-    $self->$_sendCommand ($command . "," . $led);
+    $self->_sendCommand ($command . "," . $led);
     # Give the device a moment to respond.
     usleep 300000;
   }
   else {
-    $self->$_sendCommand ($command . ",?");
+    $self->_sendCommand ($command . ",?");
     # Give the device a moment to respond.
     usleep 300000;
-    (my $l, $led) = split /,/, $self->$_getResponse;
+    (my $l, $led) = split /,/, $self->_getResponse;
     die "Invalid response from device" unless (uc $l eq "?L" or uc $l eq "?IL");
   }
   return $led;
@@ -1075,7 +1066,7 @@ sub ledIndicator {
 
 sub measure {
   my $self = shift;
-  $self->$_sendCommand ("R");
+  $self->_sendCommand ("R");
   # Each model has a different delay.
   my $delay;
   $delay = 600000 if ($self->{model} eq EZO_RTD);
@@ -1093,7 +1084,7 @@ sub measure {
   $delay = 300000 if ($self->{model} eq EZO_RGB);
   # Give the device a moment to respond.
   usleep $delay;
-  my @response = split ",", $self->$_getResponse;
+  my @response = split ",", $self->_getResponse;
   # Read the device options.
   my @options = $self->options;
   # Extract the measurement(s) from the response based on the model.
@@ -1343,15 +1334,15 @@ sub options {
       )
     );
     die "Invalid parameter value" unless ($value == 0 or $value == 1);
-    $self->$_sendCommand ("O," . $param . "," . $value);
+    $self->_sendCommand ("O," . $param . "," . $value);
     # Give the device a moment to respond.
     usleep 300000;
   }
   else {
-    $self->$_sendCommand ("O,?");
+    $self->_sendCommand ("O,?");
     # Give the device a moment to respond.
     usleep 300000;
-    (my $o, $param) = split /,/, $self->$_getResponse, 2;
+    (my $o, $param) = split /,/, $self->_getResponse, 2;
     die "Invalid response from device" unless (uc $o eq "?O");
   }
   return split ",", $param;
@@ -1374,15 +1365,15 @@ sub pressureUnit {
       $unit eq 'in h2o' or
       $unit eq 'cm h20'
     );
-    $self->$_sendCommand ("U," . $unit);
+    $self->_sendCommand ("U," . $unit);
     # Give the device a moment to respond.
     usleep 300000;
   }
   else {
-    $self->$_sendCommand ("U,?");
+    $self->_sendCommand ("U,?");
     # Give the device a moment to respond.
     usleep 300000;
-    (my $u, $unit) = split /,/, $self->$_getResponse;
+    (my $u, $unit) = split /,/, $self->_getResponse;
     die "Invalid response from device" unless (uc $u eq "?U");
   }
   return $unit;
@@ -1396,22 +1387,22 @@ sub pumpVoltage {
     $self->{model} eq EZO_PMPL
   );
   # Send the pump voltage command.
-  $self->$_sendCommand ("PV,?");
+  $self->_sendCommand ("PV,?");
   # Give the device a moment to respond.
   usleep 300000;
-  my ($pv, $voltage) = split /,/, $self->$_getResponse;
+  my ($pv, $voltage) = split /,/, $self->_getResponse;
   die "Invalid response from device" unless (uc $pv eq "?PV");
   return $voltage;
 }
 
 ## Private methods.
 
-$_getInformation = sub {
+sub _getInformation {
   my $self = shift;
-  $self->$_sendCommand ("I");
+  $self->_sendCommand ("I");
   # Give the device a moment to respond.
   usleep 300000;
-  my ($i, $m, $firmware) = split /,/, $self->$_getResponse;
+  my ($i, $m, $firmware) = split /,/, $self->_getResponse;
   die "Invalid response from device" unless (uc $i eq "?I");
   my $model;
   $model = EZO_RTD if (uc $m eq EZO_RTD);
@@ -1429,9 +1420,9 @@ $_getInformation = sub {
   $model = EZO_RGB if (uc $m eq EZO_RGB);
   die "Unsupported device $m" unless (defined $model);
   return ($model, $firmware);
-};
+}
 
-$_getResponse = sub {
+sub _getResponse {
   my $self = shift;
   my @response = $self->{io}->readBlockData (
     EZO_RESPONSE_LOCATION, EZO_RESPONSE_LENGTH
@@ -1456,29 +1447,29 @@ $_getResponse = sub {
     }
     return $response;
   }
-};
+}
 
-$_is_number = sub {
+sub _is_number {
   my $self = shift;
   return shift =~ /^[-]?\d*\.?\d*$/;
-};
+}
 
-$_sendCommand = sub {
+sub _sendCommand {
   my $self = shift;
   my ($command) = @_;
   # Send the command to the device.
   my @bytes = unpack 'C*', $command;
   my $comm = shift @bytes;
   $self->{io}->writeBlockData ($comm, \@bytes);
-};
+}
 
-$_require_firmware = sub {
+sub _require_firmware {
   my $self = shift;
   my ($model, $version) = @_;
   die "Feature not available on firmware < $version for $model" if (
     $self->{model} eq $model &&
     version->parse ($self->{firmware}) < version->parse ($version)
   );
-};
+}
 
 1;
