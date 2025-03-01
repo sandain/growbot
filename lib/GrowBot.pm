@@ -688,7 +688,7 @@ $_loadConfig = sub {
         foreach my $type (keys %{$d->{Limits}}) {
           foreach my $value (keys %{$d->{Limits}{$type}}) {
             $config->{Devices}{$device}{Actions}{Measure}{Type}{$type}{$value} =
-              $d->{Limits}{$type}{$value};
+              $d->{Limits}{$type}{$value}{Value};
           }
         }
       }
