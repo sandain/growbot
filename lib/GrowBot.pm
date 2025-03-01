@@ -421,6 +421,7 @@ my $_deviceMeasure;
 my $_deviceHistoryPlot;
 my $_deviceGaugePlot;
 my $_loadConfig;
+my $_readQueue;
 my $_executeAction;
 my $_startDevice;
 
@@ -732,6 +733,34 @@ $_loadConfig = sub {
   return $config;
 };
 
+$_readQueue = sub {
+  my $self = shift;
+  my ($device) = @_;
+  my @queue;
+  # Open the queue file for read and write.
+  open my $fh, '+<', $self->{queue}{$device} or
+    die "Unable to read from $device queue: $!";
+  flock $fh, LOCK_EX;
+  while (my $line = <$fh>) {
+    $line =~ s/[\r\n]+//;
+    my ($command, $datetime, $priority) = split "\t", $line;
+    my $action;
+    eval {
+      $action = {
+        command => $command,
+        datetime => DateTime::Format::ISO8601->parse_datetime ($datetime),
+        priority => $priority
+      };
+    } or printf STDERR "Error: Unable to parse datetime '%s' for %s.\n%s",
+      $datetime, $device, $@;
+    # Enqueue the action.
+    push @queue, $action if (defined $action);
+  }
+  truncate $fh, 0;
+  $fh->close;
+  return @queue;
+};
+
 $_executeAction = sub {
   my $self = shift;
   my ($device, $action) = @_;
@@ -762,28 +791,8 @@ $_startDevice = sub {
   my $child = Child->new (sub {
     my $running = 1;
     while ($running) {
-      my @queue;
-      # Open the queue file for read and write.
-      open my $fh, '+<', $self->{queue}{$device} or
-        die "Unable to read from $device queue: $!";
-      flock $fh, LOCK_EX;
-      while (my $line = <$fh>) {
-        $line =~ s/[\r\n]+//;
-        my ($command, $datetime, $priority) = split "\t", $line;
-        my $action;
-        eval {
-          $action = {
-            command => $command,
-            datetime => DateTime::Format::ISO8601->parse_datetime ($datetime),
-            priority => $priority
-          };
-        } or printf STDERR "Error: Unable to parse datetime '%s' for %s.\n%s",
-          $datetime, $device, $@;
-        # Enqueue the action.
-        push @queue, $action if (defined $action);
-      }
-      truncate $fh, 0;
-      $fh->close;
+      # Read the action queue for the device.
+      my @queue = $self->$_readQueue ($device);
       # Make sure there is something in the queue.
       next unless (@queue > 0);
       # Sort the queue based on priority then time.
