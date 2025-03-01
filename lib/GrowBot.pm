@@ -421,6 +421,7 @@ my $_deviceMeasure;
 my $_deviceHistoryPlot;
 my $_deviceGaugePlot;
 my $_loadConfig;
+my $_executeAction;
 my $_startDevice;
 
 
@@ -731,6 +732,28 @@ $_loadConfig = sub {
   return $config;
 };
 
+$_executeAction = sub {
+  my $self = shift;
+  my ($device, $action) = @_;
+  my $config = $self->{config}{Devices}{$device};
+  # Make sure the action exists in the configuration.
+  die "Unknown action $action->{command}"
+    unless (defined $config->{Actions}{$action->{command}});
+  # Respond to the action based on its type.
+  if ($action->{command} eq 'Calibrate') {
+    $self->$_deviceCalibrate ($device);
+  }
+  if ($action->{command} eq 'Measure') {
+    $self->$_deviceMeasure ($device);
+  }
+  if ($action->{command} eq 'HistoryPlot') {
+    $self->$_deviceHistoryPlot ($device);
+  }
+  if ($action->{command} eq 'GaugePlot') {
+    $self->$_deviceGaugePlot ($device);
+  }
+};
+
 $_startDevice = sub {
   my $self = shift;
   my ($device) = @_;
@@ -779,22 +802,8 @@ $_startDevice = sub {
           $running = 0;
           last;
         }
-        # Make sure the action exists in the configuration.
-        die "Unknown action $action->{command}"
-          unless (defined $config->{Actions}{$action->{command}});
-        # Respond to the action based on its type.
-        if ($action->{command} eq 'Calibrate') {
-          $self->$_deviceCalibrate ($device);
-        }
-        if ($action->{command} eq 'Measure') {
-          $self->$_deviceMeasure ($device);
-        }
-        if ($action->{command} eq 'HistoryPlot') {
-          $self->$_deviceHistoryPlot ($device);
-        }
-        if ($action->{command} eq 'GaugePlot') {
-          $self->$_deviceGaugePlot ($device);
-        }
+        # Execute the action.
+        $self->$_executeAction ($device, $action);
         # Enqueue the action again if needed.
         if (defined $config->{Actions}{$action->{command}}{Interval}) {
           my $interval = DateTime::Duration->new (
