@@ -703,6 +703,7 @@ $_loadConfig = sub {
   $fh->close;
   # Copy values from the provided configuration.
   $config->{AppName} = $c->{AppName} if (defined $c->{AppName});
+  $config->{AdminEmail} = $c->{AdminEmail} if (defined $c->{AdminEmail});
   $config->{Version} = $c->{Version} if (defined $c->{Version});
   $config->{TimeZone} = $c->{TimeZone} if (defined $c->{TimeZone});
   $config->{DataFolder} = $c->{DataFolder} if (defined $c->{DataFolder});
