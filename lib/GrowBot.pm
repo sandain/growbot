@@ -734,6 +734,12 @@ $_loadConfig = sub {
           foreach my $value (keys %{$d->{Limits}{$type}}) {
             $config->{Devices}{$device}{Actions}{Measure}{Type}{$type}{$value} =
               $d->{Limits}{$type}{$value}{Value};
+            # XXX Load responses.
+            if (defined $d->{Limits}{$type}{$value}{Response}) {
+              foreach my $resp (@{$d->{Limits}{$type}{$value}{Response}}) {
+
+              }
+            }
           }
         }
       }
