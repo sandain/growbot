@@ -417,6 +417,7 @@ our @EXPORT_OK = qw ();
 
 # Private methods. Defined below.
 my $_deviceCalibrate;
+my $_deviceDispense;
 my $_deviceMeasure;
 my $_deviceHistoryPlot;
 my $_deviceGaugePlot;
@@ -525,6 +526,12 @@ sub enqueueAction {
 ## Private methods.
 
 $_deviceCalibrate = sub {
+  my $self = shift;
+  my ($device) = @_;
+
+};
+
+$_deviceDispense = sub {
   my $self = shift;
   my ($device) = @_;
 
@@ -784,6 +791,9 @@ $_executeAction = sub {
   # Respond to the action based on its type.
   if ($action->{command} eq 'Calibrate') {
     $self->$_deviceCalibrate ($device);
+  }
+  if ($action->{command} eq 'Dispense') {
+    $self->$_deviceDispense ($device);
   }
   if ($action->{command} eq 'Measure') {
     $self->$_deviceMeasure ($device);
