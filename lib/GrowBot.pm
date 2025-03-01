@@ -267,6 +267,40 @@ my %SUPPORTED_DEVICES = (
     ],
     "DefaultActions" => [ "Measure", "HistoryPlot", "GaugePlot" ]
   },
+  "EZO_PMP" => {
+    "Driver" => "AtlasScientific",
+    "Actions" => {
+      "Calibrate" => {
+      },
+      "Dispense" => {
+      },
+      "HistoryPlot" => {
+        "Interval" => 60
+      },
+      "GaugePlot" => {
+        "Interval" => 30
+      }
+    },
+    "Dashboard" => [],
+    "DefaultActions" => [ "HistoryPlot", "GaugePlot" ]
+  },
+  "EZO_PMPL" => {
+    "Driver" => "AtlasScientific",
+    "Actions" => {
+      "Calibrate" => {
+      },
+      "Dispense" => {
+      },
+      "HistoryPlot" => {
+        "Interval" => 60
+      },
+      "GaugePlot" => {
+        "Interval" => 30
+      }
+    },
+    "Dashboard" => [],
+    "DefaultActions" => [ "HistoryPlot", "GaugePlot" ]
+  },
   "BME280" => {
     "Driver" => "Bosch280",
     "Actions" => {
