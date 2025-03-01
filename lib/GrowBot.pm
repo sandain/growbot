@@ -422,6 +422,7 @@ my $_deviceHistoryPlot;
 my $_deviceGaugePlot;
 my $_loadConfig;
 my $_readQueue;
+my $_writeQueue;
 my $_executeAction;
 my $_startDevice;
 
@@ -761,6 +762,17 @@ $_readQueue = sub {
   return @queue;
 };
 
+$_writeQueue = sub {
+  my $self = shift;
+  my ($device, $queue) = @_;
+  open my $fh, '>', $self->{queue}{$device} or die "Unable to write to $device queue: $!";
+  flock $fh, LOCK_EX;
+  foreach my $action (@{$queue}) {
+    printf $fh "%s\t%s\t%d\n", $action->{command}, $action->{datetime}->rfc3339, $action->{priority};
+  }
+  $fh->close;
+};
+
 $_executeAction = sub {
   my $self = shift;
   my ($device, $action) = @_;
@@ -823,15 +835,7 @@ $_startDevice = sub {
         }
       }
       # Write any actions in the queue back to the queue file.
-      while (@queue > 0) {
-        my $action = shift @queue;
-        $self->enqueueAction (
-          $device,
-          $action->{command},
-          $action->{datetime},
-          $action->{priority}
-        );
-      }
+      $self->$_writeQueue ($device, \@queue);
     }
   });
   return $child->start;
