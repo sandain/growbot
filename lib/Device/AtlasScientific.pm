@@ -57,7 +57,7 @@ L<https://atlas-scientific.com/files/DO_EZO_Datasheet.pdf>
 L<https://atlas-scientific.com/files/EZO_PMP_Datasheet.pdf>
 
 =item * Large Peristaltic pump:
-L <https://atlas-scientific.com/files/EZO_PMP_L_Datasheet.pdf>
+L<https://atlas-scientific.com/files/EZO_PMP_L_Datasheet.pdf>
 
 =item * Carbon dioxide (gas) meter:
 L<https://atlas-scientific.com/files/EZO_CO2_Datasheet.pdf>
