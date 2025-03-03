@@ -80,8 +80,8 @@ use utf8;
 use open qw (:std :utf8);
 use Fcntl qw (:flock);
 use Exporter qw (import);
+use Mojo::IOLoop;
 use Mojo::JSON qw (from_json);
-use Child;
 use Cwd;
 use DateTime;
 use File::Path qw (make_path);
@@ -422,10 +422,8 @@ my $_deviceMeasure;
 my $_deviceHistoryPlot;
 my $_deviceGaugePlot;
 my $_loadConfig;
-my $_readQueue;
-my $_writeQueue;
 my $_executeAction;
-my $_startDevice;
+my $_schedule_action;
 
 
 ## Public methods.
@@ -437,9 +435,7 @@ sub new {
   # Bless ourselves with our class.
   my $self = bless {
     config => undef,
-    devices => undef,
-    threads => undef,
-    queue => undef
+    devices => undef
   }, $class;
   # Load the configuration file.
   $self->{configFile} = $configFile;
@@ -451,15 +447,13 @@ sub close {
   my $self = shift;
   foreach my $device (keys %{$self->{devices}}) {
     $self->{devices}{$device}->close;
-    unlink $self->{queue}{$device};
   }
+  Mojo::IOLoop->stop if Mojo::IOLoop->is_running;
 }
 
 sub wait {
   my $self = shift;
-  foreach my $device (keys %{$self->{devices}}) {
-    $self->{threads}{$device}->wait;
-  }
+  Mojo::IOLoop->start unless Mojo::IOLoop->is_running;
 }
 
 sub start {
@@ -472,19 +466,10 @@ sub start {
       $self->{devices}{$device} = $type->new (@{$config->{Options}});
     } or printf STDERR "Error: Unable to initialize device %s.\n%s",
       $device, $@;
-    # Setup the action queue for the device.
-    $self->{queue}{$device} =
-      sprintf "%s/growbot_%s", File::Spec->tmpdir, $device;
-    open my $fh, '>', $self->{queue}{$device} or
-      die "Unable to write to $device queue: $!";
-    flock $fh, LOCK_EX;
-    printf $fh "";
-    $fh->close;
-    # Create the worker thread for the device.
-    eval {
-      $self->{threads}{$device} = $self->$_startDevice ($device);
-    } or printf STDERR "Error: Unable to start child process for %s.\n%s",
-      $device, $@;
+    # Schedule the initial actions for the device.
+    foreach my $action (@{$config->{DefaultActions}}) {
+      $self->$_schedule_action ($device, $action, 0);
+    }
   }
 }
 
@@ -511,16 +496,6 @@ sub timeZone {
 sub devices {
   my $self = shift;
   return keys %{$self->{config}->{Devices}};
-}
-
-sub enqueueAction {
-  my $self = shift;
-  my ($device, $command, $datetime, $priority) = @_;
-  open my $fh, '>>', $self->{queue}{$device} or
-    die "Unable to write to $device queue: $!";
-  flock $fh, LOCK_EX;
-  printf $fh "%s\t%s\t%d\n", $command, $datetime->rfc3339, $priority;
-  $fh->close;
 }
 
 ## Private methods.
@@ -748,45 +723,6 @@ $_loadConfig = sub {
   return $config;
 };
 
-$_readQueue = sub {
-  my $self = shift;
-  my ($device) = @_;
-  my @queue;
-  # Open the queue file for read and write.
-  open my $fh, '+<', $self->{queue}{$device} or
-    die "Unable to read from $device queue: $!";
-  flock $fh, LOCK_EX;
-  while (my $line = <$fh>) {
-    $line =~ s/[\r\n]+//;
-    my ($command, $datetime, $priority) = split "\t", $line;
-    my $action;
-    eval {
-      $action = {
-        command => $command,
-        datetime => DateTime::Format::ISO8601->parse_datetime ($datetime),
-        priority => $priority
-      };
-    } or printf STDERR "Error: Unable to parse datetime '%s' for %s.\n%s",
-      $datetime, $device, $@;
-    # Enqueue the action.
-    push @queue, $action if (defined $action);
-  }
-  truncate $fh, 0;
-  $fh->close;
-  return @queue;
-};
-
-$_writeQueue = sub {
-  my $self = shift;
-  my ($device, $queue) = @_;
-  open my $fh, '>', $self->{queue}{$device} or die "Unable to write to $device queue: $!";
-  flock $fh, LOCK_EX;
-  foreach my $action (@{$queue}) {
-    printf $fh "%s\t%s\t%d\n", $action->{command}, $action->{datetime}->rfc3339, $action->{priority};
-  }
-  $fh->close;
-};
-
 $_executeAction = sub {
   my $self = shift;
   my ($device, $action) = @_;
@@ -801,50 +737,18 @@ $_executeAction = sub {
   $self->$_deviceGaugePlot ($device) if ($action eq 'GaugePlot');
 };
 
-$_startDevice = sub {
+$_schedule_action = sub {
   my $self = shift;
-  my ($device) = @_;
-  my $config = $self->{config}{Devices}{$device};
-  make_path ($self->{config}{DataFolder} . '/' . $device);
-  my $child = Child->new (sub {
-    my $running = 1;
-    while ($running) {
-      # Read the action queue for the device.
-      my @queue = $self->$_readQueue ($device);
-      # Make sure there is something in the queue.
-      next unless (@queue > 0);
-      # Sort the queue based on priority then time.
-      @queue = sort {
-        $b->{priority} <=> $a->{priority} ||
-        DateTime->compare ($a->{datetime}, $b->{datetime})
-      } @queue;
-      # Get the current time.
-      my $now = DateTime->now (time_zone => $self->{config}{TimeZone});
-      # Check if it is time to run the first action in the queue.
-      if (DateTime->compare ($now, $queue[0]->{datetime}) >= 0) {
-        # Grab the next action in the queue.
-        my $action = shift @queue;
-        # Respond to the close action.
-        if ($action->{command} eq 'Close') {
-          $running = 0;
-          last;
-        }
-        # Execute the action.
-        $self->$_executeAction ($device, $action->{command});
-        # Enqueue the action again if needed.
-        if (defined $config->{Actions}{$action->{command}}{Interval}) {
-          my $interval = DateTime::Duration->new (
-            seconds => $config->{Actions}{$action->{command}}{Interval}
-          );
-          $action->{datetime} = $now + $interval;
-          push @queue, $action;
-        }
-      }
-      # Write any actions in the queue back to the queue file.
-      $self->$_writeQueue ($device, \@queue);
+  my ($device, $action, $delay) = @_;
+  my $now = DateTime->now (time_zone => $self->timeZone);
+  Mojo::IOLoop->timer ($delay => sub {
+    $self->$_executeAction ($device, $action);
+    # Schedule the next action if an interval is defined.
+    if (defined $self->{config}{Devices}{$device}{Actions}{$action}{Interval}) {
+      my $interval = $self->{config}{Devices}{$device}{Actions}{$action}{Interval};
+      $self->$_schedule_action ($device, $action, $interval);
     }
   });
-  return $child->start;
 };
 
 1;
