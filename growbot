@@ -70,11 +70,6 @@ $0 = "growbot";
 # The configuration file to load.
 my $configFile = "config.json";
 
-# Create a PID file.
-open my $pid, ">", "growbot.pid" or die "Could not write to PID file: $!";
-print $pid "$$\n";
-close $pid;
-
 # Create a new GrowBot using the configuration file.
 my $growbot = GrowBot->new ($configFile);
 
@@ -82,6 +77,11 @@ my $growbot = GrowBot->new ($configFile);
 $SIG{INT} = $SIG{TERM} = sub { $growbot->close };
 
 printf "%s %s\n", $growbot->name, $growbot->version;
+
+# Create a PID file.
+open my $pid, ">", "growbot.pid" or die "Could not write to PID file: $!";
+print $pid "$$\n";
+close $pid;
 
 # Start the GrowBot.
 $growbot->start;
