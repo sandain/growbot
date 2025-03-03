@@ -93,6 +93,14 @@ use Device::lm_sensors;
 use GaugePlot;
 use ScatterPlot;
 
+my $default_config = {
+  "AppName"    => "GrowBot",
+  "Version"    => 0.2,
+  "TimeZone"   => "UTC",
+  "DataFolder" => getcwd . "/data",
+  "Devices"    => { }
+};
+
 my %SUPPORTED_DEVICES = (
   "EZO_RTD" => {
     "Driver" => "AtlasScientific",
@@ -404,14 +412,6 @@ my %SUPPORTED_DEVICES = (
     "DefaultActions" => [ "Measure", "HistoryPlot", "GaugePlot" ]
   }
 );
-
-my $default_config = {
-  "AppName"    => "GrowBot",
-  "Version"    => 0.2,
-  "TimeZone"   => "UTC",
-  "DataFolder" => getcwd . "/data",
-  "Devices"    => { }
-};
 
 our @EXPORT_OK = qw ();
 
