@@ -79,33 +79,12 @@ close $pid;
 my $growbot = GrowBot->new ($configFile);
 
 # Capture SIGINT, and SIGTERM to allow for a graceful exit.
-$SIG{INT} = $SIG{TERM} = sub {
-  foreach my $device ($growbot->devices) {
-    $growbot->enqueueAction (
-      $device,
-      "Close",
-      DateTime->now (time_zone => $growbot->timeZone),
-      100
-    );
-  }
-};
+$SIG{INT} = $SIG{TERM} = sub { $growbot->close };
 
 printf "%s %s\n", $growbot->name, $growbot->version;
 
 # Start the GrowBot.
 $growbot->start;
-
-# Enqueue default actions for each device.
-foreach my $device ($growbot->devices) {
-  foreach my $action (@{$growbot->{config}{Devices}{$device}{DefaultActions}}) {
-    $growbot->enqueueAction (
-      $device,
-      $action,
-      DateTime->now (time_zone => $growbot->timeZone),
-      0
-    );
-  }
-}
 
 # Wait for the Growbot to finish.
 $growbot->wait;
@@ -113,7 +92,7 @@ $growbot->wait;
 # Close the GrowBot.
 $growbot->close;
 
-printf "Done.\n";
-
 # Remove the PID file.
 unlink "growbot.pid" or die "Count not remove PID file: $!";
+
+printf "Done.\n";
