@@ -95,7 +95,7 @@ use ScatterPlot;
 
 my $default_config = {
   "AppName"    => "GrowBot",
-  "Version"    => 0.2,
+  "Version"    => 0.3,
   "TimeZone"   => "UTC",
   "DataFolder" => getcwd . "/data",
   "Devices"    => { }
