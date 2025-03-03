@@ -60,14 +60,12 @@ use utf8;
 use open qw (:std :utf8);
 use v5.14;
 
-use lib qw (lib);
-use GrowBot;
-
 use DateTime;
 use Mojolicious::Lite;
 use Mojo::JSON qw (to_json);
 
 use lib qw (lib);
+use GrowBot;
 
 my $configFile = "config.json";
 my $growbot = GrowBot->new ($configFile);
