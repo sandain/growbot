@@ -726,15 +726,25 @@ $_loadConfig = sub {
 $_executeAction = sub {
   my $self = shift;
   my ($device, $action) = @_;
-  my $config = $self->{config}{Devices}{$device};
-  # Make sure the action exists in the configuration.
-  die "Unknown action $action" unless (defined $config->{Actions}{$action});
   # Respond to the action based on its type.
-  $self->$_deviceCalibrate ($device) if ($action eq 'Calibrate');
-  $self->$_deviceDispense ($device) if ($action eq 'Dispense');
-  $self->$_deviceMeasure ($device) if ($action eq 'Measure');
-  $self->$_deviceHistoryPlot ($device) if ($action eq 'HistoryPlot');
-  $self->$_deviceGaugePlot ($device) if ($action eq 'GaugePlot');
+  if ($action eq 'Calibrate') {
+    $self->$_deviceCalibrate ($device);
+  }
+  elsif ($action eq 'Dispense') {
+    $self->$_deviceDispense ($device);
+  }
+  elsif ($action eq 'Measure') {
+    $self->$_deviceMeasure ($device);
+  }
+  elsif ($action eq 'HistoryPlot') {
+    $self->$_deviceHistoryPlot ($device);
+  }
+  elsif ($action eq 'GaugePlot') {
+    $self->$_deviceGaugePlot ($device);
+  }
+  else {
+    warn sprintf "Unknown action %s for device %s\n", $action, $device;
+  }
 };
 
 $_scheduleAction = sub {
