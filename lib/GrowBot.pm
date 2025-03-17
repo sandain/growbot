@@ -468,7 +468,7 @@ sub start {
       $device, $@;
     # Schedule the initial actions for the device.
     foreach my $action (@{$config->{DefaultActions}}) {
-      $self->$_scheduleAction ($device, $action, 0);
+      $self->$_scheduleAction ($device, $action);
     }
   }
 }
@@ -749,16 +749,21 @@ $_executeAction = sub {
 
 $_scheduleAction = sub {
   my $self = shift;
-  my ($device, $action, $delay) = @_;
-  my $now = DateTime->now (time_zone => $self->timeZone);
-  Mojo::IOLoop->timer ($delay => sub {
-    $self->$_executeAction ($device, $action);
-    # Schedule the next action if an interval is defined.
-    if (defined $self->{config}{Devices}{$device}{Actions}{$action}{Interval}) {
-      my $interval = $self->{config}{Devices}{$device}{Actions}{$action}{Interval};
-      $self->$_scheduleAction ($device, $action, $interval);
-    }
-  });
+  my ($device, $action) = @_;
+  my $config = $self->{config}{Devices}{$device};
+  if (defined $config->{Actions}{$action}{Interval}) {
+    my $interval = $config->{Actions}{$action}{Interval};
+    my $id = Mojo::IOLoop->recurring ($interval => sub {
+      $self->$_executeAction ($device, $action);
+    });
+  }
+  else {
+    Mojo::IOLoop->next_tick (
+      sub {
+        $self->$_executeAction ($device, $action);
+      }
+    );
+  }
 };
 
 1;
