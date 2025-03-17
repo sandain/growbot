@@ -138,71 +138,71 @@ sub new {
   my $usage = sprintf
     'Usage: %s->new(value=>23, lim=>[0,100], ...)',
     $class;
-  die sprintf "Value undefined\n%s", $usage
+  warn sprintf "Value undefined\n%s", $usage
     unless (defined $self->{value});
-  die sprintf "Limits undefined\n%s", $usage
+  warn sprintf "Limits undefined\n%s", $usage
     unless (defined $self->{lim}[0] && defined $self->{lim}[1]);
-  die sprintf "Limits malformed: (%s, %s)\n%s",
+  warn sprintf "Limits malformed: (%s, %s)\n%s",
     $self->{lim}[0], $self->{lim}[1],
     $usage
     unless ($self->{lim}[0] < $self->{lim}[1]);
-#  die sprintf "Value less than minimum\n%s", $usage
+#  warn sprintf "Value less than minimum\n%s", $usage
 #    unless ($self->{value} >= $self->{lim}[0]);
-#  die sprintf "Value more than maximum\n%s", $usage
+#  warn sprintf "Value more than maximum\n%s", $usage
 #    unless ($self->{value} <= $self->{lim}[1]);
   if (defined $self->{warnLim}[0] || defined $self->{warnLim}[1]) {
-    die sprintf "Warn limits missing\n%s", $usage
+    warn sprintf "Warn limits missing\n%s", $usage
       unless (defined $self->{warnLim}[0]);
-    die sprintf "Warn limits missing\n%s", $usage
+    warn sprintf "Warn limits missing\n%s", $usage
       unless (defined $self->{warnLim}[1]);
-    die sprintf "Warn limits malformed: (%s, %s)\n%s",
+    warn sprintf "Warn limits malformed: (%s, %s)\n%s",
       $self->{warnLim}[0], $self->{warnLim}[1],
       $usage
       unless ($self->{warnLim}[0] < $self->{warnLim}[1]);
-    die sprintf "Warn limits outside limits range (%s, %s): (%s, %s)\n%s",
+    warn sprintf "Warn limits outside limits range (%s, %s): (%s, %s)\n%s",
       $self->{lim}[0], $self->{lim}[1],
       $self->{warnLim}[0], $self->{warnLim}[1],
       $usage
       unless ($self->{warnLim}[0] >= $self->{lim}[0]);
-    die sprintf "Warn limits outside limits range (%s, %s): (%s, %s)\n%s",
+    warn sprintf "Warn limits outside limits range (%s, %s): (%s, %s)\n%s",
       $self->{lim}[0], $self->{lim}[1],
       $self->{warnLim}[0], $self->{warnLim}[1],
       $usage
       unless ($self->{warnLim}[0] < $self->{lim}[1]);
-    die sprintf "Warn limits outside limits range (%s, %s): (%s, %s)\n%s",
+    warn sprintf "Warn limits outside limits range (%s, %s): (%s, %s)\n%s",
       $self->{lim}[0], $self->{lim}[1],
       $self->{warnLim}[0], $self->{warnLim}[1],
       $usage
       unless ($self->{warnLim}[1] > $self->{lim}[0]);
-    die sprintf "Warn limits outside limits range (%s, %s): (%s, %s)\n%s",
+    warn sprintf "Warn limits outside limits range (%s, %s): (%s, %s)\n%s",
       $self->{lim}[0], $self->{lim}[1],
       $self->{warnLim}[0], $self->{warnLim}[1],
       $usage
       unless ($self->{warnLim}[1] <= $self->{lim}[1]);
   }
   if (defined $self->{errorLim}[0] || defined $self->{errorLim}[1]) {
-    die sprintf "Error limits missing\n%s", $usage
+    warn sprintf "Error limits missing\n%s", $usage
       unless (defined $self->{errorLim}[0]);
-    die sprintf "Error limits missing\n%s", $usage
+    warn sprintf "Error limits missing\n%s", $usage
       unless (defined $self->{errorLim}[1]);
-    die sprintf "Error limits malformed: (%s, %s)\n%s",
+    warn sprintf "Error limits malformed: (%s, %s)\n%s",
       $self->{errorLim}[0], $self->{errorLim}[1],
       $usage
       unless ($self->{errorLim}[0] < $self->{errorLim}[1]);
-    die sprintf "Error limits outside limits range (%s, %s): (%s, %s)\n%s",
+    warn sprintf "Error limits outside limits range (%s, %s): (%s, %s)\n%s",
       $self->{lim}[0], $self->{lim}[1],
       $self->{errorLim}[0], $self->{errorLim}[1],
       $usage
       unless ($self->{errorLim}[0] >= $self->{lim}[0]);
-    die sprintf "Error limits outside limits range (%s, %s): (%s, %s)\n%s",
+    warn sprintf "Error limits outside limits range (%s, %s): (%s, %s)\n%s",
       $self->{lim}[0], $self->{lim}[1],
       $self->{errorLim}[0], $self->{errorLim}[1],
       unless ($self->{errorLim}[0] < $self->{lim}[1]);
-    die sprintf "Error limits outside limits range (%s, %s): (%s, %s)\n%s",
+    warn sprintf "Error limits outside limits range (%s, %s): (%s, %s)\n%s",
       $self->{lim}[0], $self->{lim}[1],
       $self->{errorLim}[0], $self->{errorLim}[1],
       unless ($self->{errorLim}[1] > $self->{lim}[0]);
-    die sprintf "Error limits outside limits range (%s, %s): (%s, %s)\n%s",
+    warn sprintf "Error limits outside limits range (%s, %s): (%s, %s)\n%s",
       $self->{lim}[0], $self->{lim}[1],
       $self->{errorLim}[0], $self->{errorLim}[1],
       unless ($self->{errorLim}[1] <= $self->{lim}[1]);
