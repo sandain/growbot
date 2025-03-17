@@ -530,6 +530,7 @@ $_deviceMeasure = sub {
     my $recentfile = sprintf "%s/%s.txt", $folder, $type;
     open my $recentfh, '>', $recentfile or
       warn "Can't output sensor data: $!\n";
+    flock $recentfh, LOCK_EX;
     printf $recentfh "%s\t%s\t%s\n",
       $now->rfc3339, $measure->{$type}{value}, $measure->{$type}{unit};
     $recentfh->close;
@@ -541,9 +542,8 @@ $_deviceHistoryPlot = sub {
   my ($device) = @_;
   my $config = $self->{config}{Devices}{$device};
   my $folder = $self->{config}{DataFolder} . '/' . $device;
-  my $measure = $self->{devices}{$device}->measure;
   my $now = DateTime->now (time_zone => $self->{config}{TimeZone});
-  foreach my $type (sort keys %{$measure}) {
+  foreach my $type (sort keys %{$config->{Actions}{Measure}{Type}}) {
     # Determine the default name to be used for the title.
     my $name = $type;
     $name = $config->{Actions}{Measure}{Type}{$type}{Name}
@@ -558,12 +558,8 @@ $_deviceHistoryPlot = sub {
     $start->set (hour => 0, minute => 0, second => 0, nanosecond => 0);
     $end->set (hour => 0, minute => 0, second => 0, nanosecond => 0);
     # Determine the limits for the Y axis.
-    my $min = $measure->{$type}{minimum};
-    my $max = $measure->{$type}{maximum};
-    $min = $config->{Actions}{Measure}{Type}{$type}{Minimum}
-      if (defined $config->{Actions}{Measure}{Type}{$type}{Minimum});
-    $max = $config->{Actions}{Measure}{Type}{$type}{Maximum}
-      if (defined $config->{Actions}{Measure}{Type}{$type}{Maximum});
+    my $min = $config->{Actions}{Measure}{Type}{$type}{Minimum};
+    my $max = $config->{Actions}{Measure}{Type}{$type}{Maximum};
     # Determine the warning limits.
     my $warnMin = $min;
     my $warnMax = $max;
@@ -579,9 +575,7 @@ $_deviceHistoryPlot = sub {
     $errorMax = $config->{Actions}{Measure}{Type}{$type}{ErrorMaximum}
       if (defined $config->{Actions}{Measure}{Type}{$type}{ErrorMaximum});
     # Determine the unit used for the Y axis.
-    my $unit = $measure->{$type}{unit};
-    $unit = $config->{Actions}{Measure}{Type}{$type}{Unit}
-      if (defined $config->{Actions}{Measure}{Type}{$type}{Unit});
+    my $unit = $config->{Actions}{Measure}{Type}{$type}{Unit};
     # Create the y axis label
     my $ylabel = $name;
     $ylabel .= sprintf " (%s)", $unit if (defined $unit && $unit ne "");
@@ -619,8 +613,7 @@ $_deviceGaugePlot = sub {
   my ($device) = @_;
   my $config = $self->{config}{Devices}{$device};
   my $folder = $self->{config}{DataFolder} . '/' . $device;
-  my $measure = $self->{devices}{$device}->measure;
-  foreach my $type (sort keys %{$measure}) {
+  foreach my $type (sort keys %{$config->{Actions}{Measure}{Type}}) {
     # Determine the name to be used for the title.
     my $name = $type;
     $name = $config->{Actions}{Measure}{Type}{$type}{Name}
@@ -628,12 +621,8 @@ $_deviceGaugePlot = sub {
     # Create a description for the figure.
     my $desc = sprintf "%s data from device %s", $name, $device;
     # Determine the limits.
-    my $min = $measure->{$type}{minimum};
-    my $max = $measure->{$type}{maximum};
-    $min = $config->{Actions}{Measure}{Type}{$type}{Minimum}
-      if (defined $config->{Actions}{Measure}{Type}{$type}{Minimum});
-    $max = $config->{Actions}{Measure}{Type}{$type}{Maximum}
-      if (defined $config->{Actions}{Measure}{Type}{$type}{Maximum});
+    my $min = $config->{Actions}{Measure}{Type}{$type}{Minimum};
+    my $max = $config->{Actions}{Measure}{Type}{$type}{Maximum};
     # Determine the warning limits.
     my $warnMin = $min;
     my $warnMax = $max;
@@ -649,17 +638,22 @@ $_deviceGaugePlot = sub {
     $errorMax = $config->{Actions}{Measure}{Type}{$type}{ErrorMaximum}
       if (defined $config->{Actions}{Measure}{Type}{$type}{ErrorMaximum});
     # Determine the unit.
-    my $unit = $measure->{$type}{unit};
-    $unit = $config->{Actions}{Measure}{Type}{$type}{Unit}
-      if (defined $config->{Actions}{Measure}{Type}{$type}{Unit});
+    my $unit = $config->{Actions}{Measure}{Type}{$type}{Unit};
     # Determine the format of the measured value.
     my $format = "%s";
     $format = $config->{Actions}{Measure}{Type}{$type}{Format}
       if (defined $config->{Actions}{Measure}{Type}{$type}{Format});
+    # Determine the last measured value.
+    my $recentfile = sprintf "%s/%s.txt", $folder, $type;
+    open my $recentfh, '<', $recentfile or warn "Can't read sensor data: $!\n";
+    flock $recentfh, LOCK_EX;
+    ($_, my $value, $_) = split "\t", <$recentfh>;
+    $recentfh->close;
+    # Create a gauge plot.
     my $painter = GaugePlot->new (
       title => $name,
       desc => $desc,
-      value => sprintf ($format, $measure->{$type}{value}),
+      value => sprintf ($format, $value),
       unit => $unit,
       lim => [$min,$max],
       warnLim => [$warnMin,$warnMax],
