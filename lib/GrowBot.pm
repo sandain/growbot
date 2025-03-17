@@ -448,7 +448,7 @@ sub close {
   foreach my $device (keys %{$self->{devices}}) {
     $self->{devices}{$device}->close;
   }
-  Mojo::IOLoop->stop if Mojo::IOLoop->is_running;
+  Mojo::IOLoop->stop_gracefully if Mojo::IOLoop->is_running;
 }
 
 sub wait {
