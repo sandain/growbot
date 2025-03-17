@@ -435,7 +435,8 @@ sub new {
   # Bless ourselves with our class.
   my $self = bless {
     config => undef,
-    devices => undef
+    devices => undef,
+    loopid => undef
   }, $class;
   # Load the configuration file.
   $self->{configFile} = $configFile;
@@ -446,6 +447,9 @@ sub new {
 sub close {
   my $self = shift;
   foreach my $device (keys %{$self->{devices}}) {
+    foreach my $id (@{$self->{loopid}{$device}}) {
+      Mojo::IOLoop->remove ($id);
+    }
     $self->{devices}{$device}->close;
   }
   Mojo::IOLoop->stop_gracefully if Mojo::IOLoop->is_running;
@@ -466,6 +470,7 @@ sub start {
       $self->{devices}{$device} = $type->new (@{$config->{Options}});
     } or printf STDERR "Error: Unable to initialize device %s.\n%s",
       $device, $@;
+    $self->{loopid}{$device} = [];
     # Schedule the initial actions for the device.
     foreach my $action (@{$config->{DefaultActions}}) {
       $self->$_scheduleAction ($device, $action);
@@ -756,6 +761,7 @@ $_scheduleAction = sub {
     my $id = Mojo::IOLoop->recurring ($interval => sub {
       $self->$_executeAction ($device, $action);
     });
+    push @{$self->{loopid}{$device}}, $id;
   }
   else {
     Mojo::IOLoop->next_tick (
