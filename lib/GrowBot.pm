@@ -525,13 +525,14 @@ $_deviceMeasure = sub {
   foreach my $type (sort keys %{$measure}) {
     # Append the measurement to the current day's file.
     my $dayfile = sprintf "%s/%s-%s.txt", $folder, $type, $now->date;
-    open my $dayfh, '>>', $dayfile or die "Can't output sensor data: $!\n";
+    open my $dayfh, '>>', $dayfile or warn "Can't output sensor data: $!\n";
     printf $dayfh "%s\t%s\t%s\n",
       $now->rfc3339, $measure->{$type}{value}, $measure->{$type}{unit};
     $dayfh->close;
     # Write the measurement to the most recent measure file.
     my $recentfile = sprintf "%s/%s.txt", $folder, $type;
-    open my $recentfh, '>', $recentfile or die "Can't output sensor data: $!\n";
+    open my $recentfh, '>', $recentfile or
+      warn "Can't output sensor data: $!\n";
     printf $recentfh "%s\t%s\t%s\n",
       $now->rfc3339, $measure->{$type}{value}, $measure->{$type}{unit};
     $recentfh->close;
@@ -607,7 +608,7 @@ $_deviceHistoryPlot = sub {
     );
     my $file = sprintf "%s/%s-history", $folder, $type;
     # Write the svg data to a temporary file.
-    open my $fh, '>', $file . ".tmp" or die "Can't output sensor data: $!\n";
+    open my $fh, '>', $file . ".tmp" or warn "Can't output sensor data: $!\n";
     print $fh $painter->paint;
     $fh->close;
     # Rename the temporary file.
@@ -669,7 +670,7 @@ $_deviceGaugePlot = sub {
     );
     my $file = sprintf "%s/%s-gauge", $folder, $type;
     # Write the svg data to a temporary file.
-    open my $fh, '>', $file . ".tmp" or die "Can't output sensor data: $!\n";
+    open my $fh, '>', $file . ".tmp" or warn "Can't output sensor data: $!\n";
     print $fh $painter->paint;
     $fh->close;
     # Rename the temporary file.
