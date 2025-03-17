@@ -79,13 +79,10 @@ use warnings;
 use utf8;
 use open qw (:std :utf8);
 use Fcntl qw (:flock);
-use Exporter qw (import);
 use Mojo::IOLoop;
 use Mojo::JSON qw (from_json);
 use Cwd;
 use DateTime;
-use File::Path qw (make_path);
-use File::Spec;
 
 use Device::Bosch280;
 use Device::AtlasScientific;
