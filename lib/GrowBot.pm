@@ -468,8 +468,7 @@ sub start {
     eval {
       my $type = sprintf "Device::%s", $config->{Driver};
       $self->{devices}{$device} = $type->new (@{$config->{Options}});
-    } or printf STDERR "Error: Unable to initialize device %s.\n%s",
-      $device, $@;
+    } or warn sprintf "Error: Unable to initialize device %s.\n%s", $device, $@;
     $self->{loopid}{$device} = [];
     # Schedule the initial actions for the device.
     foreach my $action (@{$config->{DefaultActions}}) {
@@ -698,7 +697,7 @@ $_loadConfig = sub {
     foreach my $device (keys %{$c->{Devices}}) {
       my $d = $c->{Devices}{$device};
       unless (defined $d->{Type} && defined $SUPPORTED_DEVICES{$d->{Type}}) {
-        printf STDERR "Error: Unsupported device type %s\n", $d->{Type};
+        warn sprintf "Error: Unsupported device type %s\n", $d->{Type};
         next;
       }
       $config->{Devices}{$device} = $SUPPORTED_DEVICES{$d->{Type}};
