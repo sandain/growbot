@@ -423,7 +423,7 @@ my $_deviceHistoryPlot;
 my $_deviceGaugePlot;
 my $_loadConfig;
 my $_executeAction;
-my $_schedule_action;
+my $_scheduleAction;
 
 
 ## Public methods.
@@ -468,7 +468,7 @@ sub start {
       $device, $@;
     # Schedule the initial actions for the device.
     foreach my $action (@{$config->{DefaultActions}}) {
-      $self->$_schedule_action ($device, $action, 0);
+      $self->$_scheduleAction ($device, $action, 0);
     }
   }
 }
@@ -737,7 +737,7 @@ $_executeAction = sub {
   $self->$_deviceGaugePlot ($device) if ($action eq 'GaugePlot');
 };
 
-$_schedule_action = sub {
+$_scheduleAction = sub {
   my $self = shift;
   my ($device, $action, $delay) = @_;
   my $now = DateTime->now (time_zone => $self->timeZone);
@@ -746,7 +746,7 @@ $_schedule_action = sub {
     # Schedule the next action if an interval is defined.
     if (defined $self->{config}{Devices}{$device}{Actions}{$action}{Interval}) {
       my $interval = $self->{config}{Devices}{$device}{Actions}{$action}{Interval};
-      $self->$_schedule_action ($device, $action, $interval);
+      $self->$_scheduleAction ($device, $action, $interval);
     }
   });
 };
