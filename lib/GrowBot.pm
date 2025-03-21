@@ -44,7 +44,7 @@ Jason M. Wood L<sandain@hotmail.com|mailto:sandain@hotmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-  Copyright (c) 2020-2025 Jason M. Wood
+  Copyright (c) 2025 Jason M. Wood
 
   All rights reserved.
 
