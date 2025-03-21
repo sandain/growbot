@@ -416,8 +416,10 @@ my $_compensateHumidity;
 
 sub new {
   my $class = shift;
-  die "Usage: $class->new (i2c, address)" unless (@_ == 2);
   my ($i2c, $address) = @_;
+  die "Usage: $class->new (i2c, address)" unless (defined $i2c && defined $address);
+  die "Invalid I2C device path: $i2c" unless -e $i2c && -c $i2c;
+  die "Invalid I2C address: $address" unless $address =~ /^(?:0x)?[0-9a-f]{2}$/i;
   my $io = new Device::I2C ($i2c, O_RDWR);
   # Make sure we can open the I2C bus.
   die "Error: Unable to open I2C Device File at $i2c"
@@ -538,12 +540,17 @@ sub id {
 
 sub reset {
   my $self = shift;
-  $self->{io}->writeByteData (BOSCH280_REG_RESET, BOSCH280_CMD_RESET);
+  eval {
+    $self->{io}->writeByteData (BOSCH280_REG_RESET, BOSCH280_CMD_RESET);
+  } or die "Error: Unable to reset device " . $self->{id};
 }
 
 sub status {
   my $self = shift;
-  my $status = $self->{io}->readByteData (BOSCH280_REG_STATUS);
+  my $status;
+  eval {
+    $status = $self->{io}->readByteData (BOSCH280_REG_STATUS);
+  } or die "Error: Unable to read status from device " . $self->{id};
   my @status = reverse split //, unpack "B*", $status;
   return ($status[0], $status[3]);
 }
@@ -645,105 +652,111 @@ $_getModel = sub {
 $_getCalibration = sub {
   my $self = shift;
   my %calibration;
-  # Read the temperature and pressure calibration data.
-  my @cal0 = $self->{io}->readBlockData (
-    BOSCH280_REG_CALIBRATION_0, BOSCH280_CALIBRATION_LENGTH_0
-  );
-  # Extract the temperature data.
-  # T1: unsigned short.
-  $calibration{T1} = $cal0[1] << 8 | $cal0[0];
-  # T2: signed short.
-  $calibration{T2} = $cal0[3] << 8 | $cal0[2];
-  $calibration{T2} -= 2 ** 16 if ($calibration{T2} >= 2 ** 15);
-  # T3: signed short.
-  $calibration{T3} = $cal0[5] << 8 | $cal0[4];
-  $calibration{T3} -= 2 ** 16 if ($calibration{T3} >= 2 ** 15);
-  # Extract the pressure data.
-  # P1: unsigned short.
-  $calibration{P1} = $cal0[7] << 8 | $cal0[6];
-  # P2: signed short.
-  $calibration{P2} = $cal0[9] << 8 | $cal0[8];
-  $calibration{P2} -= 2 ** 16 if ($calibration{P2} >= 2 ** 15);
-  # P3: signed short.
-  $calibration{P3} = $cal0[11] << 8 | $cal0[10];
-  $calibration{P3} -= 2 ** 16 if ($calibration{P3} >= 2 ** 15);
-  # P4: signed short.
-  $calibration{P4} = $cal0[13] << 8 | $cal0[12];
-  $calibration{P4} -= 2 ** 16 if ($calibration{P4} >= 2 ** 15);
-  # P5: signed short.
-  $calibration{P5} = $cal0[15] << 8 | $cal0[14];
-  $calibration{P5} -= 2 ** 16 if ($calibration{P5} >= 2 ** 15);
-  # P6: signed short.
-  $calibration{P6} = $cal0[17] << 8 | $cal0[16];
-  $calibration{P6} -= 2 ** 16 if ($calibration{P6} >= 2 ** 15);
-  # P7: signed short.
-  $calibration{P7} = $cal0[19] << 8 | $cal0[18];
-  $calibration{P7} -= 2 ** 16 if ($calibration{P7} >= 2 ** 15);
-  # P8: signed short.
-  $calibration{P8} = $cal0[21] << 8 | $cal0[20];
-  $calibration{P8} -= 2 ** 16 if ($calibration{P8} >= 2 ** 15);
-  # P9: signed short.
-  $calibration{P9} = $cal0[23] << 8 | $cal0[22];
-  $calibration{P9} -= 2 ** 16 if ($calibration{P9} >= 2 ** 15);
-  if ($self->{model} == BOSCH280_SENSOR_BME280) {
-    # Read the humidity calibration data.
-    my @cal1 = $self->{io}->readBlockData (
-      BOSCH280_REG_CALIBRATION_1, BOSCH280_CALIBRATION_LENGTH_1
+  eval {
+    # Read the temperature and pressure calibration data.
+    my @cal0 = $self->{io}->readBlockData (
+      BOSCH280_REG_CALIBRATION_0, BOSCH280_CALIBRATION_LENGTH_0
     );
-    # Extract the humidity data.
-    # H1: unsigned char.
-    $calibration{H1} = $cal0[25];
-    # H2: signed short.
-    $calibration{H2} = $cal1[1] << 8 | $cal1[0];
-    # H3: unsigned char.
-    $calibration{H3} = $cal1[2];
-    # H4: signed short.
-    $calibration{H4} = $cal1[3] * 16 | $cal1[4] & 0x0F;
-    $calibration{H4} -= 2 ** 16 if ($calibration{H4} >= 2 ** 15);
-    # H5: signed short.
-    $calibration{H5} = $cal1[5] * 16 | $cal1[4] >> 4;
-    $calibration{H5} -= 2 ** 16 if ($calibration{H5} >= 2 ** 15);
-    # H6: signed char.
-    $calibration{H6} = $cal1[6];
-    $calibration{H6} -= 2 ** 8 if ($calibration{H6} >= 2 ** 7);
-  }
+    # Extract the temperature data.
+    # T1: unsigned short.
+    $calibration{T1} = $cal0[1] << 8 | $cal0[0];
+    # T2: signed short.
+    $calibration{T2} = $cal0[3] << 8 | $cal0[2];
+    $calibration{T2} -= 2 ** 16 if ($calibration{T2} >= 2 ** 15);
+    # T3: signed short.
+    $calibration{T3} = $cal0[5] << 8 | $cal0[4];
+    $calibration{T3} -= 2 ** 16 if ($calibration{T3} >= 2 ** 15);
+    # Extract the pressure data.
+    # P1: unsigned short.
+    $calibration{P1} = $cal0[7] << 8 | $cal0[6];
+    # P2: signed short.
+    $calibration{P2} = $cal0[9] << 8 | $cal0[8];
+    $calibration{P2} -= 2 ** 16 if ($calibration{P2} >= 2 ** 15);
+    # P3: signed short.
+    $calibration{P3} = $cal0[11] << 8 | $cal0[10];
+    $calibration{P3} -= 2 ** 16 if ($calibration{P3} >= 2 ** 15);
+    # P4: signed short.
+    $calibration{P4} = $cal0[13] << 8 | $cal0[12];
+    $calibration{P4} -= 2 ** 16 if ($calibration{P4} >= 2 ** 15);
+    # P5: signed short.
+    $calibration{P5} = $cal0[15] << 8 | $cal0[14];
+    $calibration{P5} -= 2 ** 16 if ($calibration{P5} >= 2 ** 15);
+    # P6: signed short.
+    $calibration{P6} = $cal0[17] << 8 | $cal0[16];
+    $calibration{P6} -= 2 ** 16 if ($calibration{P6} >= 2 ** 15);
+    # P7: signed short.
+    $calibration{P7} = $cal0[19] << 8 | $cal0[18];
+    $calibration{P7} -= 2 ** 16 if ($calibration{P7} >= 2 ** 15);
+    # P8: signed short.
+    $calibration{P8} = $cal0[21] << 8 | $cal0[20];
+    $calibration{P8} -= 2 ** 16 if ($calibration{P8} >= 2 ** 15);
+    # P9: signed short.
+    $calibration{P9} = $cal0[23] << 8 | $cal0[22];
+    $calibration{P9} -= 2 ** 16 if ($calibration{P9} >= 2 ** 15);
+    if ($self->{model} == BOSCH280_SENSOR_BME280) {
+      # Read the humidity calibration data.
+      my @cal1 = $self->{io}->readBlockData (
+        BOSCH280_REG_CALIBRATION_1, BOSCH280_CALIBRATION_LENGTH_1
+      );
+      # Extract the humidity data.
+      # H1: unsigned char.
+      $calibration{H1} = $cal0[25];
+      # H2: signed short.
+      $calibration{H2} = $cal1[1] << 8 | $cal1[0];
+      # H3: unsigned char.
+      $calibration{H3} = $cal1[2];
+      # H4: signed short.
+      $calibration{H4} = $cal1[3] * 16 | $cal1[4] & 0x0F;
+      $calibration{H4} -= 2 ** 16 if ($calibration{H4} >= 2 ** 15);
+      # H5: signed short.
+      $calibration{H5} = $cal1[5] * 16 | $cal1[4] >> 4;
+      $calibration{H5} -= 2 ** 16 if ($calibration{H5} >= 2 ** 15);
+      # H6: signed char.
+      $calibration{H6} = $cal1[6];
+      $calibration{H6} -= 2 ** 8 if ($calibration{H6} >= 2 ** 7);
+    }
+  } or die "Error: Unable to read calibration data from device " . $self->{id};
   return \%calibration;
 };
 
 $_getControls = sub {
   my $self = shift;
-  # Read the controls for temperature, pressure, and the mode of operation.
-  my $meas = $self->{io}->readByteData (BOSCH280_REG_CTRL_MEAS);
-  my $osrs_t = $self->$_extractBits ($meas, 5, 3);
-  my $osrs_p = $self->$_extractBits ($meas, 2, 3);
-  my $mode = $self->$_extractBits ($meas, 0, 1);
-  my $osrs_h = BOSCH280_OVERSAMPLING_OFF;
-  if ($self->{model} == BOSCH280_SENSOR_BME280) {
-    # Read the controls for humidity.
-    my $hum_meas = $self->{io}->readByteData (BOSCH280_REG_CTRL_HUM);
-    $osrs_h = $self->$_extractBits ($hum_meas, 0, 3);
-  }
-  my $ctrl = {
-    temperature => $osrs_t,
-    pressure => $osrs_p,
-    humidity => $osrs_h,
-    mode => $mode
-  };
-  return $ctrl;
+  eval {
+    # Read the controls for temperature, pressure, and the mode of operation.
+    my $meas = $self->{io}->readByteData (BOSCH280_REG_CTRL_MEAS);
+    my $osrs_t = $self->$_extractBits ($meas, 5, 3);
+    my $osrs_p = $self->$_extractBits ($meas, 2, 3);
+    my $mode = $self->$_extractBits ($meas, 0, 1);
+    my $osrs_h = BOSCH280_OVERSAMPLING_OFF;
+    if ($self->{model} == BOSCH280_SENSOR_BME280) {
+      # Read the controls for humidity.
+      my $hum_meas = $self->{io}->readByteData (BOSCH280_REG_CTRL_HUM);
+      $osrs_h = $self->$_extractBits ($hum_meas, 0, 3);
+    }
+    my $ctrl = {
+      temperature => $osrs_t,
+      pressure => $osrs_p,
+      humidity => $osrs_h,
+      mode => $mode
+    };
+    return $ctrl;
+  } or die "Error: Unable to read controls from device " . $self->{id};
 };
 
 $_getConfig = sub {
   my $self = shift;
-  my $config = $self->{io}->readByteData (BOSCH280_REG_CONFIG);
-  my $t_sb = $self->$_extractBits ($config, 5, 3);
-  my $filter = $self->$_extractBits ($config, 2, 3);
-  my $spi3w_en = $self->$_extractBits ($config, 0, 1);
-  my $cfg = {
-    standby => $t_sb,
-    filter => $filter,
-    spi_enable => $spi3w_en
-  };
-  return $cfg;
+  eval {
+    my $config = $self->{io}->readByteData (BOSCH280_REG_CONFIG);
+    my $t_sb = $self->$_extractBits ($config, 5, 3);
+    my $filter = $self->$_extractBits ($config, 2, 3);
+    my $spi3w_en = $self->$_extractBits ($config, 0, 1);
+    my $cfg = {
+      standby => $t_sb,
+      filter => $filter,
+      spi_enable => $spi3w_en
+    };
+    return $cfg;
+  } or die "Error: Unable to read config from device " . $self->{id};
 };
 
 $_getMeasureTime = sub {
@@ -815,18 +828,20 @@ $_getData = sub {
   if ($self->{model} == BOSCH280_SENSOR_BME280) {
     $length = BOSCH280_DATA_LENGTH_0 + BOSCH280_DATA_LENGTH_1
   }
-  my @data = $self->{io}->readBlockData (BOSCH280_REG_DATA, $length);
-  $temperature = ($data[3] << 12) | ($data[4] << 4) | ($data[5] >> 4);
-  $pressure = ($data[0] << 12) | ($data[1] << 4) | ($data[2] >> 4);
-  if ($self->{model} == BOSCH280_SENSOR_BME280) {
-    $humidity = $data[7] | ($data[6] << 8);
-  }
-  my $data = {
-    temperature => $temperature,
-    pressure => $pressure,
-    humidity => $humidity
-  };
-  return $data;
+  eval {
+    my @data = $self->{io}->readBlockData (BOSCH280_REG_DATA, $length);
+    $temperature = ($data[3] << 12) | ($data[4] << 4) | ($data[5] >> 4);
+    $pressure = ($data[0] << 12) | ($data[1] << 4) | ($data[2] >> 4);
+    if ($self->{model} == BOSCH280_SENSOR_BME280) {
+      $humidity = $data[7] | ($data[6] << 8);
+    }
+    my $data = {
+      temperature => $temperature,
+      pressure => $pressure,
+      humidity => $humidity
+    };
+    return $data;
+  } or die "Failed to read data from sensor: $@";
 };
 
 $_setControls = sub {
@@ -836,14 +851,16 @@ $_setControls = sub {
   $self->{controls} = $ctrl;
   $self->{measureTime} = $self->$_getMeasureTime;
   $self->{maxMeasureTime} = $self->$_getMaxMeasureTime;
-  # The humidity controls need to be set first.
-  if ($self->{model} == BOSCH280_SENSOR_BME280) {
-    # Write the controls for humidity.
-    $self->{io}->writeByteData (BOSCH280_REG_CTRL_HUM, $ctrl->{humidity});
-  }
-  # Write the controls for temperature, pressure, and the mode of operation.
-  my $meas = $ctrl->{temperature} << 5 | $ctrl->{pressure} << 2 | $ctrl->{mode};
-  $self->{io}->writeByteData (BOSCH280_REG_CTRL_MEAS, $meas);
+  eval {
+    # The humidity controls need to be set first.
+    if ($self->{model} == BOSCH280_SENSOR_BME280) {
+      # Write the controls for humidity.
+      $self->{io}->writeByteData (BOSCH280_REG_CTRL_HUM, $ctrl->{humidity});
+    }
+    # Write the controls for temperature, pressure, and the mode of operation.
+    my $meas = $ctrl->{temperature} << 5 | $ctrl->{pressure} << 2 | $ctrl->{mode};
+    $self->{io}->writeByteData (BOSCH280_REG_CTRL_MEAS, $meas);
+  } or die "Failed to set controls: $@";
   return $ctrl;
 };
 
@@ -853,9 +870,11 @@ $_setConfig = sub {
   # Update the values stored locally.
   $self->{config} = $cfg;
   $self->{standbyTime} = $self->$_getStandybyTime;
-  # Write the config.
-  my $config = $cfg->{standby} << 5 | $cfg->{filter} << 2 | $cfg->{spi_enable};
-  $self->{io}->writeByteData (BOSCH280_REG_CONFIG, $config);
+  eval {
+    # Write the config.
+    my $config = $cfg->{standby} << 5 | $cfg->{filter} << 2 | $cfg->{spi_enable};
+    $self->{io}->writeByteData (BOSCH280_REG_CONFIG, $config);
+  } or die "Failed to set config: $@";
   return $cfg;
 };
 
