@@ -419,6 +419,7 @@ my $_deviceMeasure;
 my $_deviceHistoryPlot;
 my $_deviceGaugePlot;
 my $_loadConfig;
+my $_loadDeviceConfig;
 my $_executeAction;
 my $_scheduleAction;
 
@@ -685,33 +686,41 @@ $_loadConfig = sub {
   $config->{Version} = $c->{Version} if (defined $c->{Version});
   $config->{TimeZone} = $c->{TimeZone} if (defined $c->{TimeZone});
   $config->{DataFolder} = $c->{DataFolder} if (defined $c->{DataFolder});
-  if (defined $c->{Devices}) {
-    foreach my $device (keys %{$c->{Devices}}) {
-      my $d = $c->{Devices}{$device};
-      unless (defined $d->{Type} && defined $SUPPORTED_DEVICES{$d->{Type}}) {
-        warn sprintf "Error: Unsupported device type %s\n", $d->{Type};
-        next;
-      }
-      $config->{Devices}{$device} = $SUPPORTED_DEVICES{$d->{Type}};
-      $config->{Devices}{$device}{Type} = $d->{Type};
-      $config->{Devices}{$device}{Name} = $device;
-      $config->{Devices}{$device}{Name} = $d->{Name} if (defined $d->{Name});
-      $config->{Devices}{$device}{Options} = $d->{Options}
-        if (defined $d->{Options});
-      $config->{Devices}{$device}{Dashboard} = $d->{Dashboard}
-        if (defined $d->{Dashboard} && ref $d->{Dashboard} eq 'ARRAY');
-      if (defined $d->{Limits}) {
-        foreach my $type (keys %{$d->{Limits}}) {
-          foreach my $value (keys %{$d->{Limits}{$type}}) {
-            $config->{Devices}{$device}{Actions}{Measure}{Type}{$type}{$value} =
-              $d->{Limits}{$type}{$value}{Value};
-            # XXX Load responses.
-            if (defined $d->{Limits}{$type}{$value}{Response}) {
-              foreach my $resp (@{$d->{Limits}{$type}{$value}{Response}}) {
+  return $config unless (defined $c->{Devices});
+  foreach my $device (keys %{$c->{Devices}}) {
+    $config->{Devices}{$device} =
+      $self->$_loadDeviceConfig ($device, $c->{Devices}{$device});
+  }
+  return $config;
+};
 
-              }
-            }
-          }
+$_loadDeviceConfig = sub {
+  my $self = shift;
+  my ($device, $d) = @_;
+  my $config = {};
+  # Check for a valid device type.
+  unless (defined $d->{Type} && defined $SUPPORTED_DEVICES{$d->{Type}}) {
+    warn sprintf "Error: Unsupported device type %s\n", $d->{Type};
+    return $config;
+  }
+  # Copy the default configuration for the device.
+  $config = $SUPPORTED_DEVICES{$d->{Type}};
+  # Copy the device specific configuration.
+  $config->{Type} = $d->{Type};
+  $config->{Name} = $device;
+  $config->{Name} = $d->{Name} if (defined $d->{Name});
+  $config->{Options} = $d->{Options} if (defined $d->{Options});
+  $config->{Dashboard} = $d->{Dashboard}
+      if (defined $d->{Dashboard} && ref $d->{Dashboard} eq 'ARRAY');
+  return $config unless (defined $d->{Limits});
+  foreach my $type (keys %{$d->{Limits}}) {
+    foreach my $value (keys %{$d->{Limits}{$type}}) {
+      $config->{Actions}{Measure}{Type}{$type}{$value} =
+        $d->{Limits}{$type}{$value}{Value};
+      # XXX Load responses.
+      if (defined $d->{Limits}{$type}{$value}{Response}) {
+        foreach my $resp (@{$d->{Limits}{$type}{$value}{Response}}) {
+
         }
       }
     }
