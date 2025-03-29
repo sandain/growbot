@@ -420,6 +420,7 @@ sub new {
   # Make sure we have the required parameters.
   die "Usage: $class->new (i2c, address)"
     unless (defined $i2c && defined $address);
+  # Make sure the parameters are valid.
   die "Invalid I2C device path: $i2c"
     unless -e $i2c && -c $i2c;
   die "Invalid I2C address: $address"
