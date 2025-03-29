@@ -675,22 +675,18 @@ sub _getInformation {
 
 sub _getResponse {
   my $self = shift;
-  my @response;
-  my $code;
-  eval {
+  my @response = $self->{io}->readBlockData (
+    EZO_RESPONSE_LOCATION, EZO_RESPONSE_LENGTH
+  );
+  # Get the device response code, wait for it to not be busy.
+  my $code = shift @response;
+  while ($code == EZO_RESPONSE_BUSY) {
+    usleep 1000;
     @response = $self->{io}->readBlockData (
       EZO_RESPONSE_LOCATION, EZO_RESPONSE_LENGTH
     );
-    # Get the device response code, wait for it to not be busy.
     $code = shift @response;
-    while ($code == EZO_RESPONSE_BUSY) {
-      usleep 1000;
-      @response = $self->{io}->readBlockData (
-        EZO_RESPONSE_LOCATION, EZO_RESPONSE_LENGTH
-      );
-      $code = shift @response;
-    }
-  } or die "Error reading response from device: $@";
+  }
   # Check for syntax error in the command.
   die "Syntax error" if ($code == EZO_RESPONSE_ERROR);
   # Check for valid response.
@@ -715,9 +711,7 @@ sub _sendCommand {
   # Send the command to the device.
   my @bytes = unpack 'C*', $command;
   my $comm = shift @bytes;
-  eval {
-    $self->{io}->writeBlockData ($comm, \@bytes);
-  } or die "Error sending command to device: $@";
+  $self->{io}->writeBlockData ($comm, \@bytes);
 }
 
 sub _require_firmware {
