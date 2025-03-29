@@ -692,28 +692,29 @@ $_getCalibration = sub {
   # P9: signed short.
   $calibration{P9} = $cal0[23] << 8 | $cal0[22];
   $calibration{P9} -= 2 ** 16 if ($calibration{P9} >= 2 ** 15);
-  if ($self->{model} == BOSCH280_SENSOR_BME280) {
-    # Read the humidity calibration data.
-    my @cal1 = $self->{io}->readBlockData (
-      BOSCH280_REG_CALIBRATION_1, BOSCH280_CALIBRATION_LENGTH_1
-    );
-    # Extract the humidity data.
-    # H1: unsigned char.
-    $calibration{H1} = $cal0[25];
-    # H2: signed short.
-    $calibration{H2} = $cal1[1] << 8 | $cal1[0];
-    # H3: unsigned char.
-    $calibration{H3} = $cal1[2];
-    # H4: signed short.
-    $calibration{H4} = $cal1[3] * 16 | $cal1[4] & 0x0F;
-    $calibration{H4} -= 2 ** 16 if ($calibration{H4} >= 2 ** 15);
-    # H5: signed short.
-    $calibration{H5} = $cal1[5] * 16 | $cal1[4] >> 4;
-    $calibration{H5} -= 2 ** 16 if ($calibration{H5} >= 2 ** 15);
-    # H6: signed char.
-    $calibration{H6} = $cal1[6];
-    $calibration{H6} -= 2 ** 8 if ($calibration{H6} >= 2 ** 7);
-  }
+  # Return the calibration data if the model is BMP280.
+  return \%calibration unless ($self->{model} == BOSCH280_SENSOR_BME280);
+  # Read the humidity calibration data.
+  my @cal1 = $self->{io}->readBlockData (
+    BOSCH280_REG_CALIBRATION_1, BOSCH280_CALIBRATION_LENGTH_1
+  );
+  # Extract the humidity data.
+  # H1: unsigned char.
+  $calibration{H1} = $cal0[25];
+  # H2: signed short.
+  $calibration{H2} = $cal1[1] << 8 | $cal1[0];
+  # H3: unsigned char.
+  $calibration{H3} = $cal1[2];
+  # H4: signed short.
+  $calibration{H4} = $cal1[3] * 16 | $cal1[4] & 0x0F;
+  $calibration{H4} -= 2 ** 16 if ($calibration{H4} >= 2 ** 15);
+  # H5: signed short.
+  $calibration{H5} = $cal1[5] * 16 | $cal1[4] >> 4;
+  $calibration{H5} -= 2 ** 16 if ($calibration{H5} >= 2 ** 15);
+  # H6: signed char.
+  $calibration{H6} = $cal1[6];
+  $calibration{H6} -= 2 ** 8 if ($calibration{H6} >= 2 ** 7);
+  # Return the calibration data.
   return \%calibration;
 };
 
