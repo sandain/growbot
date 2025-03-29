@@ -417,9 +417,14 @@ my $_compensateHumidity;
 sub new {
   my $class = shift;
   my ($i2c, $address) = @_;
-  die "Usage: $class->new (i2c, address)" unless (defined $i2c && defined $address);
-  die "Invalid I2C device path: $i2c" unless -e $i2c && -c $i2c;
-  die "Invalid I2C address: $address" unless $address =~ /^(?:0x)?[0-9a-f]{2}$/i;
+  # Make sure we have the required parameters.
+  die "Usage: $class->new (i2c, address)"
+    unless (defined $i2c && defined $address);
+  die "Invalid I2C device path: $i2c"
+    unless -e $i2c && -c $i2c;
+  die "Invalid I2C address: $address"
+    unless $address =~ /^(?:0x)?[0-9a-f]{2}$/i;
+  # Create a new I2C object.
   my $io = new Device::I2C ($i2c, O_RDWR);
   # Make sure we can open the I2C bus.
   die "Error: Unable to open I2C Device File at $i2c"
@@ -449,9 +454,8 @@ sub new {
   $self->{id} = $io->readByteData (BOSCH280_REG_CHIP_ID);
   # Figure out the model of the device.
   $self->{model} = $self->$_getModel;
-  unless (defined $self->{model}) {
-    die "Error: Unrecognized device " . $self->{id};
-  }
+  die "Error: Unrecognized device " . $self->{id}
+    unless (defined $self->{model});
   # Read the calibration data.
   $self->{calibration} = $self->$_getCalibration;
   # Read the environmental controls and the mode of operation.
