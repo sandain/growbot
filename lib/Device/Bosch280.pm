@@ -411,6 +411,7 @@ my $_setConfig;
 my $_compensateTemperature;
 my $_compensatePressure;
 my $_compensateHumidity;
+my $_signed;
 
 ## Public methods.
 
@@ -657,41 +658,31 @@ $_getCalibration = sub {
     BOSCH280_REG_CALIBRATION_0, BOSCH280_CALIBRATION_LENGTH_0
   );
   # Extract the temperature data.
-  # T1: unsigned short.
-  $calibration{T1} = $cal0[1] << 8 | $cal0[0];
-  # T2: signed short.
-  $calibration{T2} = $cal0[3] << 8 | $cal0[2];
-  $calibration{T2} -= 2 ** 16 if ($calibration{T2} >= 2 ** 15);
-  # T3: signed short.
-  $calibration{T3} = $cal0[5] << 8 | $cal0[4];
-  $calibration{T3} -= 2 ** 16 if ($calibration{T3} >= 2 ** 15);
+  # T1: unsigned short - [7:0]/[15:8].
+  $calibration{T1} = $cal0[0] | $cal0[1] << 8;
+  # T2: signed short - [7:0]/[15:8].
+  $calibration{T2} = $self->$_signed ($cal0[2] | $cal0[3] << 8, 16);
+  # T3: signed short - [7:0]/[15:8].
+  $calibration{T3} = $self->$_signed ($cal0[4] | $cal0[5] << 8, 16);
   # Extract the pressure data.
-  # P1: unsigned short.
-  $calibration{P1} = $cal0[7] << 8 | $cal0[6];
-  # P2: signed short.
-  $calibration{P2} = $cal0[9] << 8 | $cal0[8];
-  $calibration{P2} -= 2 ** 16 if ($calibration{P2} >= 2 ** 15);
-  # P3: signed short.
-  $calibration{P3} = $cal0[11] << 8 | $cal0[10];
-  $calibration{P3} -= 2 ** 16 if ($calibration{P3} >= 2 ** 15);
-  # P4: signed short.
-  $calibration{P4} = $cal0[13] << 8 | $cal0[12];
-  $calibration{P4} -= 2 ** 16 if ($calibration{P4} >= 2 ** 15);
-  # P5: signed short.
-  $calibration{P5} = $cal0[15] << 8 | $cal0[14];
-  $calibration{P5} -= 2 ** 16 if ($calibration{P5} >= 2 ** 15);
-  # P6: signed short.
-  $calibration{P6} = $cal0[17] << 8 | $cal0[16];
-  $calibration{P6} -= 2 ** 16 if ($calibration{P6} >= 2 ** 15);
-  # P7: signed short.
-  $calibration{P7} = $cal0[19] << 8 | $cal0[18];
-  $calibration{P7} -= 2 ** 16 if ($calibration{P7} >= 2 ** 15);
-  # P8: signed short.
-  $calibration{P8} = $cal0[21] << 8 | $cal0[20];
-  $calibration{P8} -= 2 ** 16 if ($calibration{P8} >= 2 ** 15);
-  # P9: signed short.
-  $calibration{P9} = $cal0[23] << 8 | $cal0[22];
-  $calibration{P9} -= 2 ** 16 if ($calibration{P9} >= 2 ** 15);
+  # P1: unsigned short - [7:0]/[15:8].
+  $calibration{P1} = $cal0[6] | $cal0[7] << 8;
+  # P2: signed short - [7:0]/[15:8].
+  $calibration{P2} = $self->$_signed ($cal0[8] | $cal0[9] << 8, 16);
+  # P3: signed short - [7:0]/[15:8].
+  $calibration{P3} = $self->$_signed ($cal0[10] | $cal0[11] << 8, 16);
+  # P4: signed short - [7:0]/[15:8].
+  $calibration{P4} = $self->$_signed ($cal0[12] | $cal0[13] << 8, 16);
+  # P5: signed short - [7:0]/[15:8].
+  $calibration{P5} = $self->$_signed ($cal0[14] | $cal0[15] << 8, 16);
+  # P6: signed short - [7:0]/[15:8].
+  $calibration{P6} = $self->$_signed ($cal0[16] | $cal0[17] << 8, 16);
+  # P7: signed short - [7:0]/[15:8].
+  $calibration{P7} = $self->$_signed ($cal0[18] | $cal0[19] << 8, 16);
+  # P8: signed short - [7:0]/[15:8].
+  $calibration{P8} = $self->$_signed ($cal0[20] | $cal0[21] << 8, 16);
+  # P9: signed short - [7:0]/[15:8].
+  $calibration{P9} = $self->$_signed ($cal0[22] | $cal0[23] << 8, 16);
   # Return the calibration data if the model is BMP280.
   return \%calibration unless ($self->{model} == BOSCH280_SENSOR_BME280);
   # Read the humidity calibration data.
@@ -699,21 +690,18 @@ $_getCalibration = sub {
     BOSCH280_REG_CALIBRATION_1, BOSCH280_CALIBRATION_LENGTH_1
   );
   # Extract the humidity data.
-  # H1: unsigned char.
+  # H1: unsigned char - [7:0].
   $calibration{H1} = $cal0[25];
-  # H2: signed short.
-  $calibration{H2} = $cal1[1] << 8 | $cal1[0];
-  # H3: unsigned char.
+  # H2: signed short - [7:0]/[15:8].
+  $calibration{H2} = $cal0[0] | $cal1[1] << 8;
+  # H3: unsigned char - [7:0].
   $calibration{H3} = $cal1[2];
-  # H4: signed short.
-  $calibration{H4} = $cal1[3] * 16 | $cal1[4] & 0x0F;
-  $calibration{H4} -= 2 ** 16 if ($calibration{H4} >= 2 ** 15);
-  # H5: signed short.
-  $calibration{H5} = $cal1[5] * 16 | $cal1[4] >> 4;
-  $calibration{H5} -= 2 ** 16 if ($calibration{H5} >= 2 ** 15);
-  # H6: signed char.
-  $calibration{H6} = $cal1[6];
-  $calibration{H6} -= 2 ** 8 if ($calibration{H6} >= 2 ** 7);
+  # H4: signed short - [11:4]/[3:0].
+  $calibration{H4} = $self->$_signed ($cal1[3] << 4 | $cal1[4] & 0x0F, 16);
+  # H5: signed short - [3:0]/[11:4].
+  $calibration{H5} = $self->$_signed ($cal1[4] >> 4 | $cal1[5] << 4, 16);
+  # H6: signed char - [7:0].
+  $calibration{H6} = $self->$_signed ($cal1[6], 8);
   # Return the calibration data.
   return \%calibration;
 };
@@ -916,6 +904,13 @@ $_compensateHumidity = sub {
   return BOSCH280_HUMIDITY_MIN if ($humidity < BOSCH280_HUMIDITY_MIN);
   return BOSCH280_HUMIDITY_MAX if ($humidity > BOSCH280_HUMIDITY_MAX);
   return $humidity;
+};
+
+$_signed = sub {
+  my $self = shift;
+  my ($a, $n) = @_;
+  $a -= 2 ** $n if ($a >= 2 ** ($n - 1));
+  return $a;
 };
 
 1;
