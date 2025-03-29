@@ -616,7 +616,8 @@ sub dispenseStop {
 
 sub dispensedAbsoluteTotalVolume {
   my $self = shift;
-  die "Dispensed absolute total volume feature not available on " . $self->{model};
+  die "Dispensed absolute total volume feature not available on " .
+    $self->{model};
 }
 
 sub dispensedTotalVolume {
@@ -717,9 +718,8 @@ sub _sendCommand {
 sub _require_firmware {
   my $self = shift;
   my ($version) = @_;
-  die "Feature not available on firmware < $version for " . $self->{model} if (
-    $self->_test_version ($version)
-  );
+  die "Feature not available on firmware < $version for " . $self->{model}
+    if ($self->_test_version ($version));
 }
 
 sub _test_version {
