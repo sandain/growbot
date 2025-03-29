@@ -518,8 +518,8 @@ sub measure {
       $self->$_compensatePressure ($data->{pressure}) / 100
     ),
     unit => "hPa",
-    minimum => BOSCH280_PRESSURE_MIN,
-    maximum => BOSCH280_PRESSURE_MAX
+    minimum => BOSCH280_PRESSURE_MIN / 100,
+    maximum => BOSCH280_PRESSURE_MAX / 100
   };
   return $measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
   $measure->{humidity} = {
