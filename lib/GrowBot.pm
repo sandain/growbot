@@ -466,7 +466,10 @@ sub start {
     eval {
       my $type = sprintf "Device::%s", $config->{Driver};
       $self->{devices}{$device} = $type->new (@{$config->{Options}});
-    } or warn sprintf "Error: Unable to initialize device %s.\n%s", $device, $@;
+    } or do {
+      warn sprintf "Error: Unable to initialize device %s.\n%s", $device, $@;
+      next;
+    };
     $self->{loopid}{$device} = [];
     # Schedule the initial actions for the device.
     foreach my $action (@{$config->{DefaultActions}}) {
