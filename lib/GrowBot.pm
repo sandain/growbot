@@ -463,13 +463,14 @@ sub start {
   foreach my $device (keys %{$self->{config}{Devices}}) {
     my $config = $self->{config}{Devices}{$device};
     # Load the device driver.
+    my $deviceDriver;
     eval {
       my $type = sprintf "Device::%s", $config->{Driver};
-      $self->{devices}{$device} = $type->new (@{$config->{Options}});
-    } or do {
-      warn sprintf "Error: Unable to initialize device %s.\n%s", $device, $@;
-      next;
-    };
+      $deviceDriver = $type->new (@{$config->{Options}});
+    } or warn sprintf "Error: Unable to initialize device %s.\n%s", $device, $@;
+    # If the device driver was not created, skip this device.
+    next unless (defined $deviceDriver);
+    $self->{devices}{$device} = $deviceDriver;
     $self->{loopid}{$device} = [];
     # Schedule the initial actions for the device.
     foreach my $action (@{$config->{DefaultActions}}) {
@@ -691,8 +692,9 @@ $_loadConfig = sub {
   $config->{DataFolder} = $c->{DataFolder} if (defined $c->{DataFolder});
   return $config unless (defined $c->{Devices});
   foreach my $device (keys %{$c->{Devices}}) {
-    $config->{Devices}{$device} =
-      $self->$_loadDeviceConfig ($device, $c->{Devices}{$device});
+    my $dconfig = $self->$_loadDeviceConfig ($device, $c->{Devices}{$device});
+    next unless (defined $dconfig);
+    $config->{Devices}{$device} = $dconfig;
   }
   return $config;
 };
@@ -700,14 +702,13 @@ $_loadConfig = sub {
 $_loadDeviceConfig = sub {
   my $self = shift;
   my ($device, $d) = @_;
-  my $config = {};
   # Check for a valid device type.
   unless (defined $d->{Type} && defined $SUPPORTED_DEVICES{$d->{Type}}) {
     warn sprintf "Error: Unsupported device type %s\n", $d->{Type};
-    return $config;
+    return;
   }
   # Copy the default configuration for the device.
-  $config = $SUPPORTED_DEVICES{$d->{Type}};
+  my $config = $SUPPORTED_DEVICES{$d->{Type}};
   # Copy the device specific configuration.
   $config->{Type} = $d->{Type};
   $config->{Name} = $device;
