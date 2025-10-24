@@ -12,8 +12,8 @@ of sensor data is the only feature currently supported).
 
 ## To do
 * Drivers
+    - [ ] Switch current drivers over to [WiringPi](https://github.com/jvolkening/WiringPi-Perl) library.
     - [ ] Add PWM controller for fans and other PWM controlled devices.
-    - [ ] Update other drivers to depend on same library as the PWM controller.
     - [X] Add missing functionality to the AtlasScientfic driver.
         * Support for dosing pumps, temperature, pH, electrical conductivity,
           oxygen reduction potential, and dissolved oxygen sensors are mostly
