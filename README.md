@@ -12,13 +12,12 @@ of sensor data is the only feature currently supported).
 
 ## To do
 * Drivers
+    - [ ] Switch current drivers over to [WiringPi](https://github.com/jvolkening/WiringPi-Perl) library.
     - [ ] Add PWM controller for fans and other PWM controlled devices.
-    - [ ] Update other drivers to depend on same library as the PWM controller.
-    - [ ] Add missing functionality to the AtlasScientfic driver.
+    - [X] Add missing functionality to the AtlasScientfic driver.
         * Support for dosing pumps, temperature, pH, electrical conductivity,
           oxygen reduction potential, and dissolved oxygen sensors are mostly
-          complete, but not fully tested. Support for other devices is limited
-          to basic functions.
+          complete. Other devices may have only limited functionality.
     - [ ] Add a soil moisture driver.
         * [Vegetronix VH400](https://www.vegetronix.com/Products/VH400/) is one
           hardware option.
