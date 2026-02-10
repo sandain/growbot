@@ -82,6 +82,7 @@ use Exporter qw (import);
 use DateTime;
 use DateTime::Duration;
 use DateTime::Format::ISO8601;
+use Math::BigFloat;
 use POSIX qw (ceil floor fmod);
 
 use constant DEFAULT_WIDTH  => 1000;
@@ -415,18 +416,21 @@ $_yTics = sub {
   );
   my $i = $self->$_findClosest ($distance, @distances);
   if ($i % 2 == 0) {
-    $interval = $distances[$i] / 50;
-    $longSkip = $distances[$i] / 10;
-    $labelSkip = $distances[$i] / 5;
+    $interval = Math::BigFloat->new ($distances[$i] / 50);
+    $longSkip = Math::BigFloat->new ($distances[$i] / 10);
+    $labelSkip = Math::BigFloat->new ($distances[$i] / 5);
   }
   else {
-    $interval = $distances[$i] / 20;
-    $longSkip = $distances[$i] / 10;
-    $labelSkip = $distances[$i] / 5;
+    $interval = Math::BigFloat->new ($distances[$i] / 20);
+    $longSkip = Math::BigFloat->new ($distances[$i] / 10);
+    $labelSkip = Math::BigFloat->new ($distances[$i] / 5);
   }
-  my $format = "%s";
+  my $format = "%d";
   $format = "%.2f" if ($distance < 0.5);
-  $format = "%.1e" if (abs ($self->{ylim}[1]) > 10000);
+  $format = "%.1e" if ($distance > 1e4);
+  $format = "%.1e" if ($distance < 1e-2);
+  $format = "%.1e" if (abs ($self->{ylim}[0]) > 1e4);
+  $format = "%.1e" if (abs ($self->{ylim}[1]) > 1e4);
   my $start = $self->{ylim}[0];
   $start = ceil ($start / $interval) * $interval
     if (abs fmod ($start, $interval) > EPSILON);
