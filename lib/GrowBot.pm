@@ -170,7 +170,7 @@ my %SUPPORTED_DEVICES = (
             "Maximum" => 500000
           },
           "total_dissolved_solids" => {
-            "Name" => "Total Dissolved Solids",
+            "Name" => "TDS",
             "Unit" => "PPM",
             "Format" => "%d",
             "Minimum" => 0,
