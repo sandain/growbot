@@ -427,6 +427,7 @@ $_yTics = sub {
   }
   my $format = "%d";
   $format = "%.2f" if ($distance < 0.5);
+  $format = "%.1f" if ($distance < 5);
   $format = "%.1e" if ($distance > 1e4);
   $format = "%.1e" if ($distance < 1e-2);
   $format = "%.1e" if (abs ($self->{ylim}[0]) > 1e4);
