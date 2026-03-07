@@ -65,10 +65,10 @@ use Mojolicious::Lite;
 use Mojo::JSON qw (to_json);
 
 use lib qw (lib);
-use GrowBot;
+use GrowBot::Model::DeviceManager;
 
 my $configFile = "config.json";
-my $growbot = GrowBot->new ($configFile);
+my $growbot = GrowBot::Model::DeviceManager->new ($configFile);
 
 
 =head2 Helper Functions

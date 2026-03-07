@@ -61,7 +61,7 @@ use open qw (:std :utf8);
 use v5.14;
 
 use lib qw (lib);
-use GrowBot;
+use GrowBot::Model::DeviceManager;
 
 # Set the script name.
 $0 = "growbot";
@@ -73,7 +73,7 @@ my $configFile = "config.json";
 my $pidFile = "growbot.pid";
 
 # Create a new GrowBot using the configuration file.
-my $growbot = GrowBot->new ($configFile);
+my $growbot = GrowBot::Model::DeviceManager->new ($configFile);
 
 # Capture SIGINT, and SIGTERM to allow for a graceful exit.
 $SIG{INT} = $SIG{TERM} = sub { $growbot->close };

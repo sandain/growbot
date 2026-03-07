@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-GrowBot
+GrowBot::Model::DeviceManager
 
 =head1 SYNOPSIS
 
@@ -18,7 +18,7 @@ GrowBot
 
 =item C<new>
 
-Returns a new GrowBot.
+Returns a new GrowBot::Model::DeviceManager.
 
 =item C<close>
 
@@ -28,7 +28,7 @@ Closes the GrowBot device input/output.
 
 =head1 DEPENDENCIES
 
-Device requires Perl version 5.14 or later.
+GrowBot::Model::DeviceManager requires Perl version 5.14 or later.
 
 =head1 FEEDBACK
 
@@ -71,7 +71,7 @@ Jason M. Wood L<sandain@hotmail.com|mailto:sandain@hotmail.com>
 
 =cut
 
-package GrowBot;
+package GrowBot::Model::DeviceManager;
 
 use v5.14;
 use strict;
