@@ -658,6 +658,7 @@ $_deviceGaugePlot = sub {
     my $painter = GaugePlot->new (
       title => $name,
       desc => $desc,
+      xmlTag => 0,
       value => sprintf ($format, $value),
       unit => $unit,
       lim => [$min,$max],
