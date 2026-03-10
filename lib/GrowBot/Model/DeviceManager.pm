@@ -763,9 +763,22 @@ $_scheduleAction = sub {
   my $config = $self->{config}{Devices}{$device};
   if (defined $config->{Actions}{$action}{Interval}) {
     my $interval = $config->{Actions}{$action}{Interval};
-    my $id = Mojo::IOLoop->recurring ($interval => sub {
-      $self->$_executeAction ($device, $action);
-    });
+    my $id = Mojo::IOLoop->recurring (
+      $interval => sub {
+        Mojo::IOLoop->subprocess->run (
+          sub {
+            $self->$_executeAction ($device, $action);
+          },
+          sub {
+            my ($subprocess, $err) = @_;
+            if ($err) {
+              warn sprintf "Error in subprocess for %s/%s: %s\n",
+                $device, $action, $err;
+            }
+          }
+        );
+      }
+    );
     push @{$self->{loopid}{$device}}, $id;
   }
   else {
