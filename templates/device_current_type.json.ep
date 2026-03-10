@@ -1,1 +1,1 @@
-%== $self->gauge ($name, $type, "json", 0);
+%== current ($name, $type, "json", 0);

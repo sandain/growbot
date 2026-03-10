@@ -20,7 +20,7 @@
               <a href="/device/<%= $device %>/history/<%= $type %>.svg">
                 <div class="text-center">
                   <figure class="figure w-90">
-                    <%== gauge ($device, $type, "svg", 20) %>
+                    <%== current ($device, $type, "svg", 20) %>
                   </figure>
                 </div>
               </a>

@@ -1,1 +1,1 @@
-%== $self->gauge ($name, $type, "txt", 0);
+%== current ($name, $type, "txt", 0);

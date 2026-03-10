@@ -139,13 +139,13 @@ $_registerHelpers = sub {
     return sort $dm->devices;
   });
 
-  # Helper: gauge
-  # Return current measurement SVG for a given device and measurement type.
-  $self->helper ('gauge' => sub {
+  # Helper: current
+  # Return current measurement for a given device and measurement type.
+  $self->helper ('current' => sub {
     my ($c, $device, $measurement, $type, $indent) = @_;
     # Sanity check arguments.
-    return unless (defined $self->config->{Devices}{$device});
-    return unless (defined $self->config->{Devices}{$device}{Actions}{Measure}{Type}{$measurement});
+    return unless (grep { $_ eq $device } $dm->devices);
+    return unless (defined $dm->{config}{Devices}{$device}{Actions}{Measure}{Type}{$measurement});
     return unless (grep { $_ eq $type } ("txt", "json", "html", "svg"));
     my $filepath = sprintf "%s/%s/%s-gauge.%s",
       $dm->dataFolder, $device, $measurement, $type;
@@ -157,12 +157,12 @@ $_registerHelpers = sub {
   });
 
   # Helper: history
-  # Return measurement history SVG for a given device and measurement type.
+  # Return measurement history for a given device and measurement type.
   $self->helper ('history' => sub {
     my ($c, $device, $measurement, $type, $indent) = @_;
     # Sanity check arguments.
-    return unless (defined $self->config->{Devices}{$device});
-    return unless (defined $self->config->{Devices}{$device}{Actions}{Measure}{Type}{$measurement});
+    return unless (grep { $_ eq $device } $dm->devices);
+    return unless (defined $dm->{config}{Devices}{$device}{Actions}{Measure}{Type}{$measurement});
     return unless (grep { $_ eq $type } ("txt", "json", "html", "svg"));
     my $filepath = sprintf "%s/%s/%s-history.%s",
       $dm->dataFolder, $device, $measurement, $type;
