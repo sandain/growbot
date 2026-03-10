@@ -1,0 +1,1 @@
+%== $self->gauge ($name, $type, "json", 0);
