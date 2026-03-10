@@ -434,7 +434,8 @@ sub new {
   my $self = bless {
     config => undef,
     devices => undef,
-    loopid => undef
+    loopid => undef,
+    busy => undef
   }, $class;
   # Load the configuration file.
   $self->{configFile} = $configFile;
@@ -736,56 +737,59 @@ $_loadDeviceConfig = sub {
 $_executeAction = sub {
   my $self = shift;
   my ($device, $action) = @_;
-  # Respond to the action based on its type.
-  if ($action eq 'Calibrate') {
-    $self->$_deviceCalibrate ($device);
-  }
-  elsif ($action eq 'Dispense') {
-    $self->$_deviceDispense ($device);
-  }
-  elsif ($action eq 'Measure') {
-    $self->$_deviceMeasure ($device);
-  }
-  elsif ($action eq 'HistoryPlot') {
-    $self->$_deviceHistoryPlot ($device);
-  }
-  elsif ($action eq 'GaugePlot') {
-    $self->$_deviceGaugePlot ($device);
-  }
-  else {
-    warn sprintf "Unknown action %s for device %s\n", $action, $device;
-  }
+  # Skip if a subprocess for this device/action is already running.
+  return if ($self->{busy}{$device}{$action});
+  $self->{busy}{$device}{$action} = 1;
+  Mojo::IOLoop->subprocess->run (
+    sub {
+      # Respond to the action based on its type.
+      if ($action eq 'Calibrate') {
+        $self->$_deviceCalibrate ($device);
+      }
+      elsif ($action eq 'Dispense') {
+        $self->$_deviceDispense ($device);
+      }
+      elsif ($action eq 'Measure') {
+        $self->$_deviceMeasure ($device);
+      }
+      elsif ($action eq 'HistoryPlot') {
+        $self->$_deviceHistoryPlot ($device);
+      }
+      elsif ($action eq 'GaugePlot') {
+        $self->$_deviceGaugePlot ($device);
+      }
+      else {
+        warn sprintf "Unknown action %s for device %s\n", $action, $device;
+      }
+    },
+    sub {
+      my ($subprocess, $err) = @_;
+      $self->{busy}{$device}{$action} = 0;
+      if ($err) {
+        warn sprintf "Error in subprocess for %s/%s: %s\n",
+          $device, $action, $err;
+      }
+    }
+  );
 };
 
 $_scheduleAction = sub {
   my $self = shift;
   my ($device, $action) = @_;
   my $config = $self->{config}{Devices}{$device};
+  # Initialize the busy flag for this device/action pair.
+  $self->{busy}{$device}{$action} = 0;
   if (defined $config->{Actions}{$action}{Interval}) {
     my $interval = $config->{Actions}{$action}{Interval};
+    # Add the reccuring action to the IO loop.
     my $id = Mojo::IOLoop->recurring (
-      $interval => sub {
-        Mojo::IOLoop->subprocess->run (
-          sub {
-            $self->$_executeAction ($device, $action);
-          },
-          sub {
-            my ($subprocess, $err) = @_;
-            if ($err) {
-              warn sprintf "Error in subprocess for %s/%s: %s\n",
-                $device, $action, $err;
-            }
-          }
-        );
-      }
+      $interval => sub { $self->$_executeAction ($device, $action); }
     );
     push @{$self->{loopid}{$device}}, $id;
   }
   else {
     Mojo::IOLoop->next_tick (
-      sub {
-        $self->$_executeAction ($device, $action);
-      }
+      sub { $self->$_executeAction ($device, $action); }
     );
   }
 };
