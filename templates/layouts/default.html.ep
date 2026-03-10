@@ -22,7 +22,7 @@
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Devices</a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            % foreach my $device ($self->gb_devices) {
+            % foreach my $device (gb_devices) {
             <li><a class="dropdown-item" href="/device/<%= $device %>"><%= $device %></a></li>
             % }
           </ul>
