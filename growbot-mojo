@@ -6,13 +6,19 @@
 
 =head1 SYNOPSIS
 
+  growbot daemon -l http://*:3000
+  growbot prefork -l http://*:3000
+  growbot hypnotoad
 
 =head1 DESCRIPTION
 
+  GrowBot is an environmental monitoring web app for gardens, greenhouses,
+  and fish tanks. This script starts both the device manager and the web
+  interface as a single Mojolicious application.
 
 =head1 DEPENDENCIES
 
-GrowBot requires Perl version 5.14 or later, in addition to Mojolicious.
+GrowBot requires Mojolicious.
 
 =head1 FEEDBACK
 
@@ -27,7 +33,7 @@ Email sandain@hotmail.com
 
 =head1 COPYRIGHT AND LICENSE
 
-  Copyright (c) 2025  Jason M. Wood <sandain@hotmail.com>
+  Copyright (c) 2026  Jason M. Wood <sandain@hotmail.com>
 
   All rights reserved.
 
@@ -56,227 +62,11 @@ Email sandain@hotmail.com
 
 use strict;
 use warnings;
-use utf8;
-use open qw (:std :utf8);
-use v5.14;
 
-use DateTime;
-use Mojolicious::Lite;
-use Mojo::JSON qw (to_json);
+use FindBin;
+BEGIN { unshift @INC, "$FindBin::Bin/lib" }
 
-use lib qw (lib);
-use GrowBot::Model::DeviceManager;
+use Mojolicious::Commands;
 
-my $configFile = "config.json";
-my $growbot = GrowBot::Model::DeviceManager->new ($configFile);
-
-
-=head2 Helper Functions
-
-=head3 config
-
-  Return configuration information.
-
-=cut
-
-helper 'config' => sub {
-  my $self = shift;
-  return $growbot->{config};
-};
-
-=head3 gauge
-
-  Return current measurement.
-
-=cut
-
-helper 'gauge' => sub {
-  my $self = shift;
-  my ($device, $measurement, $type, $indent) = @_;
-  my $filepath = sprintf "%s/%s/%s-gauge.%s",
-    $growbot->dataFolder, $device, $measurement, $type;
-  return unless (-s $filepath);
-  open my $fh, '<', $filepath or die "Can't load data: $!";
-  my $gauge = join " " x $indent, <$fh>;
-  close $fh;
-  return $gauge;
-};
-
-
-=head3 history
-
-  Return measurement data.
-
-=cut
-
-helper 'history' => sub {
-  my $self = shift;
-  my ($device, $measurement, $type, $indent) = @_;
-  my $filepath = sprintf "%s/%s/%s-history.%s",
-    $growbot->dataFolder, $device, $measurement, $type;
-  return unless (-s $filepath);
-  open my $fh, '<', $filepath or die "Can't load data: $!";
-  my $history = join " " x $indent, <$fh>;
-  close $fh;
-  return $history;
-};
-
-=head3 devices
-
-  Return the devices.
-
-=cut
-
-helper 'devices' => sub {
-  my $self = shift;
-  return sort $growbot->devices;
-};
-
-=head3 device
-
-  Return device data.
-
-=cut
-
-helper 'device' => sub {
-  my $self = shift;
-  my ($name) = @_;
-  my $folder = sprintf "%s/%s", $growbot->dataFolder, $name;
-  my $data = {
-    "name" => $self->config->{Devices}{$name}{Name},
-    "driver" => $self->config->{Devices}{$name}{Driver},
-    "type" => $self->config->{Devices}{$name}{Type},
-    "dashboard" => $self->config->{Devices}{$name}{Dashboard}
-  };
-  if (defined $self->config->{Devices}{$name}{Actions}{Measure}{Type}) {
-    foreach my $m (keys %{$self->config->{Devices}{$name}{Actions}{Measure}{Type}}) {
-      open my $fh, '<', "$folder/$m.txt" or
-        die "Can't open file $folder/$m.txt: $!";
-      my $measure = join "", <$fh>;
-      close $fh;
-      $measure =~ s/[\r\n]+//;
-      my @measure = split /\t/, $measure;
-      my $date;
-      my $time;
-      eval {
-        my $dt = DateTime::Format::ISO8601->parse_datetime ($measure[0]);
-        $dt->set_time_zone ($self->config->{TimeZone});
-        $date = $dt->ymd;
-        $time = $dt->hms;
-      } or printf STDERR "Error: Unable to parse datetime '%s'.\n%s",
-        $measure[0], $@;
-      $data->{measurements}{$m} = {
-        "type" => $self->config->{Devices}{$name}{Actions}{Measure}{Type}{$m}{Name},
-        "date" => $date,
-        "time" => $time,
-        "measure" => $measure[1],
-        "unit" => (defined $measure[2] ? $measure[2] : "")
-      };
-    }
-  }
-  return to_json $data;
-};
-
-=head2 HTTP Request Methods
-
-=head3 get /
-
-  Renders the dashboard.
-
-=cut
-
-get '/'
-=> [ format => [ 'html' ] ]
-=> { format => 'html' }
-=> sub {
-  my $self = shift;
-  $self->res->headers->server ($growbot->{config}{AppName});
-  $self->render (template => 'dashboard');
-};
-
-=head3 get /device/<device name>
-
-  Renders the device.
-
-=cut
-
-get '/device/:name'
-=> [ format => [ 'html', 'json' ] ]
-=> { format => 'html' }
-=> sub {
-  my $self = shift;
-  my $name = $self->param ('name');
-  $self->res->headers->server ($growbot->{config}{AppName});
-  $self->render (template => 'device');
-};
-
-=head3 get /device/<device name>/current
-
-  Renders the current status of the device.
-
-=cut
-
-get '/device/:name/current'
-=> [ format => [ 'html', 'json' ] ]
-=> { format => 'html' }
-=> sub {
-  my $self = shift;
-  my $name = $self->param ('name');
-  $self->res->headers->server ($growbot->{config}{AppName});
-  $self->render (template => 'device_current');
-};
-
-=head3 get /device/<device name>/current/<action type>
-
-  Renders the current status of the device action type.
-
-=cut
-
-get '/device/:name/current/:type'
-=> [ format => [ 'html', 'json', 'svg', 'txt' ] ]
-=> { format => 'html' }
-=> sub {
-  my $self = shift;
-  my $name = $self->param ('name');
-  my $type = $self->param ('type');
-  $self->res->headers->server ($growbot->{config}{AppName});
-  $self->render (template => 'device_current_type');
-};
-
-=head3 get /device/<device name>/history
-
-  Renders the history for the device.
-
-=cut
-
-get '/device/:name/history'
-=> [ format => [ 'html', 'json' ] ]
-=> { format => 'html' }
-=> sub {
-  my $self = shift;
-  my $name = $self->param ('name');
-  $self->res->headers->server ($growbot->{config}{AppName});
-  $self->render (template => 'device_history');
-};
-
-=head3 get /device/<device name>/history/<action type>
-
-  Renders the history for the device action type.
-
-=cut
-
-get '/device/:name/history/:type'
-=> [ format => [ 'html', 'json', 'svg', 'txt' ] ]
-=> { format => 'html' }
-=> sub {
-  my $self = shift;
-  my $name = $self->param ('name');
-  my $type = $self->param ('type');
-  $self->res->headers->server ($growbot->{config}{AppName});
-  $self->render (template => 'device_history_type');
-};
-
-# Don't serve the default favicon.
-delete app->static->extra->{'favicon.ico'};
-
-app->start;
+# Start the GrowBot App.
+Mojolicious::Commands->start_app ('GrowBot::App');
