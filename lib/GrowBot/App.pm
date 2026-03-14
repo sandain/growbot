@@ -94,8 +94,11 @@ my $_registerRoutes;
 sub startup {
   my $self = shift;
 
+  # Find the config.json file.
+  my $config = $self->home->child ('config.json')->to_string;
+
   # Create a new GrowBot::Model::DeviceManager using the configuration file.
-  $self->device_manager (GrowBot::Model::DeviceManager->new ('config.json'));
+  $self->device_manager (GrowBot::Model::DeviceManager->new ($config));
 
   # Hook: set the Server response header globally rather than per-route.
   $self->hook (before_dispatch => sub {
