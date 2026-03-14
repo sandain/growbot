@@ -78,7 +78,6 @@ use strict;
 use warnings;
 use utf8;
 use open qw (:std :utf8);
-use Fcntl qw (:flock);
 use Mojo::IOLoop;
 use Mojo::JSON qw (from_json);
 use Cwd;
@@ -533,13 +532,13 @@ $_deviceMeasure = sub {
       $now->rfc3339, $measure->{$type}{value}, $measure->{$type}{unit};
     $dayfh->close;
     # Write the measurement to the most recent measure file.
-    my $recentfile = sprintf "%s/%s.txt", $folder, $type;
-    open my $recentfh, '>', $recentfile or
+    my $recentfile = sprintf "%s/%s", $folder, $type;
+    open my $recentfh, '>', $recentfile . ".tmp" or
       warn "Can't output sensor data: $!\n";
-    flock $recentfh, LOCK_EX;
     printf $recentfh "%s\t%s\t%s\n",
       $now->rfc3339, $measure->{$type}{value}, $measure->{$type}{unit};
     $recentfh->close;
+    rename $recentfile . ".tmp", $recentfile . ".txt";
   }
 };
 
@@ -609,7 +608,6 @@ $_deviceHistoryPlot = sub {
     print $fh $painter->paint;
     $fh->close;
     # Rename the temporary file.
-    unlink $file . ".svg" if (-e $file . ".svg");
     rename $file . ".tmp", $file . ".svg";
   }
 };
@@ -651,8 +649,8 @@ $_deviceGaugePlot = sub {
       if (defined $config->{Actions}{Measure}{Type}{$type}{Format});
     # Determine the last measured value.
     my $recentfile = sprintf "%s/%s.txt", $folder, $type;
+    next unless (-s $recentfile);
     open my $recentfh, '<', $recentfile or warn "Can't read sensor data: $!\n";
-    flock $recentfh, LOCK_EX;
     ($_, my $value, $_) = split "\t", <$recentfh>;
     $recentfh->close;
     # Create a gauge plot.
@@ -672,7 +670,6 @@ $_deviceGaugePlot = sub {
     print $fh $painter->paint;
     $fh->close;
     # Rename the temporary file.
-    unlink $file . ".svg" if (-e $file . ".svg");
     rename $file . ".tmp", $file . ".svg";
   }
 };
