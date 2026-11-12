@@ -424,8 +424,14 @@ sub new {
   # Make sure the parameters are valid.
   die "Invalid I2C device path: $i2c"
     unless -e $i2c && -c $i2c;
-  die "Invalid I2C address: $address"
-    unless $address =~ /^(?:0x)?[0-9a-f]{2}$/i;
+  # The address may be a number (e.g. 0x77) or a hexadecimal string (e.g. '0x77').
+  # The BME280 and BMP280 respond at 0x76 (SDO to GND) or 0x77 (SDO to VDDIO).
+  # Any non-reserved 7-bit address (0x08 to 0x77) is accepted so the device can
+  # be used behind an I2C address translator.
+  $address = hex $address if ($address =~ /^0x[0-9a-f]+\z/i);
+  die "Invalid I2C address: $address" unless ($address =~ /^\d+\z/);
+  die sprintf ("Invalid I2C address: 0x%02X", $address)
+    unless ($address >= 0x08 && $address <= 0x77);
   # Create a new I2C object.
   my $io = new Device::I2C ($i2c, O_RDWR);
   # Make sure we can open the I2C bus.
