@@ -424,15 +424,19 @@ sub new {
   # Make sure the parameters are valid.
   die "Invalid I2C device path: $i2c"
     unless -e $i2c && -c $i2c;
-  die "Invalid I2C address: $address"
-    unless $address =~ /^(?:0x)?[0-9a-f]{2}$/i;
+  # The address may be a number (e.g. 0x77) or a hexadecimal string (e.g. '0x77').
+  # The BME280 and BMP280 respond at 0x76 (SDO to GND) or 0x77 (SDO to VDDIO).
+  # Any non-reserved 7-bit address (0x08 to 0x77) is accepted so the device can
+  # be used behind an I2C address translator.
+  $address = hex $address if ($address =~ /^0x[0-9a-f]+\z/i);
+  die "Invalid I2C address: $address" unless ($address =~ /^\d+\z/);
+  die sprintf ("Invalid I2C address: 0x%02X", $address)
+    unless ($address >= 0x08 && $address <= 0x77);
   # Create a new I2C object.
   my $io = new Device::I2C ($i2c, O_RDWR);
   # Make sure we can open the I2C bus.
   die "Error: Unable to open I2C Device File at $i2c"
     unless ($io);
-  # Make sure the address is numeric instead of a string.
-  $address = hex $address if ($address & ~$address);
   # Make sure we can open the BME280 or BMP280 device.
   die sprintf "Error: Unable to access device at 0x%X", $address
     unless ($io->checkDevice ($address));
@@ -509,29 +513,46 @@ sub measure {
     # Wait for the standby time.
     usleep $self->{standbyTime};
   }
+  # Compensate the measurements. A measurement with oversampling turned off was
+  # skipped by the device and is undefined. Pressure and humidity compensation
+  # depend on the temperature, so they are undefined if temperature is skipped.
+  my $ctrl = $self->{controls};
+  my ($temperature, $pressure, $humidity);
+  if ($ctrl->{temperature} != BOSCH280_OVERSAMPLING_OFF) {
+    $temperature = sprintf ("%.3f",
+      $self->$_compensateTemperature ($data->{temperature})
+    );
+    if ($ctrl->{pressure} != BOSCH280_OVERSAMPLING_OFF) {
+      $pressure = sprintf ("%.3f",
+        $self->$_compensatePressure ($data->{pressure}) / 100
+      );
+    }
+    if (
+      $self->{model} == BOSCH280_SENSOR_BME280 &&
+      $ctrl->{humidity} != BOSCH280_OVERSAMPLING_OFF
+    ) {
+      $humidity = sprintf ("%.3f",
+        $self->$_compensateHumidity ($data->{humidity})
+      );
+    }
+  }
   # Return the compensated measurements.
   my $measure;
   $measure->{temperature} = {
-    value => sprintf ("%.3f",
-      $self->$_compensateTemperature ($data->{temperature})
-    ),
+    value => $temperature,
     unit => "°C",
     minimum => BOSCH280_TEMPERATURE_MIN,
     maximum => BOSCH280_TEMPERATURE_MAX
   };
   $measure->{pressure} = {
-    value => sprintf ("%.3f",
-      $self->$_compensatePressure ($data->{pressure}) / 100
-    ),
+    value => $pressure,
     unit => "hPa",
     minimum => BOSCH280_PRESSURE_MIN / 100,
     maximum => BOSCH280_PRESSURE_MAX / 100
   };
   return $measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
   $measure->{humidity} = {
-    value => sprintf ("%.3f",
-      $self->$_compensateHumidity ($data->{humidity})
-    ),
+    value => $humidity,
     unit => "%",
     minimum => BOSCH280_HUMIDITY_MIN,
     maximum => BOSCH280_HUMIDITY_MAX
@@ -552,8 +573,10 @@ sub reset {
 sub status {
   my $self = shift;
   my $status = $self->{io}->readByteData (BOSCH280_REG_STATUS);
-  my @status = reverse split //, unpack "B*", $status;
-  return ($status[0], $status[3]);
+  # im_update is bit 0, measuring is bit 3.
+  my $im_update = $self->$_extractBits ($status, 0, 1);
+  my $measuring = $self->$_extractBits ($status, 3, 1);
+  return ($im_update, $measuring);
 }
 
 sub controls {
@@ -693,13 +716,13 @@ $_getCalibration = sub {
   # H1: unsigned char - [7:0].
   $calibration{H1} = $cal0[25];
   # H2: signed short - [7:0]/[15:8].
-  $calibration{H2} = $cal0[0] | $cal1[1] << 8;
+  $calibration{H2} = $self->$_signed ($cal1[0] | $cal1[1] << 8, 16);
   # H3: unsigned char - [7:0].
   $calibration{H3} = $cal1[2];
   # H4: signed short - [11:4]/[3:0].
-  $calibration{H4} = $self->$_signed ($cal1[3] << 4 | $cal1[4] & 0x0F, 16);
+  $calibration{H4} = $self->$_signed ($cal1[3] << 4 | $cal1[4] & 0x0F, 12);
   # H5: signed short - [3:0]/[11:4].
-  $calibration{H5} = $self->$_signed ($cal1[4] >> 4 | $cal1[5] << 4, 16);
+  $calibration{H5} = $self->$_signed ($cal1[4] >> 4 | $cal1[5] << 4, 12);
   # H6: signed char - [7:0].
   $calibration{H6} = $self->$_signed ($cal1[6], 8);
   # Return the calibration data.
@@ -712,7 +735,7 @@ $_getControls = sub {
   my $meas = $self->{io}->readByteData (BOSCH280_REG_CTRL_MEAS);
   my $osrs_t = $self->$_extractBits ($meas, 5, 3);
   my $osrs_p = $self->$_extractBits ($meas, 2, 3);
-  my $mode = $self->$_extractBits ($meas, 0, 1);
+  my $mode = $self->$_extractBits ($meas, 0, 2);
   my $osrs_h = BOSCH280_OVERSAMPLING_OFF;
   if ($self->{model} == BOSCH280_SENSOR_BME280) {
     # Read the controls for humidity.
