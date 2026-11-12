@@ -552,8 +552,10 @@ sub reset {
 sub status {
   my $self = shift;
   my $status = $self->{io}->readByteData (BOSCH280_REG_STATUS);
-  my @status = reverse split //, unpack "B*", $status;
-  return ($status[0], $status[3]);
+  # im_update is bit 0, measuring is bit 3.
+  my $im_update = $self->$_extractBits ($status, 0, 1);
+  my $measuring = $self->$_extractBits ($status, 3, 1);
+  return ($im_update, $measuring);
 }
 
 sub controls {
