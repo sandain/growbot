@@ -437,8 +437,6 @@ sub new {
   # Make sure we can open the I2C bus.
   die "Error: Unable to open I2C Device File at $i2c"
     unless ($io);
-  # Make sure the address is numeric instead of a string.
-  $address = hex $address if ($address & ~$address);
   # Make sure we can open the BME280 or BMP280 device.
   die sprintf "Error: Unable to access device at 0x%X", $address
     unless ($io->checkDevice ($address));
