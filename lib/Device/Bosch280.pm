@@ -693,13 +693,13 @@ $_getCalibration = sub {
   # H1: unsigned char - [7:0].
   $calibration{H1} = $cal0[25];
   # H2: signed short - [7:0]/[15:8].
-  $calibration{H2} = $cal0[0] | $cal1[1] << 8;
+  $calibration{H2} = $self->$_signed ($cal1[0] | $cal1[1] << 8, 16);
   # H3: unsigned char - [7:0].
   $calibration{H3} = $cal1[2];
   # H4: signed short - [11:4]/[3:0].
-  $calibration{H4} = $self->$_signed ($cal1[3] << 4 | $cal1[4] & 0x0F, 16);
+  $calibration{H4} = $self->$_signed ($cal1[3] << 4 | $cal1[4] & 0x0F, 12);
   # H5: signed short - [3:0]/[11:4].
-  $calibration{H5} = $self->$_signed ($cal1[4] >> 4 | $cal1[5] << 4, 16);
+  $calibration{H5} = $self->$_signed ($cal1[4] >> 4 | $cal1[5] << 4, 12);
   # H6: signed char - [7:0].
   $calibration{H6} = $self->$_signed ($cal1[6], 8);
   # Return the calibration data.
