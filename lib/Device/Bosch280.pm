@@ -513,29 +513,46 @@ sub measure {
     # Wait for the standby time.
     usleep $self->{standbyTime};
   }
+  # Compensate the measurements. A measurement with oversampling turned off was
+  # skipped by the device and is undefined. Pressure and humidity compensation
+  # depend on the temperature, so they are undefined if temperature is skipped.
+  my $ctrl = $self->{controls};
+  my ($temperature, $pressure, $humidity);
+  if ($ctrl->{temperature} != BOSCH280_OVERSAMPLING_OFF) {
+    $temperature = sprintf ("%.3f",
+      $self->$_compensateTemperature ($data->{temperature})
+    );
+    if ($ctrl->{pressure} != BOSCH280_OVERSAMPLING_OFF) {
+      $pressure = sprintf ("%.3f",
+        $self->$_compensatePressure ($data->{pressure}) / 100
+      );
+    }
+    if (
+      $self->{model} == BOSCH280_SENSOR_BME280 &&
+      $ctrl->{humidity} != BOSCH280_OVERSAMPLING_OFF
+    ) {
+      $humidity = sprintf ("%.3f",
+        $self->$_compensateHumidity ($data->{humidity})
+      );
+    }
+  }
   # Return the compensated measurements.
   my $measure;
   $measure->{temperature} = {
-    value => sprintf ("%.3f",
-      $self->$_compensateTemperature ($data->{temperature})
-    ),
+    value => $temperature,
     unit => "°C",
     minimum => BOSCH280_TEMPERATURE_MIN,
     maximum => BOSCH280_TEMPERATURE_MAX
   };
   $measure->{pressure} = {
-    value => sprintf ("%.3f",
-      $self->$_compensatePressure ($data->{pressure}) / 100
-    ),
+    value => $pressure,
     unit => "hPa",
     minimum => BOSCH280_PRESSURE_MIN / 100,
     maximum => BOSCH280_PRESSURE_MAX / 100
   };
   return $measure if ($self->{model} == BOSCH280_SENSOR_BMP280);
   $measure->{humidity} = {
-    value => sprintf ("%.3f",
-      $self->$_compensateHumidity ($data->{humidity})
-    ),
+    value => $humidity,
     unit => "%",
     minimum => BOSCH280_HUMIDITY_MIN,
     maximum => BOSCH280_HUMIDITY_MAX
