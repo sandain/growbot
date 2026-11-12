@@ -714,7 +714,7 @@ $_getControls = sub {
   my $meas = $self->{io}->readByteData (BOSCH280_REG_CTRL_MEAS);
   my $osrs_t = $self->$_extractBits ($meas, 5, 3);
   my $osrs_p = $self->$_extractBits ($meas, 2, 3);
-  my $mode = $self->$_extractBits ($meas, 0, 1);
+  my $mode = $self->$_extractBits ($meas, 0, 2);
   my $osrs_h = BOSCH280_OVERSAMPLING_OFF;
   if ($self->{model} == BOSCH280_SENSOR_BME280) {
     # Read the controls for humidity.
